@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- GastroCEDELU index.html · 2026-03-07 17:41 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1629,19 +1630,27 @@ button { cursor: pointer; border: none; }
       </div>
     </div>
     <div class="field">
+      <label>Antecedentes Personales</label>
+      <textarea id="hc-antec" rows="3" placeholder="Antecedentes médicos, quirúrgicos, alergias, hábitos..."></textarea>
+    </div>
+    <div class="field">
+      <label>Antecedentes Familiares</label>
+      <textarea id="hc-rec1" rows="3" placeholder="Antecedentes de relevancia en familiares directos..."></textarea>
+    </div>
+    <div class="field">
       <label>Motivo de Consulta</label>
       <textarea id="hc-motivo" rows="3" placeholder="Motivo por el cual consulta..."></textarea>
     </div>
     <div class="field">
-      <label>Antecedentes de Importancia</label>
-      <textarea id="hc-antec" rows="3" placeholder="Antecedentes médicos relevantes, cirugías previas, alergias..."></textarea>
+      <label>Estudios Complementarios</label>
+      <textarea id="hc-rec2" rows="5" placeholder="Resultados de laboratorio, imágenes, endoscopias previas, otros estudios..."></textarea>
     </div>
     <div class="field">
       <label>Examen Físico</label>
       <textarea id="hc-exfisico" rows="3" placeholder="Hallazgos del examen físico..."></textarea>
     </div>
 
-    <div class="section-divider"><span>Diagnóstico y Tratamiento</span></div>
+    <div class="section-divider"><span>Diagnóstico y Conducta</span></div>
     <div class="field-row cols-2">
       <div class="field">
         <label>Diagnóstico Presuntivo</label>
@@ -1653,16 +1662,8 @@ button { cursor: pointer; border: none; }
       </div>
     </div>
     <div class="field">
-      <label>Tratamiento</label>
-      <textarea id="hc-tratamiento" rows="3" placeholder="Plan de tratamiento indicado..."></textarea>
-    </div>
-    <div class="field">
-      <label>Recomendaciones</label>
-      <textarea id="hc-rec1" rows="2" placeholder="Recomendaciones generales..."></textarea>
-    </div>
-    <div class="field">
-      <label>Recomendaciones II</label>
-      <textarea id="hc-rec2" rows="2" placeholder="Recomendaciones adicionales..."></textarea>
+      <label>Conducta / Tratamiento</label>
+      <textarea id="hc-tratamiento" rows="4" placeholder="Plan de tratamiento, indicaciones, conducta médica..."></textarea>
     </div>
 
     <div class="section-divider"><span>Medicamentos Indicados</span></div>
@@ -1714,16 +1715,12 @@ button { cursor: pointer; border: none; }
       <textarea id="cons-motivo" rows="3" placeholder="Motivo de la consulta..."></textarea>
     </div>
     <div class="field">
-      <label>Examen Físico</label>
-      <textarea id="cons-exfisico" rows="3" placeholder="Hallazgos del examen físico..."></textarea>
+      <label>Evolución</label>
+      <textarea id="cons-exfisico" rows="4" placeholder="Evolución del cuadro clínico, examen físico, novedades..."></textarea>
     </div>
     <div class="field">
-      <label>Impresión Diagnóstica</label>
-      <textarea id="cons-diag" rows="2" placeholder="Diagnóstico / Evolución del cuadro..."></textarea>
-    </div>
-    <div class="field">
-      <label>Tratamiento</label>
-      <textarea id="cons-tratamiento" rows="3" placeholder="Tratamiento indicado en esta consulta..."></textarea>
+      <label>Conducta</label>
+      <textarea id="cons-tratamiento" rows="4" placeholder="Conducta médica, indicaciones, ajuste de tratamiento..."></textarea>
     </div>
     <div class="field">
       <label>Pendiente</label>
@@ -2213,8 +2210,10 @@ function renderHC(hc) {
     <div class="hc-viewer">
       <div class="hc-section">
         <div class="hc-section-title">Consulta Inicial · ${fmtDate(hc.fechaConsulta)}</div>
+        ${hcField('Antecedentes Personales', hc.antecGrales)}
+        ${hcField('Antecedentes Familiares', hc.recomendaciones)}
         ${hcField('Motivo de Consulta', hc.motivoConsulta)}
-        ${hcField('Antecedentes de Importancia', hc.antecGrales)}
+        ${hcField('Estudios Complementarios', hc.recomendaciones2)}
         ${hcField('Examen Físico', hc.exFisico)}
       </div>
       <div class="hc-section">
@@ -2223,10 +2222,8 @@ function renderHC(hc) {
         ${hcField('Código OMS', hc.diagOMS)}
       </div>
       <div class="hc-section">
-        <div class="hc-section-title">Tratamiento</div>
-        ${hcField('Tratamiento', hc.tratamiento)}
-        ${hcField('Recomendaciones', hc.recomendaciones)}
-        ${hcField('Recomendaciones II', hc.recomendaciones2)}
+        <div class="hc-section-title">Conducta / Tratamiento</div>
+        ${hcField('Conducta / Tratamiento', hc.tratamiento)}
       </div>
       ${meds.length ? `
       <div class="hc-section">
@@ -2260,14 +2257,14 @@ function prepModalHC() {
   if (hc) {
     document.getElementById('hc-id').value = safe(hc.id);
     document.getElementById('hc-fecha').value = hc.fechaConsulta ? hc.fechaConsulta.toString().split('T')[0] : '';
-    document.getElementById('hc-motivo').value = safe(hc.motivoConsulta);
     document.getElementById('hc-antec').value = safe(hc.antecGrales);
+    document.getElementById('hc-rec1').value = safe(hc.recomendaciones);
+    document.getElementById('hc-motivo').value = safe(hc.motivoConsulta);
+    document.getElementById('hc-rec2').value = safe(hc.recomendaciones2);
     document.getElementById('hc-exfisico').value = safe(hc.exFisico);
     document.getElementById('hc-diag').value = safe(hc.diagPresuntivo);
     document.getElementById('hc-diagoms').value = safe(hc.diagOMS);
     document.getElementById('hc-tratamiento').value = safe(hc.tratamiento);
-    document.getElementById('hc-rec1').value = safe(hc.recomendaciones);
-    document.getElementById('hc-rec2').value = safe(hc.recomendaciones2);
     for (let i = 1; i <= 6; i++) {
       document.getElementById('med'+i).value = safe(hc['med'+i]);
       document.getElementById('dos'+i).value = safe(hc['dos'+i]);
@@ -2357,9 +2354,9 @@ function renderConsultas(list) {
       </div>
       <div class="consulta-body">
         ${c.motivoConsulta ? `<div class="consulta-field"><label>Motivo</label><p>${c.motivoConsulta}</p></div>` : ''}
-        ${c.exFisico ? `<div class="consulta-field"><label>Examen Físico</label><p>${c.exFisico}</p></div>` : ''}
+        ${c.exFisico ? `<div class="consulta-field"><label>Evolución</label><p>${c.exFisico}</p></div>` : ''}
         ${c.impresionDiagnostica ? `<div class="consulta-field"><label>Diagnóstico</label><p>${c.impresionDiagnostica}</p></div>` : ''}
-        ${c.tratamiento ? `<div class="consulta-field"><label>Tratamiento</label><p>${c.tratamiento}</p></div>` : ''}
+        ${c.tratamiento ? `<div class="consulta-field"><label>Conducta</label><p>${c.tratamiento}</p></div>` : ''}
         ${c.pendiente ? `<div class="consulta-field"><label>Pendiente</label><p style="color:var(--warn)">${c.pendiente}</p></div>` : ''}
       </div>
     </div>
@@ -2383,7 +2380,7 @@ function confirmarEliminarConsulta(id, idx) {
 
 function prepModalConsulta() {
   document.getElementById('cons-fecha').value = todayInput();
-  ['lugar','motivo','exfisico','diag','tratamiento','pendiente'].forEach(f => {
+  ['lugar','motivo','exfisico','tratamiento','pendiente'].forEach(f => {
     document.getElementById('cons-'+f).value = '';
   });
 }
@@ -2398,7 +2395,7 @@ async function submitConsulta() {
     lugarAtencion:       document.getElementById('cons-lugar').value,
     motivoConsulta:      document.getElementById('cons-motivo').value,
     exFisico:            document.getElementById('cons-exfisico').value,
-    impresionDiagnostica:document.getElementById('cons-diag').value,
+    impresionDiagnostica:'',
     tratamiento:         document.getElementById('cons-tratamiento').value,
     pendiente:           document.getElementById('cons-pendiente').value
   };
