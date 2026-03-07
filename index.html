@@ -1098,7 +1098,6 @@ button { cursor: pointer; border: none; }
         <p>Sistema de Gestión Médica</p>
       </div>
       <h2>Ingrese sus credenciales</h2>
-      <div id="config-warn" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#856404">⚙️ <strong>Configuración pendiente:</strong> Editá el archivo <code>index.html</code> y reemplazá <code>PEGAR_URL_APPS_SCRIPT_AQUI</code> con tu URL de Apps Script.</div>
       <div class="login-error" id="login-error"></div>
       <div class="field">
         <label>Usuario</label>
@@ -1860,16 +1859,27 @@ function initials(name) {
 }
 
 // ─── URL DEL APPS SCRIPT ── CAMBIAR POR TU URL ──────────────
-const API_URL = 'PEGAR_URL_APPS_SCRIPT_AQUI';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyFfrgfodWGzNVSRxU39X4zdyq_s6Qpm_CglMgADSxjW9umjrFHQsRjF6KcwkuBbzI/exec';
 
 async function serverCall(fn, ...args) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ action: fn, params: args })
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return await res.json();
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: fn, params: args })
+    });
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      console.error('Respuesta no JSON:', text);
+      return { ok: false, error: 'Respuesta inválida del servidor' };
+    }
+  } catch (e) {
+    console.error('serverCall error:', e);
+    throw e;
+  }
 }
 
 // ─── UI HELPERS ─────────────────────────────────────────────
@@ -1945,8 +1955,9 @@ async function doLogin() {
       errEl.classList.add('show');
     }
   } catch (e) {
-    errEl.textContent = 'Error de conexión. Intente nuevamente.';
+    errEl.textContent = 'Error de conexión: ' + e.message;
     errEl.classList.add('show');
+    console.error('Login error:', e);
   } finally {
     btn.disabled = false;
     btn.textContent = 'Ingresar al Sistema';
@@ -1962,12 +1973,7 @@ function doLogout() {
   document.getElementById('login-pass').value = '';
 }
 
-// Verificar si la URL está configurada
-document.addEventListener('DOMContentLoaded', () => {
-  if (API_URL === 'PEGAR_URL_APPS_SCRIPT_AQUI') {
-    document.getElementById('config-warn').style.display = 'block';
-  }
-});
+// URL configurada OK
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('screen-login').classList.contains('active')) {
