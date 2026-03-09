@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-09 23:50 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-10 00:20 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -850,21 +850,33 @@ button { cursor: pointer; border: none; }
 .loading-overlay.show { display: flex; }
 .loading-box {
   background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 28px 40px;
+  border: 1px solid #c0ddc9;
+  border-radius: 16px;
+  padding: 36px 52px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  font-size: 14px;
-  color: var(--muted2);
+  gap: 20px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a7a4a;
+  box-shadow: 0 8px 40px rgba(0,0,0,.18);
+  min-width: 240px;
+  text-align: center;
+  letter-spacing: .3px;
 }
 .loading-spinner {
-  width: 24px; height: 24px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
+  width: 52px; height: 52px;
+  border: 5px solid #c0efd8;
+  border-top-color: #1a7a4a;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
+}
+.loading-sub {
+  font-size: 12px;
+  color: #888;
+  font-weight: 400;
+  margin-top: -12px;
 }
 
 /* ─── ADMIN PANEL ───────────────────────────────────────────── */
@@ -1747,6 +1759,7 @@ button { cursor: pointer; border: none; }
   <div class="loading-box">
     <div class="loading-spinner"></div>
     <span id="loading-msg">Procesando...</span>
+    <span class="loading-sub" id="loading-sub"></span>
   </div>
 </div>
 
@@ -1830,8 +1843,10 @@ async function serverCall(fn, ...args) {
 }
 
 // ─── UI HELPERS ─────────────────────────────────────────────
-function showLoading(msg) {
+function showLoading(msg, sub) {
   document.getElementById('loading-msg').textContent = msg || 'Procesando...';
+  const subEl = document.getElementById('loading-sub');
+  if (subEl) subEl.textContent = sub || '';
   document.getElementById('loading-overlay').classList.add('show');
 }
 function hideLoading() {
@@ -2731,7 +2746,7 @@ async function submitEndoscopia(generarPDF = false) {
     ? document.getElementById('endo-esofago').value
     : document.getElementById('endo-colon-informe').value;
 
-  showLoading('Guardando estudio...');
+  showLoading('GUARDANDO ESTUDIO', 'Por favor esperá...');
 
   const endoId = document.getElementById('endo-id').value || null;
 
@@ -2775,7 +2790,7 @@ async function submitEndoscopia(generarPDF = false) {
     // 2. Subir fotos si hay
     if (fotosData.length > 0) {
       hideLoading();
-      showLoading('Subiendo fotos a Drive...');
+      showLoading('GUARDANDO ESTUDIO', 'Subiendo fotos a Drive...');
       await uploadFotosADrive(pac.id, savedId);
 
       // 3. Guardar URLs de fotos en el estudio
@@ -2883,10 +2898,12 @@ function renderEndoscopias(list) {
         </div>
         ${fotos.length > 0 ? `
         <div class="endo-fotos" style="margin-top:12px">
-          ${fotos.map((url, i) =>
-            `<img class="endo-foto-thumb" src="${url}" alt="Foto ${i+1}"
-              onclick="openFotoViewer('${url}')" title="Foto ${i+1}">`
-          ).join('')}
+          ${fotos.map((url, i) => {
+            const thumb = driveThumb(url);
+            return `<img class="endo-foto-thumb" src="${thumb}" alt="Foto ${i+1}"
+              onerror="this.onerror=null;this.src='';this.style.background='#f0f9f4';this.style.display='flex'"
+              onclick="openFotoViewer('${thumb}')" title="Foto ${i+1}">`;
+          }).join('')}
         </div>` : ''}
       </div>
     </div>`;
@@ -3010,6 +3027,10 @@ function imprimirEndoscopia(endoId) {
     .page{max-width:100%}
     * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
   }
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm 10mm 10mm;
+  }
 </style>
 </head>
 <body>
@@ -3085,7 +3106,6 @@ function imprimirEndoscopia(endoId) {
     </div>
   </div>
 
-  ${e.informeBiopsia ? `<div class="card" style="margin-bottom:8px"><span class="sec-badge">Biopsia / Anatomía Patológica</span><div class="informe-text" style="font-family:'Inter',Arial;font-size:11px">${e.informeBiopsia}</div></div>` : ''}
   ${e.comentarios    ? `<div class="card" style="margin-bottom:8px"><span class="sec-badge">Comentarios</span><div class="informe-text" style="font-family:'Inter',Arial;font-size:11px">${e.comentarios}</div></div>` : ''}
 
   <!-- FOTOS + FIRMA -->
@@ -3117,11 +3137,11 @@ function imprimirEndoscopia(endoId) {
 </body>
 </html>`;
 
-  const blob = new Blob([htmlPDF], { type: 'text/html' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.target = '_blank'; a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 15000);
+  const printWin = window.open('', '_blank', 'width=900,height=700');
+  if (!printWin) { toast('Permití ventanas emergentes para generar el PDF', 'warn'); return; }
+  printWin.document.open();
+  printWin.document.write(htmlPDF);
+  printWin.document.close();
 }
 
 function confirmarEliminarEndoscopia(id) {
