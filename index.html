@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-07 21:45 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-09 20:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1412,11 +1412,12 @@ button { cursor: pointer; border: none; }
 
   <!-- ════════ PÁGINA: NUEVA ENDOSCOPÍA ════════ -->
   <div class="modal-overlay" id="modal-endoscopia">
-    <div class="modal" style="width:740px;max-width:97vw">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div class="modal" style="width:800px;max-width:97vw">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <h2 id="endo-modal-titulo" style="margin:0">🔭 Nueva Endoscopía</h2>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-endoscopia')">✕ Cancelar</button>
+          <button class="btn btn-secondary btn-sm" onclick="generarPDFEndoscopia()" id="btn-pdf-endo">📄 Guardar y Generar PDF</button>
           <button class="btn btn-primary btn-sm" onclick="submitEndoscopia()" id="btn-guardar-endo">💾 Guardar Estudio</button>
         </div>
       </div>
@@ -1424,8 +1425,32 @@ button { cursor: pointer; border: none; }
       <input type="hidden" id="endo-id">
       <input type="hidden" id="endo-paciente-id">
       <input type="hidden" id="endo-tipo">
+      <!-- campos de compatibilidad con el Sheet -->
+      <input type="hidden" id="endo-esofago-hall">
+      <input type="hidden" id="endo-estomago">
+      <input type="hidden" id="endo-estomago-hall">
+      <input type="hidden" id="endo-duodeno">
+      <input type="hidden" id="endo-duodeno-hall">
+      <input type="hidden" id="endo-colon">
+      <input type="hidden" id="endo-colon-hall">
+      <input type="hidden" id="endo-region">
+      <input type="hidden" id="endo-calidad">
+      <input type="hidden" id="endo-calidad-veda">
+      <input type="hidden" id="endo-tolerancia">
+      <input type="hidden" id="endo-anatpat">
+      <input type="hidden" id="campo-calidad-veda">
 
-      <!-- Datos básicos -->
+      <!-- Cabecera del paciente -->
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap;font-size:13px">
+        <div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Paciente</span><br><strong id="endo-pac-nombre" style="font-size:15px"></strong></div>
+        <div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">DNI</span><br><span id="endo-pac-dni"></span></div>
+        <div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Edad</span><br><span id="endo-pac-edad"></span></div>
+        <div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Sexo</span><br><span id="endo-pac-sexo"></span></div>
+        <div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">Obra Social</span><br><span id="endo-pac-os"></span></div>
+        <div><span style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px">N° Afiliado</span><br><span id="endo-pac-afil"></span></div>
+      </div>
+
+      <!-- Datos del estudio -->
       <div class="section-divider"><span>Datos del Estudio</span></div>
       <div class="field-row cols-3">
         <div class="field">
@@ -1434,12 +1459,12 @@ button { cursor: pointer; border: none; }
         </div>
         <div class="field">
           <label>Lugar de Realización</label>
-          <input type="text" id="endo-lugar" placeholder="Clínica / Sanatorio / Consultorio" list="endo-lugares">
+          <input type="text" id="endo-lugar" placeholder="Clínica / Sanatorio" list="endo-lugares">
           <datalist id="endo-lugares">
+            <option value="Clínica Uruguay SRL">
             <option value="Consultorio">
-            <option value="Clínica CEDELU">
             <option value="Hospital San Martín">
-            <option value="Sanatorio">
+            <option value="Sanatorio CEDELU">
           </datalist>
         </div>
         <div class="field">
@@ -1447,149 +1472,86 @@ button { cursor: pointer; border: none; }
           <input type="text" id="endo-pedidopor" placeholder="Médico solicitante">
         </div>
       </div>
-      <div class="field-row cols-2">
+
+      <div class="field-row cols-3">
         <div class="field">
-          <label>Anestesista</label>
-          <input type="text" id="endo-anestesista" placeholder="Dr/Dra.">
+          <label>Analgesia</label>
+          <select id="endo-analgesia" style="height:40px">
+            <option value="">— Seleccionar —</option>
+            <option value="Anestesia general">Anestesia general</option>
+            <option value="Anestesia tópica">Anestesia tópica</option>
+            <option value="Sedación consciente">Sedación consciente</option>
+            <option value="Sin analgesia">Sin analgesia</option>
+          </select>
         </div>
         <div class="field">
-          <label>Analgesia / Sedación</label>
-          <select id="endo-analgesia">
+          <label>Anestesiólogo</label>
+          <input type="text" id="endo-anestesista" placeholder="Dr/Dra." list="endo-anest-dl" onblur="autoguardarAnestesista(this.value)">
+          <datalist id="endo-anest-dl"></datalist>
+        </div>
+        <div class="field">
+          <label>Tipo de Endoscopía</label>
+          <select id="endo-endoscopia-tipo" style="height:40px">
             <option value="">— Seleccionar —</option>
-            <option value="Sin analgesia">Sin analgesia</option>
-            <option value="Midazolam">Midazolam</option>
-            <option value="Propofol">Propofol</option>
-            <option value="Midazolam + Propofol">Midazolam + Propofol</option>
-            <option value="Ketamina">Ketamina</option>
-            <option value="Anestesia general">Anestesia general</option>
+            <option value="Diagnóstica">Diagnóstica</option>
+            <option value="Terapéutica">Terapéutica</option>
           </select>
         </div>
       </div>
+
       <div class="field-row cols-2">
         <div class="field">
-          <label>Antecedentes relevantes</label>
-          <textarea id="endo-antec" rows="2" placeholder="Antecedentes del paciente para este estudio..."></textarea>
+          <label>Antecedentes</label>
+          <textarea id="endo-antec" rows="2" placeholder="Antecedentes relevantes para este estudio..."></textarea>
         </div>
         <div class="field">
           <label>Motivo del Examen</label>
-          <div class="chips-wrap" id="chips-motivo"></div>
           <textarea id="endo-motivo" rows="2" placeholder="Motivo por el cual se realiza el estudio..."></textarea>
         </div>
       </div>
 
-      <!-- Hallazgos VEDA -->
+      <!-- Informe VEDA -->
       <div id="seccion-veda">
-        <div class="section-divider"><span>🔭 Hallazgos VEDA</span></div>
-        <div class="field-row cols-2">
-          <div class="field">
-            <label>Esófago — Región Alcanzada</label>
-            <div class="chips-wrap" id="chips-esofago"></div>
-            <textarea id="endo-esofago" rows="2" placeholder="Hallazgos en esófago..."></textarea>
-          </div>
-          <div class="field">
-            <label>Esófago — Descripción Adicional</label>
-            <textarea id="endo-esofago-hall" rows="2" placeholder="Descripción detallada..."></textarea>
-          </div>
+        <div class="section-divider" style="margin-top:20px"><span>📋 Informe Endoscópico</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Insertar plantilla:</span>
+          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaVEDA(0)" style="font-size:12px">✅ VEDA Normal</button>
+          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaVEDA(1)" style="font-size:12px">🔴 Gastropatía Crónica</button>
+          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaVEDA(2)" style="font-size:12px">🟠 Esofagitis</button>
+          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaVEDA(3)" style="font-size:12px">🟡 H. hiatal + Erosiones</button>
         </div>
-        <div class="field-row cols-2">
-          <div class="field">
-            <label>Estómago / Hallazgos</label>
-            <div class="chips-wrap" id="chips-estomago"></div>
-            <textarea id="endo-estomago" rows="2" placeholder="Hallazgos en estómago..."></textarea>
-          </div>
-          <div class="field">
-            <label>Estómago — Descripción</label>
-            <textarea id="endo-estomago-hall" rows="2" placeholder="Descripción detallada..."></textarea>
-          </div>
-        </div>
-        <div class="field-row cols-2">
-          <div class="field">
-            <label>Duodeno</label>
-            <div class="chips-wrap" id="chips-duodeno"></div>
-            <textarea id="endo-duodeno" rows="2" placeholder="Hallazgos en duodeno..."></textarea>
-          </div>
-          <div class="field">
-            <label>Duodeno — Descripción</label>
-            <textarea id="endo-duodeno-hall" rows="2" placeholder="Descripción detallada..."></textarea>
-          </div>
+        <div class="field">
+          <textarea id="endo-esofago" rows="14" placeholder="Completá el informe manualmente o seleccioná una plantilla arriba..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
         </div>
       </div>
 
-      <!-- Hallazgos Colonoscopía -->
+      <!-- Informe Colonoscopía -->
       <div id="seccion-colon" style="display:none">
-        <div class="section-divider"><span>🔭 Hallazgos Colonoscopía</span></div>
-        <div class="field-row cols-2">
-          <div class="field">
-            <label>Región Alcanzada</label>
-            <select id="endo-region">
-              <option value="">— Seleccionar —</option>
-              <option value="Colon completo hasta ciego">Colon completo hasta ciego</option>
-              <option value="Colon completo hasta válvula ileocecal">Hasta válvula ileocecal</option>
-              <option value="Colon izquierdo">Colon izquierdo</option>
-              <option value="Sigmoides">Sigmoides</option>
-              <option value="Recto">Recto</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Calidad de Preparación</label>
-            <select id="endo-calidad">
-              <option value="">— Seleccionar —</option>
-              <option value="Excelente">Excelente</option>
-              <option value="Buena">Buena</option>
-              <option value="Regular">Regular</option>
-              <option value="Mala">Mala</option>
-            </select>
-          </div>
+        <div class="section-divider" style="margin-top:20px"><span>📋 Informe Colonoscopía</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Insertar plantilla:</span>
+          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaColon(0)" style="font-size:12px">✅ Colonoscopía Normal</button>
+          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaColon(1)" style="font-size:12px">🔴 Con Pólipos</button>
         </div>
         <div class="field">
-          <label>Hallazgos por Segmento</label>
-          <div class="chips-wrap" id="chips-colon"></div>
-          <textarea id="endo-colon" rows="3" placeholder="Recto, sigmoides, colon descendente, transverso, ascendente, ciego..."></textarea>
-        </div>
-        <div class="field">
-          <label>Descripción Adicional</label>
-          <textarea id="endo-colon-hall" rows="2" placeholder="Descripción detallada de los hallazgos..."></textarea>
+          <textarea id="endo-colon-informe" rows="14" placeholder="Completá el informe manualmente o seleccioná una plantilla..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
         </div>
       </div>
 
-      <!-- Diagnóstico y cierre -->
-      <div class="section-divider"><span>Diagnóstico Final</span></div>
-      <div class="field">
-        <label>Impresión Diagnóstica</label>
-        <div class="chips-wrap" id="chips-diagnostico"></div>
-        <textarea id="endo-impresion" rows="3" placeholder="Conclusión diagnóstica del estudio..."></textarea>
-      </div>
-      <div class="field-row cols-3">
+      <!-- Impresión diagnóstica y biopsia -->
+      <div class="field-row cols-2" style="margin-top:8px">
         <div class="field">
-          <label>Tolerancia</label>
-          <select id="endo-tolerancia">
-            <option value="">— Seleccionar —</option>
-            <option value="Buena">Buena</option>
-            <option value="Regular">Regular</option>
-            <option value="Mala">Mala</option>
-          </select>
-        </div>
-        <div class="field" id="campo-calidad-veda">
-          <label>Calidad de Imagen</label>
-          <select id="endo-calidad-veda">
-            <option value="">— Seleccionar —</option>
-            <option value="Excelente">Excelente</option>
-            <option value="Buena">Buena</option>
-            <option value="Regular">Regular</option>
-          </select>
+          <label>Impresión Diagnóstica</label>
+          <textarea id="endo-impresion" rows="3" placeholder="Diagnóstico endoscópico final..."></textarea>
         </div>
         <div class="field">
-          <label>Anatomía Patológica</label>
-          <input type="text" id="endo-anatpat" placeholder="Biopsia / AP">
+          <label>Informe de Biopsia / Anatomía Patológica</label>
+          <textarea id="endo-biopsia" rows="3" placeholder="Resultado de biopsia si corresponde..."></textarea>
         </div>
-      </div>
-      <div class="field">
-        <label>Informe de Biopsia</label>
-        <textarea id="endo-biopsia" rows="2" placeholder="Resultado de biopsia / anatomía patológica..."></textarea>
       </div>
       <div class="field">
         <label>Comentarios / Recomendaciones</label>
-        <textarea id="endo-comentarios" rows="2" placeholder="Comentarios adicionales, recomendaciones post-procedimiento..."></textarea>
+        <textarea id="endo-comentarios" rows="2" placeholder="Recomendaciones post-procedimiento..."></textarea>
       </div>
 
       <!-- Fotos -->
@@ -1972,6 +1934,7 @@ function initApp() {
 
   cargarObrasSociales();
   cargarLocalidades();
+  cargarAnestesistas();
   loadPacientes();
 }
 
@@ -2628,16 +2591,31 @@ function nuevaEndoscopia(tipo) {
   document.getElementById('endo-modal-titulo').textContent =
     '🔭 Nueva ' + tipo + ' — ' + pac.apellidoNombre;
 
+  // Auto-llenar datos del paciente en la cabecera
+  document.getElementById('endo-pac-nombre').textContent = pac.apellidoNombre || '';
+  document.getElementById('endo-pac-dni').textContent    = pac.dni || '—';
+  document.getElementById('endo-pac-edad').textContent   = pac.edad ? pac.edad + ' años' : '—';
+  document.getElementById('endo-pac-sexo').textContent   = pac.sexo || '—';
+  document.getElementById('endo-pac-os').textContent     = pac.obraSocial || '—';
+  document.getElementById('endo-pac-afil').textContent   = pac.nroAfiliado || '—';
+
+  // Auto-llenar antecedentes y motivo desde HC si existe
+  if (App.hcActual) {
+    document.getElementById('endo-antec').value  = App.hcActual.antecGrales || '';
+    document.getElementById('endo-motivo').value = App.hcActual.motivoConsulta || '';
+  }
+
   // Mostrar/ocultar secciones según tipo
-  const esVeda  = tipo === 'VEDA';
+  const esVeda = tipo === 'VEDA';
   document.getElementById('seccion-veda').style.display  = esVeda ? '' : 'none';
   document.getElementById('seccion-colon').style.display = esVeda ? 'none' : '';
-  document.getElementById('campo-calidad-veda').style.display = esVeda ? '' : 'none';
 
   // Fecha hoy
   document.getElementById('endo-fecha').value = todayInputDMY();
 
-  initChips();
+  // Cargar datalist anestesistas
+  actualizarDatalistAnestesistas();
+
   showModal('modal-endoscopia');
 }
 
@@ -2657,16 +2635,14 @@ function resetFormEndoscopia() {
   document.getElementById('fotos-input').value = '';
   document.getElementById('endo-id').value = '';
   ['fecha','lugar','pedidopor','anestesista','antec','motivo',
-   'esofago','esofago-hall','estomago','estomago-hall',
-   'duodeno','duodeno-hall','colon','colon-hall',
-   'impresion','anatpat','biopsia','comentarios'].forEach(f => {
+   'esofago','colon-informe','impresion','biopsia','comentarios'].forEach(f => {
     const el = document.getElementById('endo-' + f);
     if (el) el.value = '';
   });
-  ['analgesia','tolerancia','calidad-veda','calidad','region'].forEach(f => {
-    const el = document.getElementById('endo-' + f);
-    if (el) el.value = '';
-  });
+  const anlg = document.getElementById('endo-analgesia');
+  if (anlg) anlg.value = '';
+  const etipo = document.getElementById('endo-endoscopia-tipo');
+  if (etipo) etipo.value = '';
 }
 
 function todayInputDMY() {
@@ -2761,10 +2737,13 @@ async function uploadFotosADrive(pacienteId, endoscopiaId) {
 async function submitEndoscopia() {
   const pac  = App.pacienteActual;
   const tipo = document.getElementById('endo-tipo').value;
+  const esVeda = tipo === 'VEDA';
+  const informeTexto = esVeda
+    ? document.getElementById('endo-esofago').value
+    : document.getElementById('endo-colon-informe').value;
 
   showLoading('Guardando estudio...');
 
-  // Primero guardamos el estudio para obtener el ID
   const endoId = document.getElementById('endo-id').value || null;
 
   const data = {
@@ -2779,21 +2758,19 @@ async function submitEndoscopia() {
     anestesista:     document.getElementById('endo-anestesista').value,
     antecedentes:    document.getElementById('endo-antec').value,
     motivoExamen:    document.getElementById('endo-motivo').value,
-    esofago:         document.getElementById('endo-esofago').value,
-    esofagoHallazgos:document.getElementById('endo-esofago-hall').value,
-    estomago:        document.getElementById('endo-estomago').value,
-    estomagoHallazgos:document.getElementById('endo-estomago-hall').value,
-    duodeno:         document.getElementById('endo-duodeno').value,
-    duodenoHallazgos:document.getElementById('endo-duodeno-hall').value,
-    colon:           document.getElementById('endo-colon').value,
-    colonHallazgos:  document.getElementById('endo-colon-hall').value,
+    esofago:         informeTexto,
+    esofagoHallazgos:'',
+    estomago:        document.getElementById('endo-endoscopia-tipo').value,
+    estomagoHallazgos:'',
+    duodeno:         '',
+    duodenoHallazgos:'',
+    colon:           '',
+    colonHallazgos:  '',
     impresionDiagnostica: document.getElementById('endo-impresion').value,
     analgesia:       document.getElementById('endo-analgesia').value,
-    tolerancia:      document.getElementById('endo-tolerancia').value,
-    calidadPrep:     tipo === 'VEDA'
-                       ? document.getElementById('endo-calidad-veda').value
-                       : document.getElementById('endo-calidad').value,
-    anatPatologica:  document.getElementById('endo-anatpat').value,
+    tolerancia:      '',
+    calidadPrep:     '',
+    anatPatologica:  '',
     informeBiopsia:  document.getElementById('endo-biopsia').value,
     comentarios:     document.getElementById('endo-comentarios').value,
   };
@@ -3086,6 +3063,251 @@ async function autoguardarLocalidad(valor) {
       await serverCall('saveListaPersonalizada', 'localidades', extras);
     } catch {}
   }
+}
+
+// ─── ANESTESISTAS ───────────────────────────────────────────────────────────
+let anestesistasState = [];
+
+async function cargarAnestesistas() {
+  try {
+    const res = await serverCall('getListaPersonalizada', 'anestesistas');
+    anestesistasState = res.ok && Array.isArray(res.data) ? res.data : [];
+  } catch { anestesistasState = []; }
+  actualizarDatalistAnestesistas();
+}
+
+function actualizarDatalistAnestesistas() {
+  const dl = document.getElementById('endo-anest-dl');
+  if (!dl) return;
+  dl.innerHTML = anestesistasState.map(a => `<option value="${a}">`).join('');
+}
+
+async function autoguardarAnestesista(valor) {
+  if (!valor || valor.trim() === '') return;
+  const v = valor.trim();
+  if (!anestesistasState.includes(v)) {
+    anestesistasState.push(v);
+    actualizarDatalistAnestesistas();
+    try {
+      await serverCall('saveListaPersonalizada', 'anestesistas', anestesistasState);
+    } catch {}
+  }
+}
+
+// ─── PLANTILLAS VEDA ────────────────────────────────────────────────────────
+const PLANTILLAS_VEDA = [
+  {
+    nombre: 'VEDA Normal',
+    texto: `ESÓFAGO: línea Z a ___ cm de la arcada dentaria superior, coincidente con el inicio de los pliegues gástricos. Mucosa esofágica sin lesiones.
+
+ESTÓMAGO: cardias continente. Mucosa de fundus, cuerpo y antro sin lesiones. Píloro céntrico y permeable.
+
+DUODENO: bulbo y segunda porción duodenal sin lesiones.`,
+    diagnostico: 'Endoscopía digestiva alta sin lesiones.'
+  },
+  {
+    nombre: 'Gastropatía Crónica con Biopsias',
+    texto: `ESÓFAGO: línea Z a ___ cm de la arcada dentaria superior. Mucosa esofágica sin lesiones.
+
+ESTÓMAGO: cardias continente. Mucosa gástrica con eritema y aspecto congestivo predominante en antro, compatible con gastropatía crónica.
+Se toman biopsias de antro y cuerpo para estudio histológico y búsqueda de Helicobacter pylori.
+Píloro céntrico y permeable.
+
+DUODENO: bulbo y segunda porción duodenal sin lesiones.`,
+    diagnostico: 'Gastropatía crónica.\nBiopsias gástricas para Helicobacter pylori.'
+  },
+  {
+    nombre: 'Esofagitis Erosiva',
+    texto: `ESÓFAGO: línea Z a ___ cm de la arcada dentaria superior.
+En esófago distal se observan erosiones mucosas mayores de 5 mm, no confluentes.
+
+ESTÓMAGO: cardias continente. Mucosa de fundus, cuerpo y antro sin lesiones.
+
+DUODENO: bulbo y segunda porción duodenal sin lesiones.`,
+    diagnostico: 'Esofagitis erosiva grado ___ según clasificación de Los Ángeles.'
+  },
+  {
+    nombre: 'Hernia Hiatal + Antropatía Erosiva',
+    texto: `ESÓFAGO: línea Z a ___ cm de la arcada dentaria superior, coincidente con inicio de pliegues gástricos. Impronta hiatal a ___ cm de la ADS. Luz y mucosa sin lesiones.
+
+ESTÓMAGO: cardias continente. Mucosa de techo y cuerpo sin lesiones. Antro con erosiones y restos de hematina. Se biopsia antro y cuerpo (Fco. 1) para búsqueda de H. pylori. Píloro céntrico y permeable.
+
+DUODENO: bulbo y segunda porción duodenal sin lesiones.`,
+    diagnostico: 'Hernia hiatal.\nAntropatía erosiva.'
+  }
+];
+
+const PLANTILLAS_COLON = [
+  {
+    nombre: 'Colonoscopía Normal',
+    texto: `Colonoscopía completa hasta ciego con intubación de válvula ileocecal.
+Calidad de preparación: ___.
+
+COLON: mucosa de recto, sigmoides, colon descendente, ángulo esplénico, colon transverso, ángulo hepático, colon ascendente y ciego sin lesiones. Apéndice visible sin alteraciones.`,
+    diagnostico: 'Colonoscopía sin lesiones endoscópicas.'
+  },
+  {
+    nombre: 'Colonoscopía con Pólipos',
+    texto: `Colonoscopía completa hasta ciego con intubación de válvula ileocecal.
+Calidad de preparación: ___.
+
+COLON: En ___ se identifica pólipo sésil/pediculado de ___ mm. Se realiza polipectomía con asa fría/caliente. Se envía a anatomía patológica.
+Resto de la mucosa colónica sin lesiones.`,
+    diagnostico: 'Pólipo de colon en ___.\nPolipectomía endoscópica. Muestra enviada a AP.'
+  }
+];
+
+function insertarPlantillaVEDA(idx) {
+  const p = PLANTILLAS_VEDA[idx];
+  if (!p) return;
+  const ta = document.getElementById('endo-esofago');
+  const actual = ta.value.trim();
+  if (actual && !confirm('¿Reemplazar el informe actual con la plantilla "' + p.nombre + '"?')) return;
+  ta.value = p.texto;
+  const diag = document.getElementById('endo-impresion');
+  if (!diag.value.trim()) diag.value = p.diagnostico;
+  ta.focus();
+}
+
+function insertarPlantillaColon(idx) {
+  const p = PLANTILLAS_COLON[idx];
+  if (!p) return;
+  const ta = document.getElementById('endo-colon-informe');
+  const actual = ta.value.trim();
+  if (actual && !confirm('¿Reemplazar el informe actual con la plantilla "' + p.nombre + '"?')) return;
+  ta.value = p.texto;
+  const diag = document.getElementById('endo-impresion');
+  if (!diag.value.trim()) diag.value = p.diagnostico;
+  ta.focus();
+}
+
+// ─── GENERAR PDF ────────────────────────────────────────────────────────────
+async function generarPDFEndoscopia() {
+  await submitEndoscopia();
+  // Pequeña pausa para que se guarde
+  await new Promise(r => setTimeout(r, 500));
+
+  const pac  = App.pacienteActual;
+  const tipo = document.getElementById('endo-tipo').value;
+  const esVeda = tipo === 'VEDA';
+  const informe = esVeda
+    ? document.getElementById('endo-esofago').value
+    : document.getElementById('endo-colon-informe').value;
+
+  const tituloEstudio = esVeda
+    ? 'VIDEOENDOSCOPÍA DIGESTIVA ALTA (VEDA)'
+    : 'VIDEOENDOSCOPÍA COLONOSCOPÍA';
+
+  const fecha        = document.getElementById('endo-fecha').value || '';
+  const lugar        = document.getElementById('endo-lugar').value || '';
+  const pedidoPor    = document.getElementById('endo-pedidopor').value || '';
+  const anestesista  = document.getElementById('endo-anestesista').value || '';
+  const analgesia    = document.getElementById('endo-analgesia').value || '';
+  const tipoEndo     = document.getElementById('endo-endoscopia-tipo').value || '';
+  const antec        = document.getElementById('endo-antec').value || '';
+  const motivo       = document.getElementById('endo-motivo').value || '';
+  const diagnostico  = document.getElementById('endo-impresion').value || '';
+  const biopsia      = document.getElementById('endo-biopsia').value || '';
+  const comentarios  = document.getElementById('endo-comentarios').value || '';
+
+  // Fotos guardadas en Drive
+  const fotoLinks = fotosData
+    .filter(f => f.url)
+    .map((f, i) => `<img src="${f.url}" style="max-width:180px;max-height:180px;border-radius:6px;border:1px solid #ddd">`)
+    .join('');
+
+  const htmlPDF = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe ${tipo} — ${pac.apellidoNombre}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size:12px; color:#1a1a1a; background:#fff; padding:32px; }
+  .header { display:flex; align-items:flex-start; gap:20px; padding-bottom:16px; border-bottom:3px solid #1a7a4a; margin-bottom:20px; }
+  .header-logo { font-size:36px; }
+  .header-info h1 { font-size:18px; font-weight:700; color:#1a7a4a; letter-spacing:1px; text-transform:uppercase; }
+  .header-info .subtitle { font-size:11px; color:#555; margin-top:2px; }
+  .titulo-estudio { background:#1a7a4a; color:#fff; text-align:center; padding:10px; font-size:15px; font-weight:700; letter-spacing:2px; border-radius:6px; margin-bottom:20px; text-transform:uppercase; }
+  .datos-paciente { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1.5px solid #1a7a4a; border-radius:6px; overflow:hidden; margin-bottom:16px; }
+  .dato-item { padding:8px 12px; border-right:1px solid #c0d9c8; border-bottom:1px solid #c0d9c8; }
+  .dato-item:nth-child(3n) { border-right:none; }
+  .dato-label { font-size:9px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
+  .dato-valor { font-size:12px; font-weight:600; }
+  .section-title { font-size:10px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:1px; border-bottom:1.5px solid #1a7a4a; padding-bottom:3px; margin:16px 0 8px; }
+  .informe-text { font-size:12px; line-height:1.9; white-space:pre-wrap; background:#f7fcf9; border:1px solid #c0d9c8; border-radius:6px; padding:14px 16px; }
+  .diagnostico-box { background:#e8f5ec; border-left:4px solid #1a7a4a; border-radius:0 6px 6px 0; padding:12px 16px; font-size:13px; white-space:pre-wrap; margin-top:4px; }
+  .datos-estudio-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+  .dato-estudio { background:#f5f5f5; border-radius:6px; padding:8px 12px; }
+  .dato-estudio .label { font-size:9px; font-weight:700; color:#666; text-transform:uppercase; }
+  .dato-estudio .valor { font-size:12px; font-weight:600; margin-top:2px; }
+  .fotos-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+  .footer { margin-top:32px; border-top:1px solid #ccc; padding-top:16px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .firma-area { text-align:center; }
+  .firma-linea { border-top:1px solid #333; width:200px; margin:0 auto 4px; }
+  .firma-nombre { font-size:11px; font-weight:600; }
+  .firma-mp { font-size:10px; color:#555; }
+  @media print { body { padding:16px; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-logo">🏥</div>
+    <div class="header-info">
+      <h1>Gastro CEDELU</h1>
+      <div class="subtitle">Unidad de Endoscopia Digestiva</div>
+      <div class="subtitle">${lugar || 'Concepción del Uruguay, Entre Ríos'}</div>
+    </div>
+  </div>
+
+  <div class="titulo-estudio">INFORME ${tituloEstudio}</div>
+
+  <div class="datos-paciente">
+    <div class="dato-item"><div class="dato-label">Apellido y Nombre</div><div class="dato-valor" style="font-size:14px">${pac.apellidoNombre || ''}</div></div>
+    <div class="dato-item"><div class="dato-label">DNI</div><div class="dato-valor">${pac.dni || '—'}</div></div>
+    <div class="dato-item"><div class="dato-label">Fecha del Estudio</div><div class="dato-valor">${fecha}</div></div>
+    <div class="dato-item"><div class="dato-label">Edad</div><div class="dato-valor">${pac.edad ? pac.edad + ' años' : '—'}</div></div>
+    <div class="dato-item"><div class="dato-label">Sexo</div><div class="dato-valor">${pac.sexo || '—'}</div></div>
+    <div class="dato-item"><div class="dato-label">Obra Social</div><div class="dato-valor">${pac.obraSocial || '—'}</div></div>
+    <div class="dato-item"><div class="dato-label">N° Afiliado</div><div class="dato-valor">${pac.nroAfiliado || '—'}</div></div>
+    <div class="dato-item"><div class="dato-label">Pedido por</div><div class="dato-valor">${pedidoPor}</div></div>
+    <div class="dato-item"><div class="dato-label">Anestesiólogo</div><div class="dato-valor">${anestesista}</div></div>
+  </div>
+
+  <div class="datos-estudio-grid">
+    <div class="dato-estudio"><div class="label">Analgesia</div><div class="valor">${analgesia || '—'}</div></div>
+    <div class="dato-estudio"><div class="label">Tipo de Endoscopía</div><div class="valor">${tipoEndo || '—'}</div></div>
+    <div class="dato-estudio"><div class="label">Motivo del Examen</div><div class="valor">${motivo || '—'}</div></div>
+  </div>
+
+  ${antec ? `<div class="section-title">Antecedentes</div><div style="font-size:12px;white-space:pre-wrap">${antec}</div>` : ''}
+
+  <div class="section-title">Informe Endoscópico</div>
+  <div class="informe-text">${informe || 'Sin informe registrado.'}</div>
+
+  <div class="section-title">Impresión Diagnóstica</div>
+  <div class="diagnostico-box">${diagnostico || '—'}</div>
+
+  ${biopsia ? `<div class="section-title">Informe de Biopsia / Anatomía Patológica</div><div style="font-size:12px;white-space:pre-wrap;margin-top:4px">${biopsia}</div>` : ''}
+  ${comentarios ? `<div class="section-title">Comentarios y Recomendaciones</div><div style="font-size:12px;white-space:pre-wrap;margin-top:4px">${comentarios}</div>` : ''}
+
+  ${fotoLinks ? `<div class="section-title">Fotografías del Estudio</div><div class="fotos-grid">${fotoLinks}</div>` : ''}
+
+  <div class="footer">
+    <div style="font-size:10px;color:#888">Gastro CEDELU · ${lugar} · ${fecha}</div>
+    <div class="firma-area">
+      <div class="firma-linea"></div>
+      <div class="firma-nombre">${App.session?.nombre || 'Médico Tratante'}</div>
+      <div class="firma-mp">M.P. ___________</div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const ventana = window.open('', '_blank', 'width=900,height=700');
+  ventana.document.write(htmlPDF);
+  ventana.document.close();
+  ventana.onload = () => { ventana.focus(); ventana.print(); };
 }
 
 </script>
