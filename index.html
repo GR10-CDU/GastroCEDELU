@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-09 21:00 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-09 22:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1417,7 +1417,7 @@ button { cursor: pointer; border: none; }
         <h2 id="endo-modal-titulo" style="margin:0">🔭 Nueva Endoscopía</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-endoscopia')">✕ Cancelar</button>
-          <button class="btn btn-secondary btn-sm" onclick="generarPDFEndoscopia()" id="btn-pdf-endo">📄 Guardar y Generar PDF</button>
+          <button class="btn btn-secondary btn-sm" onclick="submitEndoscopia(true)" id="btn-pdf-endo">📄 Guardar y Generar PDF</button>
           <button class="btn btn-primary btn-sm" onclick="submitEndoscopia()" id="btn-guardar-endo">💾 Guardar Estudio</button>
         </div>
       </div>
@@ -1799,8 +1799,20 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbyFfrgfodWGzNVSRxU39X4z
 
 async function serverCall(fn, ...args) {
   try {
-    // Apps Script redirige POST→GET perdiendo el body.
-    // Solución: GET con data en URL parameter.
+    // Para uploadFoto usamos POST porque el base64 es demasiado grande para URL GET
+    if (fn === 'uploadFoto') {
+      const body = JSON.stringify({ action: fn, params: args });
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' }, // text/plain evita CORS preflight en Apps Script
+        body: body,
+        redirect: 'follow'
+      });
+      const text = await res.text();
+      try { return JSON.parse(text); }
+      catch { return { ok: false, error: 'Respuesta inválida: ' + text.substring(0, 100) }; }
+    }
+    // Para el resto, GET con data en URL
     const payload = encodeURIComponent(JSON.stringify({ action: fn, params: args }));
     const url = API_URL + '?data=' + payload;
     const res = await fetch(url, { redirect: 'follow' });
@@ -2711,7 +2723,7 @@ async function uploadFotosADrive(pacienteId, endoscopiaId) {
 }
 
 // ─── GUARDAR ENDOSCOPÍA ──────────────────────────────────────
-async function submitEndoscopia() {
+async function submitEndoscopia(generarPDF = false) {
   const pac  = App.pacienteActual;
   const tipo = document.getElementById('endo-tipo').value;
   const esVeda = tipo === 'VEDA';
@@ -2786,6 +2798,12 @@ async function submitEndoscopia() {
     const rEndo = await serverCall('getEndoscopias', pac.id);
     renderEndoscopias(rEndo.ok ? rEndo.data : []);
     showTab('endoscopias');
+
+    // Si se pidió PDF, imprimir el estudio recién guardado
+    if (generarPDF) {
+      await new Promise(r => setTimeout(r, 400));
+      imprimirEndoscopia(savedId);
+    }
 
   } catch (e) {
     toast('Error de conexión: ' + e.message, 'error');
@@ -2875,6 +2893,17 @@ function renderEndoscopias(list) {
   }).join('');
 }
 
+function fmtFechaPDF(raw) {
+  if (!raw) return '—';
+  // maneja ISO "2026-03-09T03:00:00.000Z", "2026-03-09", "09/03/2026"
+  if (raw.includes('T')) raw = raw.split('T')[0];
+  if (raw.includes('-')) {
+    const [y, m, d] = raw.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  return raw;
+}
+
 function imprimirEndoscopia(endoId) {
   const pac  = App.pacienteActual;
   const list = App.endoscopiasList || [];
@@ -2883,94 +2912,144 @@ function imprimirEndoscopia(endoId) {
 
   const fotos = [1,2,3,4,5,6,7,8,9].map(n => e['foto'+n]).filter(Boolean);
   const fotoImgs = fotos.map(url =>
-    `<img src="${url}" style="max-width:200px;max-height:200px;border-radius:6px;border:1px solid #c0d9c8;object-fit:cover">`
+    `<img src="${url}" style="width:180px;height:150px;object-fit:cover;border-radius:6px;border:1px solid #c0d9c8">`
   ).join('');
+
+  // El informe completo está guardado en esofago; el tipo de estudio en estomago
+  const informeEndoscopico = e.esofago || '';
+  const tipoEndoscopia     = e.estomago || '—';
+  const fechaFormateada    = fmtFechaPDF(e.fecha);
+
+  // Logo embebido
+  const logoBase64 = document.querySelector('img[src^="data:image"]')?.src || '';
 
   const htmlPDF = `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Informe ${e.tipoEstudio} — ${pac.apellidoNombre}</title>
+<title>Informe ${e.tipoEstudio||'VEDA'} — ${pac.apellidoNombre}</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#111; background:#fff; padding:30px; }
-  .header { display:flex; align-items:flex-start; gap:16px; padding-bottom:14px; border-bottom:3px solid #1a7a4a; margin-bottom:18px; }
-  .header-texts h1 { font-size:13px; font-weight:700; color:#1a7a4a; }
-  .header-texts p  { font-size:11px; color:#555; margin-top:1px; }
-  .titulo-estudio  { background:#1a7a4a; color:#fff; text-align:center; padding:9px; font-size:14px; font-weight:700; letter-spacing:1.5px; border-radius:5px; margin-bottom:16px; text-transform:uppercase; }
-  .datos-tabla { width:100%; border-collapse:collapse; margin-bottom:14px; border:1.5px solid #1a7a4a; border-radius:6px; overflow:hidden; }
-  .datos-tabla td { border:1px solid #c8e0d0; padding:6px 10px; font-size:11.5px; vertical-align:top; }
-  .datos-tabla td.lbl { font-size:9.5px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.4px; width:18%; background:#f4fbf7; }
-  .section-lbl { font-size:10px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:1px; border-bottom:1.5px solid #1a7a4a; padding-bottom:3px; margin:14px 0 7px; }
-  .informe-box  { font-size:12px; line-height:1.85; white-space:pre-wrap; background:#f7fcf9; border:1px solid #c0d9c8; border-radius:5px; padding:12px 14px; }
-  .diag-box     { background:#e8f5ec; border-left:4px solid #1a7a4a; border-radius:0 5px 5px 0; padding:10px 14px; font-size:12px; white-space:pre-wrap; margin-top:4px; }
-  .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
-  .mini-dato { background:#f5f5f5; border-radius:5px; padding:7px 10px; }
-  .mini-dato .lbl { font-size:9px; font-weight:700; color:#555; text-transform:uppercase; }
-  .mini-dato .val { font-size:12px; font-weight:600; margin-top:2px; }
-  .fotos-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-  .footer { margin-top:28px; border-top:1px solid #ccc; padding-top:14px; display:flex; justify-content:space-between; align-items:flex-end; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size:11.5px; color:#1a1a1a; background:#fff; }
+  .page { padding:28px 32px; max-width:800px; margin:0 auto; }
+
+  /* HEADER */
+  .header { display:flex; align-items:center; gap:16px; padding-bottom:14px; border-bottom:3px solid #1a7a4a; margin-bottom:6px; }
+  .header img { height:60px; width:60px; object-fit:contain; }
+  .header-texts { flex:1; }
+  .header-texts .clinica { font-size:11px; color:#1a7a4a; font-weight:700; letter-spacing:.3px; }
+  .header-texts .dir { font-size:10px; color:#555; margin-top:2px; }
+  .header-titulo { font-size:19px; font-weight:900; color:#1a7a4a; letter-spacing:1px; text-transform:uppercase; text-align:right; line-height:1.1; }
+
+  /* BANDA TÍTULO */
+  .titulo-estudio { background:linear-gradient(135deg,#1a7a4a 0%,#0f5c36 100%); color:#fff; text-align:center; padding:10px 16px; font-size:14px; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin:14px 0 16px; border-radius:4px; }
+
+  /* TABLA PACIENTE */
+  .pac-tabla { width:100%; border-collapse:collapse; margin-bottom:14px; border-radius:6px; overflow:hidden; border:1.5px solid #1a7a4a; }
+  .pac-tabla tr:first-child td { background:#1a7a4a; color:#fff; font-size:13px; font-weight:700; padding:8px 12px; }
+  .pac-tabla tr:first-child td.lbl { background:#136038; font-size:9px; color:rgba(255,255,255,.8); font-weight:700; text-transform:uppercase; letter-spacing:.5px; vertical-align:bottom; padding-bottom:4px; width:16%; }
+  .pac-tabla td { border:1px solid #c8e0d0; padding:6px 10px; vertical-align:top; }
+  .pac-tabla td.lbl { font-size:9px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.4px; background:#f0faf4; width:16%; }
+
+  /* CHIPS DATOS ESTUDIO */
+  .chips-row { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .chip { background:#f0faf4; border:1px solid #1a7a4a; border-radius:20px; padding:5px 14px; font-size:11px; }
+  .chip .cl { font-size:9px; font-weight:700; color:#1a7a4a; text-transform:uppercase; display:block; }
+  .chip .cv { font-weight:700; color:#111; }
+
+  /* SECCIÓN LABELS */
+  .slbl { font-size:9.5px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:1px; border-bottom:2px solid #1a7a4a; padding-bottom:3px; margin:16px 0 8px; display:flex; align-items:center; gap:6px; }
+
+  /* INFORME */
+  .informe-box { font-size:12px; line-height:1.9; white-space:pre-wrap; background:#f7fcf9; border:1px solid #c0d9c8; border-radius:5px; padding:14px 16px; font-family:'Courier New',monospace; }
+
+  /* DIAGNÓSTICO */
+  .diag-box { background:#e4f5ec; border-left:5px solid #1a7a4a; border-radius:0 6px 6px 0; padding:12px 16px; font-size:12.5px; white-space:pre-wrap; font-weight:600; }
+
+  /* FOTOS */
+  .fotos-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+
+  /* FOOTER */
+  .footer { margin-top:30px; border-top:1px solid #c0d9c8; padding-top:14px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .footer-info { font-size:9.5px; color:#888; line-height:1.6; }
   .firma-area { text-align:center; }
-  .firma-linea { border-top:1px solid #333; width:190px; margin:0 auto 4px; }
+  .firma-linea { border-top:1.5px solid #333; width:200px; margin:0 auto 5px; }
   .firma-nombre { font-size:11px; font-weight:700; }
   .firma-mp { font-size:10px; color:#555; }
-  @media print { body { padding:15px; } }
+
+  @media print {
+    body { margin:0; }
+    .page { padding:15px 20px; }
+  }
 </style>
 </head>
 <body>
+<div class="page">
+
+  <!-- HEADER -->
   <div class="header">
+    ${logoBase64 ? `<img src="${logoBase64}" alt="Logo">` : '<div style="width:60px;height:60px;background:#1a7a4a;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:22px">🏥</div>'}
     <div class="header-texts">
-      <h1>Gastro CEDELU — Unidad de Endoscopia Digestiva</h1>
-      <p>${e.lugarRealizacion || 'Concepción del Uruguay, Entre Ríos'}</p>
+      <div class="clinica">Gastro CEDELU · Unidad de Endoscopia Digestiva</div>
+      <div class="dir">${e.lugarRealizacion || 'Concepción del Uruguay, Entre Ríos'}</div>
     </div>
+    <div class="header-titulo">INFORME<br>VIDEOENDOSCÓPICO</div>
   </div>
 
-  <div class="titulo-estudio">INFORME — ${(e.tipoEstudio||'').toUpperCase()}</div>
+  <!-- BANDA -->
+  <div class="titulo-estudio">VIDEOENDOSCOPÍA DIGESTIVA ${(e.tipoEstudio||'VEDA').toUpperCase()}</div>
 
-  <table class="datos-tabla">
+  <!-- DATOS PACIENTE -->
+  <table class="pac-tabla">
     <tr>
       <td class="lbl">Apellido y Nombre</td>
-      <td colspan="3" style="font-size:14px;font-weight:700">${pac.apellidoNombre||''}</td>
+      <td colspan="5" style="font-size:15px;font-weight:800;letter-spacing:.3px">${pac.apellidoNombre||''}</td>
     </tr>
     <tr>
-      <td class="lbl">Fecha del Estudio</td><td>${e.fecha||'—'}</td>
+      <td class="lbl">Fecha del Estudio</td><td style="font-weight:600">${fechaFormateada}</td>
       <td class="lbl">Edad</td><td>${pac.edad ? pac.edad+' años' : '—'}</td>
-    </tr>
-    <tr>
       <td class="lbl">Sexo</td><td>${pac.sexo||'—'}</td>
-      <td class="lbl">DNI</td><td>${pac.dni||'—'}</td>
     </tr>
     <tr>
+      <td class="lbl">DNI</td><td>${pac.dni||'—'}</td>
       <td class="lbl">Obra Social</td><td>${pac.obraSocial||'—'}</td>
       <td class="lbl">N° Afiliado</td><td>${pac.nroAfiliado||'—'}</td>
     </tr>
     <tr>
       <td class="lbl">Pedido por</td><td>${e.pedidoPor||'—'}</td>
       <td class="lbl">Anestesiólogo</td><td>${e.anestesista||'—'}</td>
+      <td class="lbl">Analgesia</td><td>${e.analgesia||'—'}</td>
     </tr>
   </table>
 
-  <div class="row3">
-    <div class="mini-dato"><div class="lbl">Analgesia</div><div class="val">${e.analgesia||'—'}</div></div>
-    <div class="mini-dato"><div class="lbl">Tipo de Endoscopía</div><div class="val">${e.estomago||'—'}</div></div>
-    <div class="mini-dato"><div class="lbl">Motivo del Examen</div><div class="val">${e.motivoExamen||'—'}</div></div>
+  <!-- CHIPS ESTUDIO -->
+  <div class="chips-row">
+    <div class="chip"><span class="cl">Tipo de Endoscopía</span><span class="cv">${tipoEndoscopia}</span></div>
+    <div class="chip"><span class="cl">Motivo del Examen</span><span class="cv">${e.motivoExamen||'—'}</span></div>
+    ${e.antecedentes ? `<div class="chip"><span class="cl">Antecedentes</span><span class="cv">${e.antecedentes}</span></div>` : ''}
   </div>
 
-  ${e.antecedentes ? `<div class="section-lbl">Antecedentes</div><p style="font-size:12px;white-space:pre-wrap">${e.antecedentes}</p>` : ''}
+  <!-- INFORME ENDOSCÓPICO -->
+  <div class="slbl">📋 Informe Endoscópico</div>
+  <div class="informe-box">${informeEndoscopico || 'Sin informe registrado.'}</div>
 
-  <div class="section-lbl">Informe Endoscópico</div>
-  <div class="informe-box">${e.esofago||'Sin informe registrado.'}</div>
-
-  <div class="section-lbl">Impresión Diagnóstica</div>
+  <!-- DIAGNÓSTICO -->
+  <div class="slbl">🔬 Impresión Diagnóstica</div>
   <div class="diag-box">${e.impresionDiagnostica||'—'}</div>
 
-  ${e.informeBiopsia ? `<div class="section-lbl">Informe de Biopsia / Anatomía Patológica</div><p style="font-size:12px;white-space:pre-wrap;margin-top:4px">${e.informeBiopsia}</p>` : ''}
-  ${e.comentarios    ? `<div class="section-lbl">Comentarios y Recomendaciones</div><p style="font-size:12px;white-space:pre-wrap;margin-top:4px">${e.comentarios}</p>` : ''}
+  ${e.informeBiopsia ? `<div class="slbl">🧪 Informe de Biopsia / Anatomía Patológica</div><p style="font-size:12px;white-space:pre-wrap;padding:8px 0">${e.informeBiopsia}</p>` : ''}
+  ${e.comentarios    ? `<div class="slbl">💬 Comentarios y Recomendaciones</div><p style="font-size:12px;white-space:pre-wrap;padding:8px 0">${e.comentarios}</p>` : ''}
 
-  ${fotos.length > 0 ? `<div class="section-lbl">Fotografías del Estudio</div><div class="fotos-grid">${fotoImgs}</div>` : ''}
+  <!-- FOTOS -->
+  ${fotos.length > 0 ? `<div class="slbl">📷 Fotografías del Estudio</div><div class="fotos-grid">${fotoImgs}</div>` : ''}
 
+  <!-- FOOTER -->
   <div class="footer">
-    <div style="font-size:10px;color:#888">Gastro CEDELU · ${e.lugarRealizacion||''} · ${e.fecha||''}<br>INSTRUMENTAL: VIDEOENDOSCOPIO OLYMPUS</div>
+    <div class="footer-info">
+      Gastro CEDELU · ${e.lugarRealizacion||''}<br>
+      Fecha: ${fechaFormateada}<br>
+      INSTRUMENTAL: VIDEOENDOSCOPIO OLYMPUS
+    </div>
     <div class="firma-area">
       <div class="firma-linea"></div>
       <div class="firma-nombre">${App.session?.nombre || 'Médico Tratante'}</div>
@@ -2978,7 +3057,8 @@ function imprimirEndoscopia(endoId) {
     </div>
   </div>
 
-  <script>window.onload = function() { window.print(); }<\/script>
+</div>
+<script>window.onload = function() { window.print(); }<\/script>
 </body>
 </html>`;
 
@@ -2986,7 +3066,7 @@ function imprimirEndoscopia(endoId) {
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href = url; a.target = '_blank'; a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
 }
 
 function confirmarEliminarEndoscopia(id) {
@@ -3265,133 +3345,6 @@ function insertarPlantillaColon(idx) {
 }
 
 // ─── GENERAR PDF ────────────────────────────────────────────────────────────
-async function generarPDFEndoscopia() {
-  await submitEndoscopia();
-  // Pequeña pausa para que se guarde
-  await new Promise(r => setTimeout(r, 500));
-
-  const pac  = App.pacienteActual;
-  const tipo = document.getElementById('endo-tipo').value;
-  const esVeda = tipo === 'VEDA';
-  const informe = esVeda
-    ? document.getElementById('endo-esofago').value
-    : document.getElementById('endo-colon-informe').value;
-
-  const tituloEstudio = esVeda
-    ? 'VIDEOENDOSCOPÍA DIGESTIVA ALTA (VEDA)'
-    : 'VIDEOENDOSCOPÍA COLONOSCOPÍA';
-
-  const fecha        = document.getElementById('endo-fecha').value || '';
-  const lugar        = document.getElementById('endo-lugar').value || '';
-  const pedidoPor    = document.getElementById('endo-pedidopor').value || '';
-  const anestesista  = document.getElementById('endo-anestesista').value || '';
-  const analgesia    = document.getElementById('endo-analgesia').value || '';
-  const tipoEndo     = document.getElementById('endo-endoscopia-tipo').value || '';
-  const antec        = document.getElementById('endo-antec').value || '';
-  const motivo       = document.getElementById('endo-motivo').value || '';
-  const diagnostico  = document.getElementById('endo-impresion').value || '';
-  const biopsia      = document.getElementById('endo-biopsia').value || '';
-  const comentarios  = document.getElementById('endo-comentarios').value || '';
-
-  // Fotos guardadas en Drive
-  const fotoLinks = fotosData
-    .filter(f => f.url)
-    .map((f, i) => `<img src="${f.url}" style="max-width:180px;max-height:180px;border-radius:6px;border:1px solid #ddd">`)
-    .join('');
-
-  const htmlPDF = `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Informe ${tipo} — ${pac.apellidoNombre}</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size:12px; color:#1a1a1a; background:#fff; padding:32px; }
-  .header { display:flex; align-items:flex-start; gap:20px; padding-bottom:16px; border-bottom:3px solid #1a7a4a; margin-bottom:20px; }
-  .header-logo { font-size:36px; }
-  .header-info h1 { font-size:18px; font-weight:700; color:#1a7a4a; letter-spacing:1px; text-transform:uppercase; }
-  .header-info .subtitle { font-size:11px; color:#555; margin-top:2px; }
-  .titulo-estudio { background:#1a7a4a; color:#fff; text-align:center; padding:10px; font-size:15px; font-weight:700; letter-spacing:2px; border-radius:6px; margin-bottom:20px; text-transform:uppercase; }
-  .datos-paciente { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1.5px solid #1a7a4a; border-radius:6px; overflow:hidden; margin-bottom:16px; }
-  .dato-item { padding:8px 12px; border-right:1px solid #c0d9c8; border-bottom:1px solid #c0d9c8; }
-  .dato-item:nth-child(3n) { border-right:none; }
-  .dato-label { font-size:9px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.5px; margin-bottom:2px; }
-  .dato-valor { font-size:12px; font-weight:600; }
-  .section-title { font-size:10px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:1px; border-bottom:1.5px solid #1a7a4a; padding-bottom:3px; margin:16px 0 8px; }
-  .informe-text { font-size:12px; line-height:1.9; white-space:pre-wrap; background:#f7fcf9; border:1px solid #c0d9c8; border-radius:6px; padding:14px 16px; }
-  .diagnostico-box { background:#e8f5ec; border-left:4px solid #1a7a4a; border-radius:0 6px 6px 0; padding:12px 16px; font-size:13px; white-space:pre-wrap; margin-top:4px; }
-  .datos-estudio-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
-  .dato-estudio { background:#f5f5f5; border-radius:6px; padding:8px 12px; }
-  .dato-estudio .label { font-size:9px; font-weight:700; color:#666; text-transform:uppercase; }
-  .dato-estudio .valor { font-size:12px; font-weight:600; margin-top:2px; }
-  .fotos-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
-  .footer { margin-top:32px; border-top:1px solid #ccc; padding-top:16px; display:flex; justify-content:space-between; align-items:flex-end; }
-  .firma-area { text-align:center; }
-  .firma-linea { border-top:1px solid #333; width:200px; margin:0 auto 4px; }
-  .firma-nombre { font-size:11px; font-weight:600; }
-  .firma-mp { font-size:10px; color:#555; }
-  @media print { body { padding:16px; } }
-</style>
-</head>
-<body>
-  <div class="header">
-    <div class="header-logo">🏥</div>
-    <div class="header-info">
-      <h1>Gastro CEDELU</h1>
-      <div class="subtitle">Unidad de Endoscopia Digestiva</div>
-      <div class="subtitle">${lugar || 'Concepción del Uruguay, Entre Ríos'}</div>
-    </div>
-  </div>
-
-  <div class="titulo-estudio">INFORME ${tituloEstudio}</div>
-
-  <div class="datos-paciente">
-    <div class="dato-item"><div class="dato-label">Apellido y Nombre</div><div class="dato-valor" style="font-size:14px">${pac.apellidoNombre || ''}</div></div>
-    <div class="dato-item"><div class="dato-label">DNI</div><div class="dato-valor">${pac.dni || '—'}</div></div>
-    <div class="dato-item"><div class="dato-label">Fecha del Estudio</div><div class="dato-valor">${fecha}</div></div>
-    <div class="dato-item"><div class="dato-label">Edad</div><div class="dato-valor">${pac.edad ? pac.edad + ' años' : '—'}</div></div>
-    <div class="dato-item"><div class="dato-label">Sexo</div><div class="dato-valor">${pac.sexo || '—'}</div></div>
-    <div class="dato-item"><div class="dato-label">Obra Social</div><div class="dato-valor">${pac.obraSocial || '—'}</div></div>
-    <div class="dato-item"><div class="dato-label">N° Afiliado</div><div class="dato-valor">${pac.nroAfiliado || '—'}</div></div>
-    <div class="dato-item"><div class="dato-label">Pedido por</div><div class="dato-valor">${pedidoPor}</div></div>
-    <div class="dato-item"><div class="dato-label">Anestesiólogo</div><div class="dato-valor">${anestesista}</div></div>
-  </div>
-
-  <div class="datos-estudio-grid">
-    <div class="dato-estudio"><div class="label">Analgesia</div><div class="valor">${analgesia || '—'}</div></div>
-    <div class="dato-estudio"><div class="label">Tipo de Endoscopía</div><div class="valor">${tipoEndo || '—'}</div></div>
-    <div class="dato-estudio"><div class="label">Motivo del Examen</div><div class="valor">${motivo || '—'}</div></div>
-  </div>
-
-  ${antec ? `<div class="section-title">Antecedentes</div><div style="font-size:12px;white-space:pre-wrap">${antec}</div>` : ''}
-
-  <div class="section-title">Informe Endoscópico</div>
-  <div class="informe-text">${informe || 'Sin informe registrado.'}</div>
-
-  <div class="section-title">Impresión Diagnóstica</div>
-  <div class="diagnostico-box">${diagnostico || '—'}</div>
-
-  ${biopsia ? `<div class="section-title">Informe de Biopsia / Anatomía Patológica</div><div style="font-size:12px;white-space:pre-wrap;margin-top:4px">${biopsia}</div>` : ''}
-  ${comentarios ? `<div class="section-title">Comentarios y Recomendaciones</div><div style="font-size:12px;white-space:pre-wrap;margin-top:4px">${comentarios}</div>` : ''}
-
-  ${fotoLinks ? `<div class="section-title">Fotografías del Estudio</div><div class="fotos-grid">${fotoLinks}</div>` : ''}
-
-  <div class="footer">
-    <div style="font-size:10px;color:#888">Gastro CEDELU · ${lugar} · ${fecha}</div>
-    <div class="firma-area">
-      <div class="firma-linea"></div>
-      <div class="firma-nombre">${App.session?.nombre || 'Médico Tratante'}</div>
-      <div class="firma-mp">M.P. ___________</div>
-    </div>
-  </div>
-</body>
-</html>`;
-
-  const ventana = window.open('', '_blank', 'width=900,height=700');
-  ventana.document.write(htmlPDF);
-  ventana.document.close();
-  ventana.onload = () => { ventana.focus(); ventana.print(); };
-}
 
 </script>
 </body>
