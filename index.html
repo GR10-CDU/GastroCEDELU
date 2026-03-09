@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-09 23:55 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-10 00:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU — 2026-03-09 23:55 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -3040,7 +3040,7 @@ function imprimirEndoscopia(endoId) {
 
   const fotos = [1,2,3,4,5,6,7,8,9].map(n => e['foto'+n]).filter(Boolean);
   const fotoImgs = fotos.map(url =>
-    `<img src="${driveThumb(url)}" style="width:9.5cm;height:8.6cm;object-fit:cover;border-radius:6px;border:1px solid #ddd">`
+    `<img src="${driveThumb(url)}" style="height:3.5cm;width:auto;max-width:5cm;object-fit:cover;border-radius:6px;border:1px solid #ddd">`
   ).join('');
 
   const informe     = e.esofago || '';
