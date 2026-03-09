@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-10 00:20 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-09 21:45 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1555,10 +1555,6 @@ button { cursor: pointer; border: none; }
           <label>Impresión Diagnóstica</label>
           <textarea id="endo-impresion" rows="3" placeholder="Diagnóstico endoscópico final..."></textarea>
         </div>
-        <div class="field">
-          <label>Informe de Biopsia / Anatomía Patológica</label>
-          <textarea id="endo-biopsia" rows="3" placeholder="Resultado de biopsia si corresponde..."></textarea>
-        </div>
       </div>
       <div class="field">
         <label>Comentarios / Recomendaciones</label>
@@ -2639,7 +2635,7 @@ function resetFormEndoscopia() {
   document.getElementById('fotos-input').value = '';
   document.getElementById('endo-id').value = '';
   ['fecha','lugar','pedidopor','anestesista','antec','motivo',
-   'esofago','colon-informe','impresion','biopsia','comentarios'].forEach(f => {
+   'esofago','colon-informe','impresion','comentarios'].forEach(f => {
     const el = document.getElementById('endo-' + f);
     if (el) el.value = '';
   });
@@ -2775,7 +2771,6 @@ async function submitEndoscopia(generarPDF = false) {
     tolerancia:      '',
     calidadPrep:     '',
     anatPatologica:  '',
-    informeBiopsia:  document.getElementById('endo-biopsia').value,
     comentarios:     document.getElementById('endo-comentarios').value,
   };
 
@@ -2882,11 +2877,6 @@ function renderEndoscopias(list) {
           <label>Impresión Diagnóstica</label>
           <p style="font-weight:500;white-space:pre-wrap">${e.impresionDiagnostica}</p>
         </div>` : ''}
-        ${e.informeBiopsia ? `
-        <div class="endo-field" style="margin-top:8px">
-          <label>Informe de Biopsia / Anatomía Patológica</label>
-          <p>${e.informeBiopsia}</p>
-        </div>` : ''}
         ${e.comentarios ? `
         <div class="endo-field" style="margin-top:8px">
           <label>Comentarios</label><p>${e.comentarios}</p>
@@ -2950,7 +2940,7 @@ function imprimirEndoscopia(endoId) {
 <meta charset="UTF-8">
 <title>Informe ${e.tipoEstudio||'VEDA'} — ${pac.apellidoNombre}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;600;700;800;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Inter',Arial,sans-serif; font-size:10.5px; color:#1a1a1a; background:#fff; }
   .page { padding:0; max-width:794px; margin:0 auto; }
@@ -2968,8 +2958,6 @@ function imprimirEndoscopia(endoId) {
   .hdr-c2 { width:290px; height:290px; background:#60cc98; top:-90px;  right:-90px;  }
   .hdr-c3 { width:200px; height:200px; background:#2a9d6e; top:-60px;  right:-60px;  }
   .hdr-row { display:flex; align-items:center; gap:14px; position:relative; z-index:10; }
-  .hdr-logo { background:#2a9d6e; border-radius:10px; padding:5px; display:flex; align-items:center; justify-content:center; }
-  .hdr-logo img { height:52px; width:52px; object-fit:contain; }
   .hdr-texts { flex:1; color:#111; }
   .hdr-clinica { font-size:17px; font-weight:900; letter-spacing:.5px; line-height:1.1; color:#111; }
   .hdr-sub { font-size:10px; font-weight:400; color:#666; margin-top:1px; }
@@ -2997,7 +2985,7 @@ function imprimirEndoscopia(endoId) {
   .pac-row-full { padding:5px 14px; border-top:1px solid #e8f2ec; display:flex; gap:24px; }
 
   /* ── INFORME ── */
-  .informe-text { font-size:11px; line-height:1.85; white-space:pre-wrap; padding:8px 14px 10px; color:#222; font-family:'Courier New',monospace; }
+  .informe-text { font-size:11px; line-height:1.85; white-space:pre-wrap; padding:8px 14px 10px; color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
 
   /* ── DIAGNÓSTICO ── */
   .diag-wrap { margin:0 14px 10px; }
@@ -3042,9 +3030,6 @@ function imprimirEndoscopia(endoId) {
     <div class="hdr-circle hdr-c2"></div>
     <div class="hdr-circle hdr-c3"></div>
     <div class="hdr-row">
-      <div class="hdr-logo">
-        <img src="${LOGO}" alt="Logo">
-      </div>
       <div class="hdr-texts">
         <div class="hdr-clinica">CLÍNICA URUGUAY SRL</div>
         <div class="hdr-sub">Galarza 574 – Concepción del Uruguay – Entre Ríos</div>
