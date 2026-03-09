@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-09 22:00 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-09 23:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1226,7 +1226,7 @@ button { cursor: pointer; border: none; }
             <h1 id="form-paciente-titulo">Nuevo Paciente</h1>
             <div class="subtitle">Complete los datos del paciente</div>
           </div>
-          <button class="btn btn-primary" onclick="submitPaciente()">
+          <button class="btn btn-primary" id="btn-guardar-pac" onclick="submitPaciente()">
             💾 Guardar Paciente
           </button>
         </div>
@@ -1319,6 +1319,9 @@ button { cursor: pointer; border: none; }
                 <input type="text" id="pac-derivado" placeholder="Dr. / Dra. / Institución">
               </div>
             </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;padding:16px 0 4px">
+            <button class="btn btn-primary" id="btn-guardar-pac-bottom" onclick="submitPaciente()">💾 Guardar Paciente</button>
           </div>
         </div>
       </div>
@@ -1572,6 +1575,13 @@ button { cursor: pointer; border: none; }
       <input type="file" id="fotos-input" accept="image/*" multiple style="display:none" onchange="previewFotos(this)">
       <div class="fotos-preview-grid" id="fotos-preview"></div>
       <div id="fotos-status" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+
+      <!-- Barra de acciones INFERIOR -->
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-endoscopia')">✕ Cancelar</button>
+        <button class="btn btn-secondary btn-sm" onclick="submitEndoscopia(true)" id="btn-pdf-endo-bottom">📄 Guardar y Generar PDF</button>
+        <button class="btn btn-primary btn-sm" onclick="submitEndoscopia()" id="btn-guardar-endo-bottom">💾 Guardar Estudio</button>
+      </div>
     </div>
   </div>
 
@@ -1588,7 +1598,13 @@ button { cursor: pointer; border: none; }
 <!-- MODAL: HISTORIA CLÍNICA -->
 <div class="modal-overlay" id="modal-hc">
   <div class="modal modal-lg">
-    <h2>📋 Historia Clínica</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="margin:0">📋 Historia Clínica</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-hc')">✕ Cancelar</button>
+        <button class="btn btn-primary btn-sm" id="btn-guardar-hc" onclick="submitHC()">💾 Guardar Historia Clínica</button>
+      </div>
+    </div>
     <input type="hidden" id="hc-id">
     <input type="hidden" id="hc-paciente-id">
 
@@ -1636,14 +1652,15 @@ button { cursor: pointer; border: none; }
     <input type="hidden" id="hc-control">
     <input type="hidden" id="hc-pendiente">
 
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-hc')">Cancelar</button>
-      <button class="btn btn-primary" onclick="submitHC()">💾 Guardar Historia Clínica</button>
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-hc')">✕ Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="btn-guardar-hc-bottom" onclick="submitHC()">💾 Guardar Historia Clínica</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: NUEVA CONSULTA -->
+
 <div class="modal-overlay" id="modal-consulta">
   <div class="modal modal-lg">
     <h2>📅 Nueva Consulta / Evolución</h2>
@@ -1674,9 +1691,9 @@ button { cursor: pointer; border: none; }
       <label>Pendiente</label>
       <input type="text" id="cons-pendiente" placeholder="Estudios pedidos, derivaciones...">
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-consulta')">Cancelar</button>
-      <button class="btn btn-primary" onclick="submitConsulta()">💾 Guardar Consulta</button>
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-consulta')">✕ Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="btn-guardar-consulta-bottom" onclick="submitConsulta()">💾 Guardar Consulta</button>
     </div>
   </div>
 </div>
@@ -2073,6 +2090,11 @@ async function submitPaciente() {
   const dni    = document.getElementById('pac-dni').value.trim();
   if (!nombre) { toast('El nombre del paciente es obligatorio', 'error'); return; }
 
+  const spinnerSVG = `<svg style="width:14px;height:14px;vertical-align:-2px;animation:spin 0.8s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+  const btns = ['btn-guardar-pac','btn-guardar-pac-bottom'].map(id => document.getElementById(id)).filter(Boolean);
+  btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
+  const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = '💾 Guardar Paciente'; });
+
   showLoading('Guardando paciente...');
   const data = {
     id:             document.getElementById('pac-id').value,
@@ -2100,9 +2122,11 @@ async function submitPaciente() {
       showPage('pacientes');
     } else {
       toast('Error: ' + res.error, 'error');
+      restore();
     }
   } catch (e) {
     toast('Error de conexión', 'error');
+    restore();
   } finally {
     hideLoading();
   }
@@ -2255,7 +2279,15 @@ document.getElementById('btn-ver-hc').onclick = prepModalHC;
 
 async function submitHC() {
   const pac = App.pacienteActual;
+  if (!pac) { toast('No hay paciente activo', 'error'); return; }
+
+  const spinnerSVG = `<svg style="width:14px;height:14px;vertical-align:-2px;animation:spin 0.8s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+  const btns = ['btn-guardar-hc','btn-guardar-hc-bottom'].map(id => document.getElementById(id)).filter(Boolean);
+  btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
+  const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = '💾 Guardar Historia Clínica'; });
+
   showLoading('Guardando Historia Clínica...');
+
   const data = {
     id:               document.getElementById('hc-id').value,
     pacienteId:       pac.id,
@@ -2279,16 +2311,18 @@ async function submitHC() {
   try {
     const res = await serverCall('saveHC', data, App.session.medicoId);
     if (res.ok) {
+      // Actualizar el id en el form por si era nueva (para futuros guardados en la misma sesión)
+      if (res.id) document.getElementById('hc-id').value = res.id;
       toast('Historia Clínica guardada', 'success');
       closeModal('modal-hc');
-      // reload HC
       const r = await serverCall('getHC', pac.id);
       App.hcActual = r.ok ? r.data : null;
       renderHC(App.hcActual);
     } else {
       toast('Error: ' + res.error, 'error');
+      restore();
     }
-  } catch { toast('Error de conexión', 'error'); }
+  } catch (e) { toast('Error de conexión: ' + e.message, 'error'); restore(); }
   finally { hideLoading(); }
 }
 
@@ -2351,6 +2385,13 @@ function prepModalConsulta() {
 
 async function submitConsulta() {
   const pac = App.pacienteActual;
+  if (!pac) { toast('No hay paciente activo', 'error'); return; }
+
+  const spinnerSVG = `<svg style="width:14px;height:14px;vertical-align:-2px;animation:spin 0.8s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+  const btns = ['btn-guardar-consulta','btn-guardar-consulta-bottom'].map(id => document.getElementById(id)).filter(Boolean);
+  btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
+  const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = '💾 Guardar Consulta'; });
+
   showLoading('Guardando consulta...');
   const data = {
     pacienteId:          pac.id,
@@ -2370,8 +2411,8 @@ async function submitConsulta() {
       closeModal('modal-consulta');
       const r = await serverCall('getConsultas', pac.id);
       renderConsultas(r.ok ? r.data : []);
-    } else toast('Error: ' + res.error, 'error');
-  } catch { toast('Error de conexión', 'error'); }
+    } else { toast('Error: ' + res.error, 'error'); restore(); }
+  } catch (e) { toast('Error de conexión: ' + e.message, 'error'); restore(); }
   finally { hideLoading(); }
 }
 
@@ -2743,6 +2784,24 @@ async function submitEndoscopia(generarPDF = false) {
     ? document.getElementById('endo-esofago').value
     : document.getElementById('endo-colon-informe').value;
 
+  // Feedback inmediato en todos los botones guardar
+  const btnsGuardar = [
+    document.getElementById('btn-guardar-endo'),
+    document.getElementById('btn-guardar-endo-bottom')
+  ];
+  const btnsPDF = [
+    document.getElementById('btn-pdf-endo'),
+    document.getElementById('btn-pdf-endo-bottom')
+  ];
+  const spinnerSVG = `<svg style="width:14px;height:14px;vertical-align:-2px;animation:spin 0.8s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+  btnsGuardar.forEach(b => { if (b) { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; } });
+  btnsPDF.forEach(b => { if (b) { b.disabled = true; } });
+
+  const restoreButtons = () => {
+    btnsGuardar.forEach(b => { if (b) { b.disabled = false; b.innerHTML = '💾 Guardar Estudio'; } });
+    btnsPDF.forEach(b => { if (b) { b.disabled = false; } });
+  };
+
   showLoading('GUARDANDO ESTUDIO', 'Por favor esperá...');
 
   const endoId = document.getElementById('endo-id').value || null;
@@ -2778,7 +2837,7 @@ async function submitEndoscopia(generarPDF = false) {
   try {
     // 1. Guardar datos
     const res = await serverCall('saveEndoscopia', data, App.session.medicoId);
-    if (!res.ok) { toast('Error: ' + res.error, 'error'); hideLoading(); return; }
+    if (!res.ok) { toast('Error: ' + res.error, 'error'); hideLoading(); restoreButtons(); return; }
 
     const savedId = res.id;
     document.getElementById('endo-id').value = savedId;
@@ -2818,6 +2877,7 @@ async function submitEndoscopia(generarPDF = false) {
 
   } catch (e) {
     toast('Error de conexión: ' + e.message, 'error');
+    restoreButtons();
   } finally {
     hideLoading();
   }
