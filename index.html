@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-09 20:00 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-09 21:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1518,7 +1518,6 @@ button { cursor: pointer; border: none; }
           <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaVEDA(0)" style="font-size:12px">✅ VEDA Normal</button>
           <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaVEDA(1)" style="font-size:12px">🔴 Gastropatía Crónica</button>
           <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaVEDA(2)" style="font-size:12px">🟠 Esofagitis</button>
-          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaVEDA(3)" style="font-size:12px">🟡 H. hiatal + Erosiones</button>
         </div>
         <div class="field">
           <textarea id="endo-esofago" rows="14" placeholder="Completá el informe manualmente o seleccioná una plantilla arriba..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
@@ -2359,28 +2358,6 @@ document.querySelector('[onclick="showModal(\'modal-consulta\')"]').onclick = ()
 };
 
 // ─── ENDOSCOPIAS ─────────────────────────────────────────────
-function renderEndoscopias(list) {
-  const cnt = document.getElementById('tab-endo-count');
-  cnt.textContent = list.length || '';
-
-  if (!list.length) return;
-
-  // Show list if there are any existing endoscopias (from migration or previous system)
-  const container = document.getElementById('endoscopias-list');
-  container.innerHTML = list.map(e => `
-    <div class="consulta-card" style="margin-top:12px">
-      <div class="consulta-header">
-        <div class="consulta-date">🔭 ${safe(e.tipoEstudio,'Endoscopía')} · ${fmtDate(e.fecha)}</div>
-        <span class="badge badge-gold">${safe(e.lugarRealizacion,'—')}</span>
-      </div>
-      <div class="consulta-body">
-        ${e.impresionDiagnostica ? `<div class="consulta-field"><label>Impresión Diagnóstica</label><p>${e.impresionDiagnostica}</p></div>` : ''}
-        ${e.anatPatologica ? `<div class="consulta-field"><label>Anatomía Patológica</label><p>${e.anatPatologica}</p></div>` : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
 // ─── CAMBIAR CONTRASEÑA ──────────────────────────────────────
 async function submitCambiarPass() {
   const actual    = document.getElementById('pass-actual').value;
@@ -2832,57 +2809,58 @@ function renderEndoscopias(list) {
     return;
   }
 
+  // Guardar la lista en App para acceder desde imprimirEndoscopia
+  App.endoscopiasList = list;
+
   container.innerHTML = list.map(e => {
-    const esVeda  = (e.tipoEstudio || '').toLowerCase().includes('veda') ||
-                    (e.tipoEstudio || '').toLowerCase().includes('gda');
+    const esVeda = (e.tipoEstudio || '').toLowerCase().includes('veda') ||
+                   (e.tipoEstudio || '').toLowerCase().includes('gda');
     const badgeCls = esVeda ? 'badge-veda' : 'badge-colon';
-    const fotos = [1,2,3,4,5,6,7,8,9]
-      .map(n => e['foto'+n]).filter(Boolean);
+    const fotos = [1,2,3,4,5,6,7,8,9].map(n => e['foto'+n]).filter(Boolean);
+    const informe = e.esofago || '';
 
     return `
     <div class="endo-card">
       <div class="endo-card-header">
         <div class="endo-tipo ${esVeda ? 'endo-tipo-veda' : 'endo-tipo-colon'}">
           🔭 ${safe(e.tipoEstudio, 'Endoscopía')}
-          <span class="seccion-badge ${badgeCls}" style="margin-left:4px">
-            ${fmtDate(e.fecha)}
-          </span>
+          <span class="seccion-badge ${badgeCls}" style="margin-left:4px">${fmtDate(e.fecha)}</span>
           ${e.lugarRealizacion ? `<span style="font-size:12px;color:var(--muted);font-weight:400">· ${e.lugarRealizacion}</span>` : ''}
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           ${e.pedidoPor ? `<span style="font-size:12px;color:var(--muted)">Solicitado por: ${e.pedidoPor}</span>` : ''}
+          <button class="btn btn-secondary btn-sm" onclick="imprimirEndoscopia('${e.id}')">📄 PDF</button>
           <button class="btn btn-danger btn-sm btn-icon" title="Eliminar"
             onclick="confirmarEliminarEndoscopia('${e.id}')">🗑️</button>
         </div>
       </div>
       <div class="endo-card-body">
         <div class="endo-grid">
-          ${e.motivoExamen ? `<div class="endo-field"><label>Motivo del Examen</label><p>${e.motivoExamen}</p></div>` : ''}
-          ${e.antecedentes ? `<div class="endo-field"><label>Antecedentes</label><p>${e.antecedentes}</p></div>` : ''}
+          ${e.motivoExamen  ? `<div class="endo-field"><label>Motivo del Examen</label><p>${e.motivoExamen}</p></div>` : ''}
+          ${e.antecedentes  ? `<div class="endo-field"><label>Antecedentes</label><p>${e.antecedentes}</p></div>` : ''}
         </div>
-        ${esVeda ? `
-        <div class="endo-grid">
-          ${e.esofago ? `<div class="endo-field"><label>Esófago</label><p>${e.esofago}${e.esofagoHallazgos ? '<br><small style="color:var(--muted)">'+e.esofagoHallazgos+'</small>' : ''}</p></div>` : ''}
-          ${e.estomago ? `<div class="endo-field"><label>Estómago</label><p>${e.estomago}${e.estomagoHallazgos ? '<br><small style="color:var(--muted)">'+e.estomagoHallazgos+'</small>' : ''}</p></div>` : ''}
-          ${e.duodeno ? `<div class="endo-field"><label>Duodeno</label><p>${e.duodeno}${e.duodenoHallazgos ? '<br><small style="color:var(--muted)">'+e.duodenoHallazgos+'</small>' : ''}</p></div>` : ''}
-        </div>` : `
-        <div class="endo-grid">
-          ${e.colon ? `<div class="endo-field"><label>Colon</label><p>${e.colon}${e.colonHallazgos ? '<br><small style="color:var(--muted)">'+e.colonHallazgos+'</small>' : ''}</p></div>` : ''}
-          ${e.calidadPrep ? `<div class="endo-field"><label>Calidad Preparación</label><p>${e.calidadPrep}</p></div>` : ''}
-        </div>`}
+        ${informe ? `
+        <div class="endo-field" style="margin-top:10px">
+          <label>Informe Endoscópico</label>
+          <div style="white-space:pre-wrap;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.8;background:#f7fcf9;border:1px solid #c0d9c8;border-radius:6px;padding:12px 14px">${informe}</div>
+        </div>` : ''}
         ${e.impresionDiagnostica ? `
         <div class="endo-field" style="margin-top:10px;padding:10px 14px;background:#edf7f0;border-radius:6px;border-left:3px solid #1a9c5b">
           <label>Impresión Diagnóstica</label>
-          <p style="font-weight:500">${e.impresionDiagnostica}</p>
+          <p style="font-weight:500;white-space:pre-wrap">${e.impresionDiagnostica}</p>
         </div>` : ''}
-        ${(e.anatPatologica || e.informeBiopsia) ? `
-        <div class="endo-grid" style="margin-top:10px">
-          ${e.anatPatologica ? `<div class="endo-field"><label>Anatomía Patológica</label><p>${e.anatPatologica}</p></div>` : ''}
-          ${e.informeBiopsia ? `<div class="endo-field"><label>Informe de Biopsia</label><p>${e.informeBiopsia}</p></div>` : ''}
+        ${e.informeBiopsia ? `
+        <div class="endo-field" style="margin-top:8px">
+          <label>Informe de Biopsia / Anatomía Patológica</label>
+          <p>${e.informeBiopsia}</p>
+        </div>` : ''}
+        ${e.comentarios ? `
+        <div class="endo-field" style="margin-top:8px">
+          <label>Comentarios</label><p>${e.comentarios}</p>
         </div>` : ''}
         <div style="display:flex;gap:12px;align-items:center;margin-top:10px;flex-wrap:wrap">
-          ${e.analgesia ? `<span style="font-size:12px;color:var(--muted)">💉 ${e.analgesia}</span>` : ''}
-          ${e.tolerancia ? `<span style="font-size:12px;color:var(--muted)">📊 Tolerancia: ${e.tolerancia}</span>` : ''}
+          ${e.analgesia   ? `<span style="font-size:12px;color:var(--muted)">💉 ${e.analgesia}</span>` : ''}
+          ${e.estomago    ? `<span style="font-size:12px;color:var(--muted)">🏥 ${e.estomago}</span>` : ''}
           ${e.anestesista ? `<span style="font-size:12px;color:var(--muted)">👨‍⚕️ ${e.anestesista}</span>` : ''}
         </div>
         ${fotos.length > 0 ? `
@@ -2895,6 +2873,120 @@ function renderEndoscopias(list) {
       </div>
     </div>`;
   }).join('');
+}
+
+function imprimirEndoscopia(endoId) {
+  const pac  = App.pacienteActual;
+  const list = App.endoscopiasList || [];
+  const e    = list.find(x => x.id == endoId);
+  if (!e || !pac) { toast('No se encontró el estudio', 'error'); return; }
+
+  const fotos = [1,2,3,4,5,6,7,8,9].map(n => e['foto'+n]).filter(Boolean);
+  const fotoImgs = fotos.map(url =>
+    `<img src="${url}" style="max-width:200px;max-height:200px;border-radius:6px;border:1px solid #c0d9c8;object-fit:cover">`
+  ).join('');
+
+  const htmlPDF = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe ${e.tipoEstudio} — ${pac.apellidoNombre}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#111; background:#fff; padding:30px; }
+  .header { display:flex; align-items:flex-start; gap:16px; padding-bottom:14px; border-bottom:3px solid #1a7a4a; margin-bottom:18px; }
+  .header-texts h1 { font-size:13px; font-weight:700; color:#1a7a4a; }
+  .header-texts p  { font-size:11px; color:#555; margin-top:1px; }
+  .titulo-estudio  { background:#1a7a4a; color:#fff; text-align:center; padding:9px; font-size:14px; font-weight:700; letter-spacing:1.5px; border-radius:5px; margin-bottom:16px; text-transform:uppercase; }
+  .datos-tabla { width:100%; border-collapse:collapse; margin-bottom:14px; border:1.5px solid #1a7a4a; border-radius:6px; overflow:hidden; }
+  .datos-tabla td { border:1px solid #c8e0d0; padding:6px 10px; font-size:11.5px; vertical-align:top; }
+  .datos-tabla td.lbl { font-size:9.5px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.4px; width:18%; background:#f4fbf7; }
+  .section-lbl { font-size:10px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:1px; border-bottom:1.5px solid #1a7a4a; padding-bottom:3px; margin:14px 0 7px; }
+  .informe-box  { font-size:12px; line-height:1.85; white-space:pre-wrap; background:#f7fcf9; border:1px solid #c0d9c8; border-radius:5px; padding:12px 14px; }
+  .diag-box     { background:#e8f5ec; border-left:4px solid #1a7a4a; border-radius:0 5px 5px 0; padding:10px 14px; font-size:12px; white-space:pre-wrap; margin-top:4px; }
+  .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
+  .mini-dato { background:#f5f5f5; border-radius:5px; padding:7px 10px; }
+  .mini-dato .lbl { font-size:9px; font-weight:700; color:#555; text-transform:uppercase; }
+  .mini-dato .val { font-size:12px; font-weight:600; margin-top:2px; }
+  .fotos-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .footer { margin-top:28px; border-top:1px solid #ccc; padding-top:14px; display:flex; justify-content:space-between; align-items:flex-end; }
+  .firma-area { text-align:center; }
+  .firma-linea { border-top:1px solid #333; width:190px; margin:0 auto 4px; }
+  .firma-nombre { font-size:11px; font-weight:700; }
+  .firma-mp { font-size:10px; color:#555; }
+  @media print { body { padding:15px; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-texts">
+      <h1>Gastro CEDELU — Unidad de Endoscopia Digestiva</h1>
+      <p>${e.lugarRealizacion || 'Concepción del Uruguay, Entre Ríos'}</p>
+    </div>
+  </div>
+
+  <div class="titulo-estudio">INFORME — ${(e.tipoEstudio||'').toUpperCase()}</div>
+
+  <table class="datos-tabla">
+    <tr>
+      <td class="lbl">Apellido y Nombre</td>
+      <td colspan="3" style="font-size:14px;font-weight:700">${pac.apellidoNombre||''}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Fecha del Estudio</td><td>${e.fecha||'—'}</td>
+      <td class="lbl">Edad</td><td>${pac.edad ? pac.edad+' años' : '—'}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Sexo</td><td>${pac.sexo||'—'}</td>
+      <td class="lbl">DNI</td><td>${pac.dni||'—'}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Obra Social</td><td>${pac.obraSocial||'—'}</td>
+      <td class="lbl">N° Afiliado</td><td>${pac.nroAfiliado||'—'}</td>
+    </tr>
+    <tr>
+      <td class="lbl">Pedido por</td><td>${e.pedidoPor||'—'}</td>
+      <td class="lbl">Anestesiólogo</td><td>${e.anestesista||'—'}</td>
+    </tr>
+  </table>
+
+  <div class="row3">
+    <div class="mini-dato"><div class="lbl">Analgesia</div><div class="val">${e.analgesia||'—'}</div></div>
+    <div class="mini-dato"><div class="lbl">Tipo de Endoscopía</div><div class="val">${e.estomago||'—'}</div></div>
+    <div class="mini-dato"><div class="lbl">Motivo del Examen</div><div class="val">${e.motivoExamen||'—'}</div></div>
+  </div>
+
+  ${e.antecedentes ? `<div class="section-lbl">Antecedentes</div><p style="font-size:12px;white-space:pre-wrap">${e.antecedentes}</p>` : ''}
+
+  <div class="section-lbl">Informe Endoscópico</div>
+  <div class="informe-box">${e.esofago||'Sin informe registrado.'}</div>
+
+  <div class="section-lbl">Impresión Diagnóstica</div>
+  <div class="diag-box">${e.impresionDiagnostica||'—'}</div>
+
+  ${e.informeBiopsia ? `<div class="section-lbl">Informe de Biopsia / Anatomía Patológica</div><p style="font-size:12px;white-space:pre-wrap;margin-top:4px">${e.informeBiopsia}</p>` : ''}
+  ${e.comentarios    ? `<div class="section-lbl">Comentarios y Recomendaciones</div><p style="font-size:12px;white-space:pre-wrap;margin-top:4px">${e.comentarios}</p>` : ''}
+
+  ${fotos.length > 0 ? `<div class="section-lbl">Fotografías del Estudio</div><div class="fotos-grid">${fotoImgs}</div>` : ''}
+
+  <div class="footer">
+    <div style="font-size:10px;color:#888">Gastro CEDELU · ${e.lugarRealizacion||''} · ${e.fecha||''}<br>INSTRUMENTAL: VIDEOENDOSCOPIO OLYMPUS</div>
+    <div class="firma-area">
+      <div class="firma-linea"></div>
+      <div class="firma-nombre">${App.session?.nombre || 'Médico Tratante'}</div>
+      <div class="firma-mp">M.P. ___________</div>
+    </div>
+  </div>
+
+  <script>window.onload = function() { window.print(); }<\/script>
+</body>
+</html>`;
+
+  const blob = new Blob([htmlPDF], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.target = '_blank'; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
 function confirmarEliminarEndoscopia(id) {
@@ -3098,42 +3190,33 @@ async function autoguardarAnestesista(valor) {
 const PLANTILLAS_VEDA = [
   {
     nombre: 'VEDA Normal',
-    texto: `ESÓFAGO: línea Z a ___ cm de la arcada dentaria superior, coincidente con el inicio de los pliegues gástricos. Mucosa esofágica sin lesiones.
+    texto: `Esófago: línea Z a ___ cm de la arcada dentaria superior, coincidente con el inicio de los pliegues gástricos. Mucosa esofágica sin lesiones.
 
-ESTÓMAGO: cardias continente. Mucosa de fundus, cuerpo y antro sin lesiones. Píloro céntrico y permeable.
+Estómago: cardias continente. Mucosa de fundus, cuerpo y antro sin lesiones. Píloro céntrico y permeable.
 
-DUODENO: bulbo y segunda porción duodenal sin lesiones.`,
-    diagnostico: 'Endoscopía digestiva alta sin lesiones.'
+Duodeno: bulbo y segunda porción duodenal sin lesiones.`,
+    diagnostico: '• Endoscopía digestiva alta sin lesiones.'
   },
   {
-    nombre: 'Gastropatía Crónica con Biopsias',
-    texto: `ESÓFAGO: línea Z a ___ cm de la arcada dentaria superior. Mucosa esofágica sin lesiones.
+    nombre: 'VEDA con Gastropatía Crónica',
+    texto: `Esófago: línea Z a ___ cm de la arcada dentaria superior. Mucosa esofágica sin lesiones.
 
-ESTÓMAGO: cardias continente. Mucosa gástrica con eritema y aspecto congestivo predominante en antro, compatible con gastropatía crónica.
-Se toman biopsias de antro y cuerpo para estudio histológico y búsqueda de Helicobacter pylori.
+Estómago: cardias continente. Mucosa gástrica con eritema y aspecto congestivo predominante en antro, compatible con gastropatía crónica.
+Se toman biopsias de antro y cuerpo para estudio histológico y búsqueda de Helicobacter pylori (Fco).
 Píloro céntrico y permeable.
 
-DUODENO: bulbo y segunda porción duodenal sin lesiones.`,
-    diagnostico: 'Gastropatía crónica.\nBiopsias gástricas para Helicobacter pylori.'
+Duodeno: bulbo y segunda porción duodenal sin lesiones.`,
+    diagnostico: '• Gastropatía crónica.\n• Biopsias gástricas para Helicobacter pylori.'
   },
   {
-    nombre: 'Esofagitis Erosiva',
-    texto: `ESÓFAGO: línea Z a ___ cm de la arcada dentaria superior.
+    nombre: 'VEDA con Esofagitis',
+    texto: `Esófago: línea Z a ___ cm de la arcada dentaria superior.
 En esófago distal se observan erosiones mucosas mayores de 5 mm, no confluentes.
 
-ESTÓMAGO: cardias continente. Mucosa de fundus, cuerpo y antro sin lesiones.
+Estómago: cardias continente. Mucosa de fundus, cuerpo y antro sin lesiones.
 
-DUODENO: bulbo y segunda porción duodenal sin lesiones.`,
-    diagnostico: 'Esofagitis erosiva grado ___ según clasificación de Los Ángeles.'
-  },
-  {
-    nombre: 'Hernia Hiatal + Antropatía Erosiva',
-    texto: `ESÓFAGO: línea Z a ___ cm de la arcada dentaria superior, coincidente con inicio de pliegues gástricos. Impronta hiatal a ___ cm de la ADS. Luz y mucosa sin lesiones.
-
-ESTÓMAGO: cardias continente. Mucosa de techo y cuerpo sin lesiones. Antro con erosiones y restos de hematina. Se biopsia antro y cuerpo (Fco. 1) para búsqueda de H. pylori. Píloro céntrico y permeable.
-
-DUODENO: bulbo y segunda porción duodenal sin lesiones.`,
-    diagnostico: 'Hernia hiatal.\nAntropatía erosiva.'
+Duodeno: bulbo y segunda porción duodenal sin lesiones.`,
+    diagnostico: '• Esofagitis erosiva grado ___ según clasificación de Los Ángeles.'
   }
 ];
 
