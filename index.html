@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-07 21:30 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-07 21:45 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1622,12 +1622,9 @@ button { cursor: pointer; border: none; }
     <input type="hidden" id="hc-id">
     <input type="hidden" id="hc-paciente-id">
 
-    <div class="section-divider"><span>Consulta Inicial</span></div>
-    <div class="field-row cols-2">
-      <div class="field">
-        <label>Fecha de Consulta</label>
-        <input type="date" id="hc-fecha">
-      </div>
+    <div class="field">
+      <label>Fecha</label>
+      <input type="date" id="hc-fecha" style="max-width:200px">
     </div>
     <div class="field">
       <label>Antecedentes Personales</label>
@@ -1643,50 +1640,31 @@ button { cursor: pointer; border: none; }
     </div>
     <div class="field">
       <label>Estudios Complementarios</label>
-      <textarea id="hc-rec2" rows="5" placeholder="Resultados de laboratorio, imágenes, endoscopias previas, otros estudios..."></textarea>
+      <textarea id="hc-rec2" rows="6" placeholder="Resultados de laboratorio, imágenes, endoscopias previas, otros estudios..."></textarea>
     </div>
     <div class="field">
       <label>Examen Físico</label>
       <textarea id="hc-exfisico" rows="3" placeholder="Hallazgos del examen físico..."></textarea>
     </div>
-
-    <div class="section-divider"><span>Diagnóstico y Conducta</span></div>
-    <div class="field-row cols-2">
-      <div class="field">
-        <label>Diagnóstico Presuntivo</label>
-        <input type="text" id="hc-diag" placeholder="Diagnóstico principal">
-      </div>
-      <div class="field">
-        <label>Código Diagnóstico OMS</label>
-        <input type="text" id="hc-diagoms" placeholder="K21.0, K92.1...">
-      </div>
+    <div class="field">
+      <label>Diagnóstico Presuntivo</label>
+      <textarea id="hc-diag" rows="2" placeholder="Diagnóstico principal..."></textarea>
     </div>
     <div class="field">
       <label>Conducta / Tratamiento</label>
       <textarea id="hc-tratamiento" rows="4" placeholder="Plan de tratamiento, indicaciones, conducta médica..."></textarea>
     </div>
 
-    <div class="section-divider"><span>Medicamentos Indicados</span></div>
-    <div class="med-grid">
-      <div class="med-row"><div class="field"><label>Medicamento 1</label><input type="text" id="med1" placeholder="Nombre genérico / comercial"></div><div class="field"><label>Dosificación</label><input type="text" id="dos1" placeholder="1 comp c/12hs x 30d"></div></div>
-      <div class="med-row"><div class="field"><label>Medicamento 2</label><input type="text" id="med2" placeholder="Nombre genérico / comercial"></div><div class="field"><label>Dosificación</label><input type="text" id="dos2" placeholder=""></div></div>
-      <div class="med-row"><div class="field"><label>Medicamento 3</label><input type="text" id="med3" placeholder="Nombre genérico / comercial"></div><div class="field"><label>Dosificación</label><input type="text" id="dos3" placeholder=""></div></div>
-      <div class="med-row"><div class="field"><label>Medicamento 4</label><input type="text" id="med4" placeholder="Nombre genérico / comercial"></div><div class="field"><label>Dosificación</label><input type="text" id="dos4" placeholder=""></div></div>
-      <div class="med-row"><div class="field"><label>Medicamento 5</label><input type="text" id="med5" placeholder="Nombre genérico / comercial"></div><div class="field"><label>Dosificación</label><input type="text" id="dos5" placeholder=""></div></div>
-      <div class="med-row"><div class="field"><label>Medicamento 6</label><input type="text" id="med6" placeholder="Nombre genérico / comercial"></div><div class="field"><label>Dosificación</label><input type="text" id="dos6" placeholder=""></div></div>
-    </div>
-
-    <div class="section-divider"><span>Seguimiento</span></div>
-    <div class="field-row cols-2">
-      <div class="field">
-        <label>Control</label>
-        <input type="text" id="hc-control" placeholder="Control en 30 días...">
-      </div>
-      <div class="field">
-        <label>Pendiente</label>
-        <input type="text" id="hc-pendiente" placeholder="Estudios pendientes, derivaciones...">
-      </div>
-    </div>
+    <!-- campos ocultos para compatibilidad con el Sheet -->
+    <input type="hidden" id="hc-diagoms">
+    <input type="hidden" id="med1"><input type="hidden" id="dos1">
+    <input type="hidden" id="med2"><input type="hidden" id="dos2">
+    <input type="hidden" id="med3"><input type="hidden" id="dos3">
+    <input type="hidden" id="med4"><input type="hidden" id="dos4">
+    <input type="hidden" id="med5"><input type="hidden" id="dos5">
+    <input type="hidden" id="med6"><input type="hidden" id="dos6">
+    <input type="hidden" id="hc-control">
+    <input type="hidden" id="hc-pendiente">
 
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-hc')">Cancelar</button>
