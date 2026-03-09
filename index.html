@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-09 21:45 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-09 22:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1541,8 +1541,9 @@ button { cursor: pointer; border: none; }
         <div class="section-divider" style="margin-top:20px"><span>📋 Informe Colonoscopía</span></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
           <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Insertar plantilla:</span>
-          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaColon(0)" style="font-size:12px">✅ Colonoscopía Normal</button>
-          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaColon(1)" style="font-size:12px">🔴 Con Pólipos</button>
+          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaColon(0)" style="font-size:12px">✅ VCC Normal</button>
+          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaColon(1)" style="font-size:12px">🔴 Con Pólipo</button>
+          <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaColon(2)" style="font-size:12px">🟡 Con Diverticulosis</button>
         </div>
         <div class="field">
           <textarea id="endo-colon-informe" rows="14" placeholder="Completá el informe manualmente o seleccioná una plantilla..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
@@ -3362,21 +3363,32 @@ Duodeno: bulbo y segunda porción duodenal sin lesiones.`,
 
 const PLANTILLAS_COLON = [
   {
-    nombre: 'Colonoscopía Normal',
-    texto: `Colonoscopía completa hasta ciego con intubación de válvula ileocecal.
-Calidad de preparación: ___.
-
-COLON: mucosa de recto, sigmoides, colon descendente, ángulo esplénico, colon transverso, ángulo hepático, colon ascendente y ciego sin lesiones. Apéndice visible sin alteraciones.`,
-    diagnostico: 'Colonoscopía sin lesiones endoscópicas.'
+    nombre: 'VCC Normal',
+    texto: `Inspección anal: sin particularidades.
+Tacto rectal: esfínter normotónico. Sin lesiones palpables en ampolla rectal.
+Se progresa hasta ciego, identificándose válvula ileocecal e implante apendicular.
+Mucosa colónica con patrón vascular conservado, sin lesiones en los segmentos explorados.
+Hemorroides internas.`,
+    diagnostico: '• Colonoscopía sin lesiones.\n• Hemorroides internas.'
   },
   {
-    nombre: 'Colonoscopía con Pólipos',
-    texto: `Colonoscopía completa hasta ciego con intubación de válvula ileocecal.
-Calidad de preparación: ___.
-
-COLON: En ___ se identifica pólipo sésil/pediculado de ___ mm. Se realiza polipectomía con asa fría/caliente. Se envía a anatomía patológica.
+    nombre: 'VCC con Pólipo',
+    texto: `Inspección anal: sin particularidades.
+Tacto rectal: esfínter normotónico.
+Se progresa el colonoscopio hasta ciego, identificándose válvula ileocecal e implante apendicular.
+En ____ se observa lesión polipoidea de aproximadamente _ mm, la cual se reseca mediante polipectomía con asa fría / asa diatérmica. La pieza se recupera para estudio anatomopatológico (Fco)
 Resto de la mucosa colónica sin lesiones.`,
-    diagnostico: 'Pólipo de colon en ___.\nPolipectomía endoscópica. Muestra enviada a AP.'
+    diagnostico: '• Lesión polipoidea en __, resecada.\n• Clasificación de París:'
+  },
+  {
+    nombre: 'VCC con Diverticulosis',
+    texto: `Inspección anal: sin particularidades.
+Tacto rectal: esfínter normotónico.
+Se progresa el colonoscopio hasta ciego, identificándose válvula ileocecal e implante apendicular.
+Mucosa colónica con patrón vascular conservado.
+Se observan múltiples divertículos en colon ____, sin signos inflamatorios asociados.
+Hemorroides internas.`,
+    diagnostico: '• Diverticulosis colónica.'
   }
 ];
 
