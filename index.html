@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- GastroCEDELU index.html · 2026-03-09 22:45 ARG -->
+<!-- GastroCEDELU index.html · 2026-03-09 23:55 ARG -->
 <!-- ============================================================ -->
-<!-- Gastro CEDELU - index.html (Frontend SPA)                    -->
+<!-- Gastro CEDELU — 2026-03-09 23:55 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
 <!-- Etapa 1: Auth + Pacientes + HC + Consultas                   -->
 <!-- ============================================================ -->
@@ -3040,7 +3040,7 @@ function imprimirEndoscopia(endoId) {
 
   const fotos = [1,2,3,4,5,6,7,8,9].map(n => e['foto'+n]).filter(Boolean);
   const fotoImgs = fotos.map(url =>
-    `<img src="${driveThumb(url)}" style="width:130px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #ddd">`
+    `<img src="${driveThumb(url)}" style="width:9.5cm;height:8.6cm;object-fit:cover;border-radius:6px;border:1px solid #ddd">`
   ).join('');
 
   const informe     = e.esofago || '';
@@ -3073,10 +3073,10 @@ function imprimirEndoscopia(endoId) {
   .hdr-c3 { width:200px; height:200px; background:#2a9d6e; top:-60px;  right:-60px;  }
   .hdr-row { display:flex; align-items:center; gap:14px; position:relative; z-index:10; }
   .hdr-texts { flex:1; color:#111; }
-  .hdr-clinica { font-size:17px; font-weight:900; letter-spacing:.5px; line-height:1.1; color:#111; }
-  .hdr-sub { font-size:10px; font-weight:400; color:#666; margin-top:1px; }
-  .hdr-unidad { margin-top:6px; font-size:10.5px; font-weight:700; color:#1a7a4a; }
-  .hdr-dra { font-size:10px; color:#555; }
+  .hdr-clinica { font-size:24px; font-weight:900; letter-spacing:.5px; line-height:1.1; color:#111; }
+  .hdr-sub { font-size:14px; font-weight:400; color:#666; margin-top:1px; }
+  .hdr-unidad { margin-top:6px; font-size:15px; font-weight:700; color:#1a7a4a; }
+  .hdr-dra { font-size:14px; color:#555; }
 
   /* ── TÍTULO CENTRAL ── */
   .titulo-wrap { text-align:center; padding:16px 20px 8px; }
@@ -3087,26 +3087,26 @@ function imprimirEndoscopia(endoId) {
   .card { margin:0 16px 10px; border:1px solid #e0ece6; border-radius:10px; overflow:hidden; }
 
   /* ── SECCIÓN BADGE ── */
-  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:9px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; padding:3px 10px; border-radius:4px; margin:10px 14px 6px; }
+  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:13px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; padding:3px 10px; border-radius:4px; margin:10px 14px 6px; }
 
   /* ── TABLA PACIENTE ── */
   .pac-nombre { font-size:15px; font-weight:900; color:#111; padding:0 14px 4px; }
   .pac-row    { display:flex; gap:0; border-top:1px solid #e8f2ec; }
   .pac-cell   { flex:1; padding:5px 14px; border-right:1px solid #e8f2ec; }
   .pac-cell:last-child { border-right:none; }
-  .pac-lbl { font-size:8.5px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.5px; }
-  .pac-val { font-size:11px; font-weight:600; margin-top:1px; }
+  .pac-lbl { font-size:12.5px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.5px; }
+  .pac-val { font-size:13px; font-weight:600; margin-top:1px; }
   .pac-row-full { padding:5px 14px; border-top:1px solid #e8f2ec; display:flex; gap:24px; }
 
   /* ── INFORME ── */
-  .informe-text { font-size:11px; line-height:1.85; white-space:pre-wrap; padding:8px 14px 10px; color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
+  .informe-text { font-size:13px; line-height:1.85; white-space:pre-wrap; padding:8px 14px 10px; color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
 
   /* ── DIAGNÓSTICO ── */
   .diag-wrap { margin:0 14px 10px; }
   .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:6px; padding:8px 14px; }
   .diag-row { display:flex; gap:20px; }
   .diag-bullets { flex:1; }
-  .diag-bullet { display:flex; align-items:flex-start; gap:6px; margin-bottom:3px; font-size:11px; font-weight:600; }
+  .diag-bullet { display:flex; align-items:flex-start; gap:6px; margin-bottom:3px; font-size:13px; font-weight:600; }
   .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:14px; line-height:1; margin-top:-1px; }
   .diag-anest { font-size:10px; color:#555; text-align:right; white-space:nowrap; padding-top:2px; }
   .diag-anest b { color:#111; }
@@ -3120,7 +3120,7 @@ function imprimirEndoscopia(endoId) {
   .firma-mp   { font-size:9.5px; color:#555; }
 
   /* ── FOOTER ── */
-  .footer { margin-top:8px; border-top:2px solid #1a7a4a; padding:8px 20px; text-align:center; font-size:9.5px; color:#555; line-height:1.7; }
+  .footer { border-top:2px solid #1a7a4a; padding:8px 20px; text-align:center; font-size:9.5px; color:#555; line-height:1.7; }
   .footer b { color:#1a7a4a; }
   .footer-dots { color:#1a7a4a; margin:0 6px; }
 
@@ -3128,6 +3128,8 @@ function imprimirEndoscopia(endoId) {
     html,body{margin:0;padding:0}
     .page{max-width:100%}
     * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+    .footer { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:2px solid #1a7a4a; }
+    .page { padding-bottom:60px; }
   }
   @page {
     size: A4 portrait;
@@ -3175,10 +3177,10 @@ function imprimirEndoscopia(endoId) {
       <div class="pac-cell"><div class="pac-lbl">Pedido por</div><div class="pac-val">${e.pedidoPor||'—'}</div></div>
     </div>
     <div class="pac-row-full">
-      <div><span style="font-size:8.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Antecedentes:</span> <span style="font-size:10.5px">${e.antecedentes||'—'}</span></div>
-      <div><span style="font-size:8.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Motivo:</span> <span style="font-size:10.5px">${e.motivoExamen||'—'}</span></div>
-      <div><span style="font-size:8.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Analgesia:</span> <span style="font-size:10.5px">${e.analgesia||'—'}</span></div>
-      <div><span style="font-size:8.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Tipo:</span> <span style="font-size:10.5px">${tipoEndo}</span></div>
+      <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Antecedentes:</span> <span style="font-size:12.5px">${e.antecedentes||'—'}</span></div>
+      <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Motivo:</span> <span style="font-size:12.5px">${e.motivoExamen||'—'}</span></div>
+      <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Analgesia:</span> <span style="font-size:12.5px">${e.analgesia||'—'}</span></div>
+      <div><span style="font-size:10.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Tipo:</span> <span style="font-size:10.5px">${tipoEndo}</span></div>
     </div>
   </div>
 
@@ -3205,7 +3207,7 @@ function imprimirEndoscopia(endoId) {
     </div>
   </div>
 
-  ${e.comentarios    ? `<div class="card" style="margin-bottom:8px"><span class="sec-badge">Comentarios</span><div class="informe-text" style="font-family:'Inter',Arial;font-size:11px">${e.comentarios}</div></div>` : ''}
+  ${e.comentarios    ? `<div class="card" style="margin-bottom:8px"><span class="sec-badge">Comentarios</span><div class="informe-text" style="font-family:'Inter',Arial;font-size:13px">${e.comentarios}</div></div>` : ''}
 
   <!-- FOTOS + FIRMA -->
   <div class="bottom-row">
