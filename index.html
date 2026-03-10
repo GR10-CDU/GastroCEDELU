@@ -1626,6 +1626,19 @@ color:#555;
           <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaColon(1)" style="font-size:12px">Con Pólipo</button>
           <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaColon(2)" style="font-size:12px">Con Diverticulosis</button>
         </div>
+        <div class="field" style="max-width:300px;margin-bottom:14px">
+          <label>Región Alcanzada</label>
+          <select id="endo-region-alcanzada" style="height:40px" onchange="document.getElementById('endo-region').value=this.value">
+            <option value="">— Seleccionar —</option>
+            <option value="Íleon">Íleon</option>
+            <option value="Ciego">Ciego</option>
+            <option value="Colon Derecho">Colon Derecho</option>
+            <option value="Colon Transverso">Colon Transverso</option>
+            <option value="Colon Izquierdo">Colon Izquierdo</option>
+            <option value="Sigma">Sigma</option>
+            <option value="Recto">Recto</option>
+          </select>
+        </div>
         <div class="field">
           <textarea id="endo-colon-informe" rows="14" placeholder="Completá el informe manualmente o seleccioná una plantilla..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
         </div>
@@ -2792,6 +2805,8 @@ function resetFormEndoscopia() {
   });
   const anlg = document.getElementById('endo-analgesia');
   if (anlg) anlg.value = '';
+  const regAlc = document.getElementById('endo-region-alcanzada');
+  if (regAlc) regAlc.value = '';
   const etipo = document.getElementById('endo-endoscopia-tipo');
   if (etipo) etipo.value = '';
 }
