@@ -1096,6 +1096,99 @@ button { cursor: pointer; border: none; }
 .badge-veda  { background: #e8f5ee; color: #155a32; border: 1px solid #9fd4b2; }
 .badge-colon { background: #e6fffa; color: #276749; border: 1px solid #81e6d9; }
 
+
+/* ===== ESTETICA INFORME ENDOSCOPICO ===== */
+.reporte-container{
+  width:210mm;
+  background:#ffffff;
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.15);
+  padding:28px;
+  font-family:var(--font-body);
+}
+
+.reporte-header{
+  background:linear-gradient(135deg,#1a9c5b,#3bb273);
+  color:white;
+  padding:18px 22px;
+  border-radius:12px 12px 0 0;
+  margin:-28px -28px 20px -28px;
+}
+
+.reporte-header h1{
+  font-family:var(--font-display);
+  font-size:28px;
+  letter-spacing:.5px;
+}
+
+.reporte-subtitulo{
+  font-size:15px;
+  opacity:.9;
+}
+
+.reporte-card{
+  background:#f8fbf9;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px 18px;
+  margin-bottom:14px;
+}
+
+.reporte-card h3{
+  background:linear-gradient(90deg,#1a9c5b,#7ccaa5);
+  color:white;
+  padding:4px 14px;
+  border-radius:20px;
+  font-size:13px;
+  display:inline-block;
+  margin-bottom:8px;
+}
+
+.reporte-texto{
+  font-size:14px;
+  line-height:1.2;
+  color:#243b30;
+}
+
+.reporte-diagnostico ul{
+  padding-left:18px;
+}
+
+.reporte-fotos{
+  display:grid;
+  grid-template-columns:repeat(4,4cm);
+  grid-auto-rows:4cm;
+  justify-content:center;
+  gap:8px;
+  margin-top:14px;
+}
+
+.reporte-fotos img{
+  width:4cm;
+  height:4cm;
+  object-fit:cover;
+  border-radius:6px;
+  border:1px solid #ddd;
+}
+
+.reporte-firma{
+  text-align:right;
+  margin-top:12px;
+}
+
+.reporte-firma img{
+  width:140px;
+}
+
+.reporte-footer{
+  margin-top:18px;
+  padding-top:10px;
+  border-top:1px solid #e0e0e0;
+  font-size:12px;
+  text-align:center;
+  color:#556;
+}
+
 </style>
 </head>
 <body>
@@ -3136,6 +3229,99 @@ function imprimirEndoscopia(endoId) {
     size: A4 portrait;
     margin: 12mm 10mm 10mm 10mm;
   }
+
+/* ===== ESTETICA INFORME ENDOSCOPICO ===== */
+.reporte-container{
+  width:210mm;
+  background:#ffffff;
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.15);
+  padding:28px;
+  font-family:var(--font-body);
+}
+
+.reporte-header{
+  background:linear-gradient(135deg,#1a9c5b,#3bb273);
+  color:white;
+  padding:18px 22px;
+  border-radius:12px 12px 0 0;
+  margin:-28px -28px 20px -28px;
+}
+
+.reporte-header h1{
+  font-family:var(--font-display);
+  font-size:28px;
+  letter-spacing:.5px;
+}
+
+.reporte-subtitulo{
+  font-size:15px;
+  opacity:.9;
+}
+
+.reporte-card{
+  background:#f8fbf9;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px 18px;
+  margin-bottom:14px;
+}
+
+.reporte-card h3{
+  background:linear-gradient(90deg,#1a9c5b,#7ccaa5);
+  color:white;
+  padding:4px 14px;
+  border-radius:20px;
+  font-size:13px;
+  display:inline-block;
+  margin-bottom:8px;
+}
+
+.reporte-texto{
+  font-size:14px;
+  line-height:1.2;
+  color:#243b30;
+}
+
+.reporte-diagnostico ul{
+  padding-left:18px;
+}
+
+.reporte-fotos{
+  display:grid;
+  grid-template-columns:repeat(4,4cm);
+  grid-auto-rows:4cm;
+  justify-content:center;
+  gap:8px;
+  margin-top:14px;
+}
+
+.reporte-fotos img{
+  width:4cm;
+  height:4cm;
+  object-fit:cover;
+  border-radius:6px;
+  border:1px solid #ddd;
+}
+
+.reporte-firma{
+  text-align:right;
+  margin-top:12px;
+}
+
+.reporte-firma img{
+  width:140px;
+}
+
+.reporte-footer{
+  margin-top:18px;
+  padding-top:10px;
+  border-top:1px solid #e0e0e0;
+  font-size:12px;
+  text-align:center;
+  color:#556;
+}
+
 </style>
 </head>
 <body>
