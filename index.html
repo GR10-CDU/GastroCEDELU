@@ -3511,13 +3511,19 @@ async function autoguardarLocalidad(valor) {
 }
 
 // ─── ANESTESISTAS ───────────────────────────────────────────────────────────
-let anestesistasState = [];
+const ANESTESISTAS_DEFAULT = [
+  'Lazarte Pamela','Bonelli Miguel','Azcua Pablo','Rivas Matías','Iribarren Carlos'
+];
+let anestesistasState = [...ANESTESISTAS_DEFAULT];
 
 async function cargarAnestesistas() {
   try {
     const res = await serverCall('getListaPersonalizada', 'anestesistas');
-    anestesistasState = res.ok && Array.isArray(res.data) ? res.data : [];
-  } catch { anestesistasState = []; }
+    if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+      const extras = res.data.filter(x => !ANESTESISTAS_DEFAULT.includes(x));
+      anestesistasState = [...ANESTESISTAS_DEFAULT, ...extras];
+    }
+  } catch {}
   actualizarDatalistAnestesistas();
 }
 
