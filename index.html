@@ -832,6 +832,49 @@ button { cursor: pointer; border: none; }
   to   { transform: translateX(0);    opacity: 1; }
 }
 
+/* ─── BANNER GUARDADO EN 2DO PLANO ──────────────────────────── */
+#save-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  z-index: 9998;
+  background: #ffffff;
+  border: 1px solid #a8e6c6;
+  border-left: 4px solid #1a7a4a;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,80,40,0.18);
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 340px;
+  max-width: 480px;
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(.25,.8,.25,1), opacity 0.35s ease;
+  pointer-events: none;
+}
+#save-banner.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+#save-banner.done-state   { border-left-color: #1a9c5b; background: #f0fdf6; }
+#save-banner.error-state  { border-left-color: #dc3545; background: #fff5f5; }
+.save-banner-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #e8f9f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.save-banner-icon svg { width:18px; height:18px; }
+.save-banner-body { flex:1; min-width:0; }
+.save-banner-title { font-size: 13px; font-weight: 700; color: #1a7a4a; margin-bottom: 3px; }
+.save-banner-sub   { font-size: 11.5px; color: #555; }
+.save-banner-steps { display: flex; gap: 5px; margin-top: 7px; }
+.save-step { height: 3px; border-radius: 2px; background: #c8ead7; flex:1; transition: background 0.4s ease; }
+.save-step.active { background: #1a7a4a; animation: pulse-step 1s ease-in-out infinite; }
+.save-step.done   { background: #1a9c5b; animation: none; }
+@keyframes pulse-step { 0%,100% { opacity:1; } 50% { opacity:.45; } }
+
 /* ─── LOADING ───────────────────────────────────────────────── */
 .loading {
   display: inline-block;
@@ -1873,6 +1916,25 @@ color:#555;
   </div>
 </div>
 
+<!-- BANNER GUARDADO EN 2DO PLANO -->
+<div id="save-banner">
+  <div class="save-banner-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#1a7a4a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+      <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+    </svg>
+  </div>
+  <div class="save-banner-body">
+    <div class="save-banner-title" id="save-banner-title">Generando estudio...</div>
+    <div class="save-banner-sub"  id="save-banner-sub">Enviando datos al servidor</div>
+    <div class="save-banner-steps">
+      <div class="save-step" id="save-step-1"></div>
+      <div class="save-step" id="save-step-2"></div>
+      <div class="save-step" id="save-step-3"></div>
+    </div>
+  </div>
+</div>
+
 <!-- TOASTS -->
 <div class="toast-container" id="toast-container"></div>
 
@@ -2905,6 +2967,55 @@ async function uploadFotosADrive(pacienteId, endoscopiaId) {
 }
 
 // ─── GUARDAR ENDOSCOPÍA ──────────────────────────────────────
+// ─── BANNER GUARDADO EN 2DO PLANO ────────────────────────────
+const SaveBanner = {
+  _timer: null,
+  show(title, sub, step) {
+    const el = document.getElementById('save-banner');
+    document.getElementById('save-banner-title').textContent = title;
+    document.getElementById('save-banner-sub').textContent   = sub;
+    el.classList.remove('done-state','error-state');
+    el.classList.add('visible');
+    if (step !== undefined) this._setStep(step);
+  },
+  setStep(step, sub) {
+    if (sub) document.getElementById('save-banner-sub').textContent = sub;
+    this._setStep(step);
+  },
+  _setStep(step) {
+    for (let i = 1; i <= 3; i++) {
+      const s = document.getElementById('save-step-'+i);
+      s.classList.remove('active','done');
+      if (i < step)  s.classList.add('done');
+      if (i === step) s.classList.add('active');
+    }
+  },
+  success(msg) {
+    document.getElementById('save-banner-title').textContent = '✓ ' + msg;
+    document.getElementById('save-banner-sub').textContent   = 'Podés continuar trabajando';
+    document.getElementById('save-banner').classList.add('done-state');
+    this._setStep(4); // todas done
+    for (let i=1;i<=3;i++) document.getElementById('save-step-'+i).classList.add('done');
+    clearTimeout(this._timer);
+    this._timer = setTimeout(() => this.hide(), 3500);
+  },
+  error(msg) {
+    document.getElementById('save-banner-title').textContent = '✗ Error al guardar';
+    document.getElementById('save-banner-sub').textContent   = msg || 'Revisá la conexión';
+    document.getElementById('save-banner').classList.add('error-state');
+    document.getElementById('save-banner-title').style.color = '#dc3545';
+    clearTimeout(this._timer);
+    this._timer = setTimeout(() => this.hide(), 5000);
+  },
+  hide() {
+    document.getElementById('save-banner').classList.remove('visible');
+    setTimeout(() => {
+      document.getElementById('save-banner').classList.remove('done-state','error-state');
+      document.getElementById('save-banner-title').style.color = '';
+    }, 400);
+  }
+};
+
 async function submitEndoscopia(generarPDF = false) {
   const pac  = App.pacienteActual;
   const tipo = document.getElementById('endo-tipo').value;
@@ -2912,26 +3023,6 @@ async function submitEndoscopia(generarPDF = false) {
   const informeTexto = esVeda
     ? document.getElementById('endo-esofago').value
     : document.getElementById('endo-colon-informe').value;
-
-  // Feedback inmediato en todos los botones guardar
-  const btnsGuardar = [
-    document.getElementById('btn-guardar-endo'),
-    document.getElementById('btn-guardar-endo-bottom')
-  ];
-  const btnsPDF = [
-    document.getElementById('btn-pdf-endo'),
-    document.getElementById('btn-pdf-endo-bottom')
-  ];
-  const spinnerSVG = `<svg style="width:14px;height:14px;vertical-align:-2px;animation:spin 0.8s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-  btnsGuardar.forEach(b => { if (b) { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; } });
-  btnsPDF.forEach(b => { if (b) { b.disabled = true; } });
-
-  const restoreButtons = () => {
-    btnsGuardar.forEach(b => { if (b) { b.disabled = false; b.innerHTML = 'Guardar Estudio'; } });
-    btnsPDF.forEach(b => { if (b) { b.disabled = false; } });
-  };
-
-  showLoading('GUARDANDO ESTUDIO', 'Por favor esperá...');
 
   const endoId = document.getElementById('endo-id').value || null;
 
@@ -2954,53 +3045,53 @@ async function submitEndoscopia(generarPDF = false) {
     anestesista:     document.getElementById('endo-anestesista').value,
   };
 
-  try {
-    // 1. Guardar datos
-    const res = await serverCall('saveEndoscopia', data, App.session.medicoId);
-    if (!res.ok) { toast('Error: ' + res.error, 'error'); hideLoading(); restoreButtons(); return; }
+  const tieneFotos = fotosData.length > 0;
 
-    const savedId = res.id;
-    document.getElementById('endo-id').value = savedId;
+  // ── Cerrar modal y dejar trabajar libremente ──────────────
+  closeModal('modal-endoscopia');
+  showTab('endoscopias');
 
-    // 2. Subir fotos si hay
-    if (fotosData.length > 0) {
-      hideLoading();
-      showLoading('GUARDANDO ESTUDIO', 'Subiendo fotos a Drive...');
-      await uploadFotosADrive(pac.id, savedId);
+  // ── Mostrar banner no-bloqueante ──────────────────────────
+  SaveBanner.show('Generando estudio...', 'Enviando datos al servidor', 1);
 
-      // 3. Guardar URLs de fotos en el estudio
-      const fotoUrls = {};
-      fotosData.forEach((f, i) => {
-        if (f.url) fotoUrls['foto' + (i+1)] = f.url;
-      });
-      if (Object.keys(fotoUrls).length > 0) {
-        await serverCall('saveEndoscopia',
-          { ...data, id: savedId, ...fotoUrls },
-          App.session.medicoId
-        );
+  // ── Guardado asíncrono en 2do plano ──────────────────────
+  (async () => {
+    try {
+      // Paso 1: guardar datos
+      const res = await serverCall('saveEndoscopia', data, App.session.medicoId);
+      if (!res.ok) { SaveBanner.error(res.error); return; }
+
+      const savedId = res.id;
+
+      // Paso 2: fotos (si hay)
+      if (tieneFotos) {
+        SaveBanner.setStep(2, 'Subiendo fotos a Drive...');
+        await uploadFotosADrive(pac.id, savedId);
+        const fotoUrls = {};
+        fotosData.forEach((f, i) => { if (f.url) fotoUrls['foto'+(i+1)] = f.url; });
+        if (Object.keys(fotoUrls).length > 0) {
+          await serverCall('saveEndoscopia', { ...data, id: savedId, ...fotoUrls }, App.session.medicoId);
+        }
       }
+
+      // Paso 3: recargar lista
+      SaveBanner.setStep(3, 'Actualizando listado...');
+      const rEndo = await serverCall('getEndoscopias', pac.id);
+      renderEndoscopias(rEndo.ok ? rEndo.data : []);
+
+      // Listo
+      SaveBanner.success('Estudio guardado' + (tieneFotos ? ' con fotos' : ''));
+
+      // PDF si se pidió
+      if (generarPDF) {
+        await new Promise(r => setTimeout(r, 600));
+        imprimirEndoscopia(savedId);
+      }
+
+    } catch (e) {
+      SaveBanner.error('Error de conexión: ' + e.message);
     }
-
-    toast('Estudio guardado correctamente' + (fotosData.length > 0 ? ' con fotos en Drive' : ''), 'success');
-    closeModal('modal-endoscopia');
-
-    // Recargar endoscopías del paciente
-    const rEndo = await serverCall('getEndoscopias', pac.id);
-    renderEndoscopias(rEndo.ok ? rEndo.data : []);
-    showTab('endoscopias');
-
-    // Si se pidió PDF, imprimir el estudio recién guardado
-    if (generarPDF) {
-      await new Promise(r => setTimeout(r, 400));
-      imprimirEndoscopia(savedId);
-    }
-
-  } catch (e) {
-    toast('Error de conexión: ' + e.message, 'error');
-    restoreButtons();
-  } finally {
-    hideLoading();
-  }
+  })();
 }
 
 // ─── RENDER ENDOSCOPÍAS ─────────────────────────────────────
