@@ -3136,6 +3136,7 @@ function imprimirEndoscopia(endoId) {
   ).join('');
 
   const informe     = e.esofago || e.colonInforme || '';
+  const regionAlcanzada = e.region || '';
   const tipoEndo    = e.estomago || '—';
   const fecha       = fmtFechaPDF(e.fecha);
 
@@ -3144,9 +3145,9 @@ function imprimirEndoscopia(endoId) {
   // copiá el ID del archivo y reemplazalo en FIRMA_DRIVE_ID.
   // URL resultado: https://drive.google.com/uc?export=view&id=TU_ID
   // Dejá FIRMA_DRIVE_ID = '' para que no muestre imagen (solo texto).
-  const FIRMA_DRIVE_ID = ''; // ← Poner acá el ID del archivo de Drive
+  const FIRMA_DRIVE_ID = '14Axzq68wEQsVdq4o-d6yY0yQQHNIGmEK';
   const firmaImgHtml = FIRMA_DRIVE_ID
-    ? `<img class="firma-img" src="https://drive.google.com/uc?export=view&id=${FIRMA_DRIVE_ID}" alt="Firma" crossorigin="anonymous">`
+    ? `<img class="firma-img" src="https://drive.google.com/thumbnail?id=${FIRMA_DRIVE_ID}&sz=w400-h200" alt="Firma">`
     : `<div style="width:165px;height:50px;border-bottom:2px solid #1a7a4a;margin:0 auto 4px"></div>`;
 
 
@@ -3269,7 +3270,7 @@ function imprimirEndoscopia(endoId) {
     <div class="pac-nombre">${pac.apellidoNombre||''}</div>
     <div class="pac-row">
       <div class="pac-cell"><div class="pac-lbl">DNI</div><div class="pac-val">${pac.dni||'—'}</div></div>
-      <div class="pac-cell"><div class="pac-lbl">Edad</div><div class="pac-val">${pac.edad ? pac.edad+' años' : '—'}</div></div>
+      <div class="pac-cell"><div class="pac-lbl">Edad</div><div class="pac-val">${pac.edad ? (String(pac.edad).includes('años') ? pac.edad : pac.edad+' años') : '—'}</div></div>
       <div class="pac-cell"><div class="pac-lbl">Sexo</div><div class="pac-val">${pac.sexo||'—'}</div></div>
       <div class="pac-cell"><div class="pac-lbl">Fecha del Estudio</div><div class="pac-val">${fecha}</div></div>
     </div>
@@ -3281,6 +3282,7 @@ function imprimirEndoscopia(endoId) {
     <div class="pac-row-full">
       <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Motivo:</span> <span style="font-size:12.5px">${e.motivoExamen||'—'}</span></div>
       <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Analgesia:</span> <span style="font-size:12.5px">${e.analgesia||'—'}</span></div>
+      <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Anestesista:</span> <span style="font-size:12.5px">${e.anestesista||'—'}</span></div>
       <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Endoscopia:</span> <span style="font-size:12.5px">${tipoEndo}</span></div>
     </div>
   </div>
@@ -3288,6 +3290,7 @@ function imprimirEndoscopia(endoId) {
   <!-- INFORME ENDOSCÓPICO -->
   <div class="card" style="margin-bottom:8px">
     <span class="sec-badge">Informe Endoscópico</span>
+    ${regionAlcanzada ? `<div style="padding:6px 14px 0;font-size:12px;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.5px">Región alcanzada: <span style="font-weight:600;color:#111;text-transform:none">${regionAlcanzada}</span></div>` : ''}
     <div class="informe-text">${informe||'Sin informe registrado.'}</div>
   </div>
 
