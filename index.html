@@ -3126,9 +3126,9 @@ function imprimirEndoscopia(endoId) {
     `<img src="${driveThumb(url)}" style="width:3.2cm;height:3.2cm;object-fit:cover;border-radius:5px;border:1px solid #ddd;display:block">`
   ).join('');
 
-  const informe     = e.esofago || e.colonInforme || '';
-  const regionAlcanzada = e.region || '';
-  const tipoEndo    = e.Endoscopia || e.estomago || '—';
+  const informe         = e.esofago || e.colonInforme || '';
+  const regionAlcanzada = e.RegionAlcanzada || e.regionAlcanzada || e.region || '';
+  const tipoEndo        = e.Endoscopia || e.estomago || '—';
   const fecha       = fmtFechaPDF(e.fecha);
 
   // ── FIRMA: URL pública de Drive configurada en el sistema ──────────────
@@ -3271,21 +3271,34 @@ function imprimirEndoscopia(endoId) {
       <div class="pac-cell"><div class="pac-lbl">Pedido por</div><div class="pac-val">${e.pedidoPor||'—'}</div></div>
     </div>
     <div class="pac-row-full">
-      <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Motivo:</span> <span style="font-size:12.5px">${e.motivoExamen||'—'}</span></div>
-      <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Analgesia:</span> <span style="font-size:12.5px">${e.analgesia||'—'}</span></div>
-      <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Anestesista:</span> <span style="font-size:12.5px">${e.anestesista||'—'}</span></div>
-      <div><span style="font-size:12.5px;font-weight:700;color:#1a7a4a;text-transform:uppercase">Endoscopia:</span> <span style="font-size:12.5px">${tipoEndo}</span></div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <span style="font-size:9.5px;font-weight:800;color:#1a7a4a;text-transform:uppercase;letter-spacing:.7px">Motivo</span>
+        <span style="font-size:12px;color:#111">${e.motivoExamen||'—'}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <span style="font-size:9.5px;font-weight:800;color:#1a7a4a;text-transform:uppercase;letter-spacing:.7px">Analgesia</span>
+        <span style="font-size:12px;color:#111">${e.analgesia||'—'}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <span style="font-size:9.5px;font-weight:800;color:#1a7a4a;text-transform:uppercase;letter-spacing:.7px">Anestesista</span>
+        <span style="font-size:12px;color:#111">${e.anestesista||'—'}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <span style="font-size:9.5px;font-weight:800;color:#1a7a4a;text-transform:uppercase;letter-spacing:.7px">Endoscopia</span>
+        <span style="font-size:12px;color:#111">${tipoEndo}</span>
+      </div>
     </div>
   </div>
 
   <!-- INFORME ENDOSCÓPICO -->
   <div class="card" style="margin-bottom:8px">
-    <span class="sec-badge">Informe Endoscópico</span>
-    ${!(e.tipoEstudio||'').toUpperCase().includes('VEDA') ? `
-    <div style="padding:8px 14px 4px;border-bottom:1px solid #e8f2ec;display:flex;align-items:center;gap:8px">
-      <span style="font-size:11px;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.8px">Región Alcanzada:</span>
-      <span style="font-size:13px;font-weight:600;color:#111">${e.RegionAlcanzada || e.region || '—'}</span>
-    </div>` : ''}
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px;flex-wrap:wrap">
+      <span class="sec-badge" style="margin:0">Informe Endoscópico</span>
+      ${!(e.tipoEstudio||'').toUpperCase().includes('VEDA') && regionAlcanzada ? `
+      <span style="background:#d4f5e4;color:#1a7a4a;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;border:1px solid #a8e6c6">
+        Región: ${regionAlcanzada}
+      </span>` : ''}
+    </div>
     <div class="informe-text">${informe||'Sin informe registrado.'}</div>
   </div>
 
@@ -3313,6 +3326,7 @@ function imprimirEndoscopia(endoId) {
     </div>
     <div class="firma-wrap">
       ${firmaImgHtml}
+      <div style="width:165px;height:1px;background:#1a7a4a;margin:4px auto 5px"></div>
       <div class="firma-name">Dra. Lorena Notari</div>
       <div class="firma-mp">MP 12.710</div>
       <div class="firma-mn">MN 126.095</div>
