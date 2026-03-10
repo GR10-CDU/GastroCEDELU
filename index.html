@@ -1096,84 +1096,6 @@ button { cursor: pointer; border: none; }
 .badge-veda  { background: #e8f5ee; color: #155a32; border: 1px solid #9fd4b2; }
 .badge-colon { background: #e6fffa; color: #276749; border: 1px solid #81e6d9; }
 
-
-
-/* ===== Informe Endoscopico estilo Clinica ===== */
-
-.informe-card{
-width:210mm;
-background:#ffffff;
-border-radius:14px;
-box-shadow:0 10px 30px rgba(0,0,0,.15);
-padding:28px;
-}
-
-.informe-header{
-background:linear-gradient(135deg,#1a9c5b,#6bc79e);
-color:white;
-padding:18px 22px;
-border-radius:12px 12px 0 0;
-margin:-28px -28px 20px -28px;
-}
-
-.informe-header h1{
-font-size:28px;
-font-weight:700;
-letter-spacing:.5px;
-margin:0;
-}
-
-.informe-sub{
-font-size:16px;
-opacity:.9;
-}
-
-.informe-section{
-background:#f7faf9;
-border:1px solid #cfe9da;
-border-radius:10px;
-padding:14px 16px;
-margin-bottom:10px;
-}
-
-.informe-title{
-font-weight:700;
-color:#17613a;
-margin-bottom:6px;
-}
-
-.informe-fotos{
-display:grid;
-grid-template-columns:repeat(4,4cm);
-grid-auto-rows:4cm;
-gap:8px;
-justify-content:center;
-margin-top:12px;
-}
-
-.informe-fotos img{
-width:4cm;
-height:4cm;
-object-fit:cover;
-border-radius:6px;
-border:1px solid #ddd;
-}
-
-.informe-firma{
-text-align:right;
-margin-top:14px;
-}
-
-.informe-footer{
-margin-top:16px;
-padding-top:8px;
-border-top:1px solid #ddd;
-font-size:12px;
-text-align:center;
-color:#555;
-}
-
-
 </style>
 </head>
 <body>
@@ -3181,25 +3103,25 @@ function imprimirEndoscopia(endoId) {
   .informe-text { font-size:12.5px; line-height:1.08; white-space:pre-wrap; padding:8px 14px 10px; color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
 
   /* ── DIAGNÓSTICO ── */
-  .diag-wrap { margin:0 14px 10px; }
-  .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:6px; padding:8px 14px; }
-  .diag-row { display:flex; gap:20px; }
+  .diag-wrap { margin:0 18px 12px; }
+  .diag-inner { background:linear-gradient(180deg,#f6fbf8 0%, #eff7f2 100%); border:1px solid #d3e3da; border-radius:12px; padding:10px 16px; }
+  .diag-row { display:flex; gap:20px; align-items:flex-start; }
   .diag-bullets { flex:1; }
-  .diag-bullet { display:flex; align-items:flex-start; gap:6px; margin-bottom:3px; font-size:13px; font-weight:600; }
+  .diag-bullet { display:flex; align-items:flex-start; gap:6px; margin-bottom:5px; font-size:13px; font-weight:600; color:#3a443f; }
   .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:14px; line-height:1; margin-top:-1px; }
   .diag-anest { font-size:10px; color:#555; text-align:right; white-space:nowrap; padding-top:2px; }
   .diag-anest b { color:#111; }
 
   /* ── FOTOS + FIRMA ── */
-  .bottom-row { display:flex; align-items:flex-end; gap:16px; padding:6px 14px 12px; break-inside:avoid; page-break-inside:avoid; }
-  .fotos-wrap { display:flex; gap:8px; flex-wrap:wrap; flex:1; align-content:flex-start; }
-  .firma-wrap { text-align:center; min-width:170px; }
-  .firma-img { width:165px; max-height:70px; object-fit:contain; display:block; margin:0 auto 2px; }
+  .bottom-row { display:flex; align-items:flex-end; gap:18px; padding:8px 18px 14px; break-inside:avoid; page-break-inside:avoid; }
+  .fotos-wrap { display:grid; grid-template-columns:repeat(4,4cm); gap:8px; flex:1; align-content:flex-start; }
+  .firma-wrap { text-align:center; min-width:180px; padding-bottom:4px; }
+  .firma-img { width:165px; max-height:78px; object-fit:contain; display:block; margin:0 auto 2px; }
   .firma-name { font-size:11px; font-weight:800; }
   .firma-mp, .firma-mn { font-size:9.5px; color:#555; }
 
   /* ── FOOTER ── */
-  .footer { border-top:2px solid #1a7a4a; padding:8px 20px; text-align:center; font-size:9.5px; color:#555; line-height:1.5; position:fixed; bottom:0; left:0; right:0; background:#fff; }
+  .footer { border-top:none; padding:12px 20px 8px; text-align:center; font-size:9.5px; color:#555; line-height:1.5; position:fixed; bottom:0; left:0; right:0; background:#fff; }
   .footer b { color:#1a7a4a; }
   .footer-dots { color:#1a7a4a; margin:0 6px; }
 
@@ -3207,8 +3129,8 @@ function imprimirEndoscopia(endoId) {
     html,body{margin:0;padding:0}
     .page{max-width:100%}
     * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
-    .footer { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:2px solid #1a7a4a; }
-    .page { padding-bottom:32mm; }
+    .footer { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:none; }
+    .page { padding-bottom:34mm; }
   }
   @page {
     size: A4 portrait;
@@ -3221,12 +3143,9 @@ function imprimirEndoscopia(endoId) {
 
   <!-- HEADER -->
   <div class="header">
-    <div class="hdr-circle hdr-c1"></div>
-    <div class="hdr-circle hdr-c2"></div>
-    <div class="hdr-circle hdr-c3"></div>
     <div class="hdr-row">
       <div class="hdr-texts">
-        <div class="hdr-clinica">CLÍNICA URUGUAY SRL</div>
+        <div class="hdr-clinica">CLÍNICA URUGUAY</div>
         <div class="hdr-sub">Galarza 574 – Concepción del Uruguay – Entre Ríos</div>
         <div class="hdr-unidad">Unidad de Endoscopía Digestiva</div>
         <div class="hdr-dra">Dra. Lorena Notari</div>
