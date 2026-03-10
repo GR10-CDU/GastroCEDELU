@@ -875,6 +875,36 @@ button { cursor: pointer; border: none; }
 .save-step.done   { background: #1a9c5b; animation: none; }
 @keyframes pulse-step { 0%,100% { opacity:1; } 50% { opacity:.45; } }
 
+
+/* ─── BADGES MIGRACIÓN ──────────────────────────────────────── */
+.badge-migrado-pdf {
+  display: inline-block;
+  font-size: 9px; font-weight: 800; letter-spacing: .7px;
+  text-transform: uppercase;
+  background: #e8f0fe; color: #3a5bbf;
+  border: 1px solid #b0c4f8;
+  border-radius: 4px; padding: 1px 6px;
+  vertical-align: middle; margin-left: 6px;
+}
+.badge-migrado-excel {
+  display: inline-block;
+  font-size: 9px; font-weight: 800; letter-spacing: .7px;
+  text-transform: uppercase;
+  background: #fff3e0; color: #b45309;
+  border: 1px solid #fcd5a0;
+  border-radius: 4px; padding: 1px 6px;
+  vertical-align: middle; margin-left: 6px;
+}
+.endo-card.migrado-pdf {
+  border-left: 3px solid #7a9cf0;
+  background: linear-gradient(135deg, #f5f8ff 0%, #ffffff 100%);
+}
+.endo-card.migrado-pdf .endo-card-tipo { color: #3a5bbf; }
+.endo-card.migrado-excel {
+  border-left: 3px solid #f0a832;
+  background: linear-gradient(135deg, #fffbf2 0%, #ffffff 100%);
+}
+.endo-card.migrado-excel .endo-card-tipo { color: #b45309; }
 /* ─── LOADING ───────────────────────────────────────────────── */
 .loading {
   display: inline-block;
@@ -3098,6 +3128,9 @@ async function submitEndoscopia(generarPDF = false) {
 function renderEndoscopias(list) {
   const cnt = document.getElementById('tab-endo-count');
   cnt.textContent = list.length || '';
+  // Separar migrados de nuevos para mostrar sección
+  const nuevos   = list.filter(e => e.origenMigracion !== 'MIGRADO');
+  const migrados = list.filter(e => e.origenMigracion === 'MIGRADO');
 
   const container = document.getElementById('endoscopias-list');
   if (!list.length) {
@@ -3128,17 +3161,24 @@ function renderEndoscopias(list) {
       const fotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
       const informe = e.esofago || '';
       return `
-      <div class="endo-card" style="margin-bottom:6px;cursor:pointer;padding:0">
+      <div class="endo-card ${e.origenMigracion==='MIGRADO_PDF' ? 'migrado-pdf' : e.origenMigracion==='MIGRADO_EXCEL' ? 'migrado-excel' : ''}" style="margin-bottom:6px;cursor:pointer;padding:0">
         <div class="endo-card-header" onclick="toggleDetalle('${uid}')"
              style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:transparent;border-radius:10px">
           <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
             <span style="font-weight:600;color:${colorHead};white-space:nowrap">${fmtDate(e.fecha)}</span>
+            ${e.origenMigracion === 'MIGRADO_PDF'   ? '<span class="badge-migrado-pdf">PDF Histórico</span>'       : ''}
+            ${e.origenMigracion === 'MIGRADO_EXCEL' ? '<span class="badge-migrado-excel">Registro Histórico</span>' : ''}
             ${e.lugarRealizacion ? `<span style="color:var(--muted);font-size:12px">${e.lugarRealizacion}</span>` : ''}
             ${e.pedidoPor ? `<span style="color:var(--muted);font-size:12px">· Solicitado por: ${e.pedidoPor}</span>` : ''}
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
             <span id="${uid}-chevron" style="color:var(--muted);font-size:12px;transition:transform 0.2s">▼</span>
-            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')">PDF</button>
+            ${e.origenMigracion === 'MIGRADO_PDF'
+              ? `<a href="${e.foto1||'#'}" target="_blank" class="btn btn-secondary btn-sm" onclick="event.stopPropagation()">Ver PDF</a>`
+              : e.origenMigracion === 'MIGRADO_EXCEL'
+                ? `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('\${e.id}')">Informe</button>`
+                : `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('\${e.id}')">PDF</button>`
+            }
             <button class="btn btn-danger btn-sm btn-icon" title="Eliminar" onclick="event.stopPropagation();confirmarEliminarEndoscopia('${e.id}')">×</button>
           </div>
         </div>
