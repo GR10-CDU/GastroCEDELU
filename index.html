@@ -2939,24 +2939,14 @@ async function submitEndoscopia(generarPDF = false) {
     fecha:           document.getElementById('endo-fecha').value,
     lugarRealizacion:document.getElementById('endo-lugar').value,
     pedidoPor:       document.getElementById('endo-pedidopor').value,
-    anestesista:     document.getElementById('endo-anestesista').value,
     antecedentes:    document.getElementById('endo-antec').value,
     motivoExamen:    document.getElementById('endo-motivo').value,
     esofago:         informeTexto,
-    esofagoHallazgos:'',
-    estomago:        document.getElementById('endo-endoscopia-tipo').value,
-    estomagoHallazgos:'',
-    duodeno:         '',
-    duodenoHallazgos:'',
-    colon:           '',
-    colonHallazgos:  '',
+    Endoscopia:      document.getElementById('endo-endoscopia-tipo').value,
+    RegionAlcanzada: document.getElementById('endo-region').value,
     impresionDiagnostica: document.getElementById('endo-impresion').value,
     analgesia:       document.getElementById('endo-analgesia').value,
-    tolerancia:      '',
-    calidadPrep:     '',
-    anatPatologica:  '',
-    comentarios:     document.getElementById('endo-comentarios').value,
-    region:          document.getElementById('endo-region').value,
+    anestesista:     document.getElementById('endo-anestesista').value,
   };
 
   try {
@@ -3138,7 +3128,7 @@ function imprimirEndoscopia(endoId) {
 
   const informe     = e.esofago || e.colonInforme || '';
   const regionAlcanzada = e.region || '';
-  const tipoEndo    = e.estomago || '—';
+  const tipoEndo    = e.Endoscopia || e.estomago || '—';
   const fecha       = fmtFechaPDF(e.fecha);
 
   // ── FIRMA: URL pública de Drive configurada en el sistema ──────────────
@@ -3291,7 +3281,11 @@ function imprimirEndoscopia(endoId) {
   <!-- INFORME ENDOSCÓPICO -->
   <div class="card" style="margin-bottom:8px">
     <span class="sec-badge">Informe Endoscópico</span>
-    ${regionAlcanzada ? `<div style="padding:6px 14px 0;font-size:12px;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.5px">Región alcanzada: <span style="font-weight:600;color:#111;text-transform:none">${regionAlcanzada}</span></div>` : ''}
+    ${!(e.tipoEstudio||'').toUpperCase().includes('VEDA') ? `
+    <div style="padding:8px 14px 4px;border-bottom:1px solid #e8f2ec;display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;font-weight:700;color:#1a7a4a;text-transform:uppercase;letter-spacing:.8px">Región Alcanzada:</span>
+      <span style="font-size:13px;font-weight:600;color:#111">${e.RegionAlcanzada || e.region || '—'}</span>
+    </div>` : ''}
     <div class="informe-text">${informe||'Sin informe registrado.'}</div>
   </div>
 
