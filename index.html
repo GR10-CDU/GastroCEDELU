@@ -2946,7 +2946,7 @@ function renderEndoscopias(list) {
 
     const items = arr.map((e, i) => {
       const uid = 'endo-detail-' + tipo + '-' + i;
-      const fotos = [1,2,3,4,5,6,7,8,9].map(n => e['foto'+n]).filter(Boolean);
+      const fotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
       const informe = e.esofago || '';
       return `
       <div class="endo-card" style="margin-bottom:6px;cursor:pointer;padding:0">
@@ -3038,9 +3038,9 @@ function imprimirEndoscopia(endoId) {
   const e    = list.find(x => x.id == endoId);
   if (!e || !pac) { toast('No se encontró el estudio', 'error'); return; }
 
-  const fotos = [1,2,3,4,5,6,7,8,9].map(n => e['foto'+n]).filter(Boolean);
+  const fotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
   const fotoImgs = fotos.map(url =>
-    `<img src="${driveThumb(url)}" style="width:5cm;height:5cm;object-fit:cover;border-radius:6px;border:1px solid #ddd;display:block">`
+    `<img src="${driveThumb(url)}" style="width:4cm;height:4cm;object-fit:cover;border-radius:6px;border:1px solid #ddd;display:block">`
   ).join('');
 
   const informe     = e.esofago || e.colonInforme || '';
