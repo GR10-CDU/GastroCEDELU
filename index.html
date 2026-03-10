@@ -1152,10 +1152,10 @@ margin-top:12px;
 }
 
 .informe-fotos img{
-width:4cm;
-height:4cm;
+width:3.2cm;
+height:3.2cm;
 object-fit:cover;
-border-radius:6px;
+border-radius:5px;
 border:1px solid #ddd;
 }
 
@@ -2956,6 +2956,7 @@ async function submitEndoscopia(generarPDF = false) {
     calidadPrep:     '',
     anatPatologica:  '',
     comentarios:     document.getElementById('endo-comentarios').value,
+    region:          document.getElementById('endo-region').value,
   };
 
   try {
@@ -3132,7 +3133,7 @@ function imprimirEndoscopia(endoId) {
 
   const fotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
   const fotoImgs = fotos.map(url =>
-    `<img src="${driveThumb(url)}" style="width:4cm;height:4cm;object-fit:cover;border-radius:6px;border:1px solid #ddd;display:block">`
+    `<img src="${driveThumb(url)}" style="width:3.2cm;height:3.2cm;object-fit:cover;border-radius:5px;border:1px solid #ddd;display:block">`
   ).join('');
 
   const informe     = e.esofago || e.colonInforme || '';
@@ -3160,7 +3161,7 @@ function imprimirEndoscopia(endoId) {
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;600;700;800;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Inter',Arial,sans-serif; font-size:10.5px; color:#1a1a1a; background:#fff; }
-  .page { padding:0; max-width:794px; margin:0 auto; position:relative; min-height:calc(297mm - 22mm); padding-bottom:32mm; }
+  .page { padding:0; max-width:794px; margin:0 auto; position:relative; min-height:calc(297mm - 22mm); padding-bottom:28mm; }
 
   /* ── HEADER ── */
   .header {
@@ -3215,7 +3216,7 @@ function imprimirEndoscopia(endoId) {
   .diag-anest b { color:#111; }
 
   /* ── FOTOS + FIRMA ── */
-  .bottom-row { display:flex; align-items:flex-end; gap:16px; padding:6px 14px 12px; break-inside:avoid; page-break-inside:avoid; }
+  .bottom-row { display:flex; align-items:flex-end; gap:16px; padding:4px 14px 10px; break-inside:avoid; page-break-inside:avoid; }
   .fotos-wrap { display:flex; gap:8px; flex-wrap:wrap; flex:1; align-content:flex-start; }
   .firma-wrap { text-align:center; min-width:170px; }
   .firma-img { width:165px; max-height:70px; object-fit:contain; display:block; margin:0 auto 2px; }
@@ -3232,7 +3233,7 @@ function imprimirEndoscopia(endoId) {
     .page{max-width:100%}
     * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
     .footer { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:2px solid #1a7a4a; }
-    .page { padding-bottom:32mm; }
+    .page { padding-bottom:28mm; }
   }
   @page {
     size: A4 portrait;
@@ -3305,13 +3306,11 @@ function imprimirEndoscopia(endoId) {
               `<div class="diag-bullet">${l.replace(/^[•·-]\s*/,'')}</div>`
             ).join('')}
           </div>
-          ${e.anestesista ? `<div class="diag-anest">ANESTESISTA:<br><b>${e.anestesista}</b></div>` : ''}
         </div>
       </div>
     </div>
   </div>
 
-  ${e.comentarios    ? `<div class="card" style="margin-bottom:8px"><span class="sec-badge">Comentarios</span><div class="informe-text" style="font-family:'Inter',Arial;font-size:12.5px">${e.comentarios}</div></div>` : ''}
 
   <!-- FOTOS + FIRMA -->
   <div class="bottom-row">
