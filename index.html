@@ -2378,7 +2378,7 @@ function formatFechaNac(raw) {
   return s;
 }
 
-function calcularEdad(fechaNac) {
+function calcEdadFiliatorios(fechaNac) {
   if (!fechaNac) return null;
   const s = String(fechaNac).trim();
   let d, m, y;
@@ -2459,7 +2459,7 @@ function abrirFiliatorios() {
   document.getElementById('fil-nombre').textContent = p.apellidoNombre || '—';
   document.getElementById('fil-dni').textContent    = p.dni || '—';
   document.getElementById('fil-fnac').textContent   = formatFechaNac(p.fechaNac);
-  const edadCalc = calcularEdad(p.fechaNac) || p.edad;
+  const edadCalc = calcEdadFiliatorios(p.fechaNac) || p.edad;
   document.getElementById('fil-edad').textContent   = edadCalc ? edadCalc + ' años' : '—';
   const sexoInf = p.sexo || inferirSexo(p.apellidoNombre) || '—';
   document.getElementById('fil-sexo').textContent   = sexoInf;
