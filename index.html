@@ -3185,25 +3185,58 @@ function renderEndoscopias(list) {
 
     const items = arr.map((e, i) => {
       const uid = 'endo-detail-' + tipo + '-' + i;
-      const fotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
+      const todasFotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
+      const esHistorico = (e.origenMigracion === 'MIGRADO_PDF');
+      // Para históricos: el PDF está en foto1 (URL /file/d/...)
+      const pdfHistoricoUrl = esHistorico ? todasFotos.find(u => u && u.includes('/file/d/')) : null;
+      const fotos = esHistorico
+        ? todasFotos.filter(u => !u.includes('/file/d/'))   // históricos: sin el PDF en la grilla
+        : todasFotos;
       const informe = e.esofago || '';
+
+      // Botones según tipo
+      const botonesHtml = esHistorico
+        ? `<!-- HISTÓRICO -->
+           <span style="background:#78350f;color:#fef3c7;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.5px">HISTÓRICO</span>
+           <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verPDFHistorico('${pdfHistoricoUrl}')" title="Ver PDF original">Ver PDF</button>
+           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirPDFHistorico('${pdfHistoricoUrl}')" title="Imprimir PDF original">🖨</button>`
+        : `<!-- NUEVO -->
+           <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verInformeEndoscopia('${e.id}')" title="Ver informe">Ver</button>
+           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')" title="Imprimir informe">🖨</button>`;
+
+      // Color de fondo de la fila: diferente para históricos
+      const rowBg = esHistorico ? '#fffbeb' : 'transparent';
+      const rowBorder = esHistorico ? '1px solid #fde68a' : 'none';
+
       return `
-      <div class="endo-card" style="margin-bottom:6px;cursor:pointer;padding:0">
+      <div class="endo-card" style="margin-bottom:6px;cursor:pointer;padding:0;${esHistorico ? 'border:1px solid #fde68a' : ''}">
         <div class="endo-card-header" onclick="toggleDetalle('${uid}')"
-             style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:transparent;border-radius:10px">
+             style="padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:${rowBg};border-radius:10px">
           <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-            <span style="font-weight:600;color:${colorHead};white-space:nowrap">${fmtDate(e.fecha)}</span>
+            <span style="font-weight:600;color:${esHistorico ? '#92400e' : colorHead};white-space:nowrap">${fmtDate(e.fecha)}</span>
             ${e.lugarRealizacion ? `<span style="color:var(--muted);font-size:12px">${e.lugarRealizacion}</span>` : ''}
-            ${e.pedidoPor ? `<span style="color:var(--muted);font-size:12px">· Solicitado por: ${e.pedidoPor}</span>` : ''}
+            ${e.pedidoPor ? `<span style="color:var(--muted);font-size:12px">· ${e.pedidoPor}</span>` : ''}
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
             <span id="${uid}-chevron" style="color:var(--muted);font-size:12px;transition:transform 0.2s">▼</span>
-            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')">PDF</button>
+            ${botonesHtml}
             <button class="btn btn-danger btn-sm btn-icon" title="Eliminar" onclick="event.stopPropagation();confirmarEliminarEndoscopia('${e.id}')">×</button>
           </div>
         </div>
-        <div id="${uid}" style="display:none;padding:0 16px 14px 16px;border-top:1px solid var(--border)">
+        <div id="${uid}" style="display:none;padding:0 16px 14px 16px;border-top:1px solid var(--border);background:${rowBg}">
           <div style="height:10px"></div>
+          ${esHistorico ? `
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fef3c7;border-radius:8px;border:1px solid #fde68a;margin-bottom:10px">
+            <span style="font-size:20px">📄</span>
+            <div>
+              <div style="font-weight:700;color:#92400e;font-size:12px">Registro histórico</div>
+              <div style="font-size:11px;color:#78350f">Este estudio fue importado del sistema anterior. El informe original está en el PDF adjunto.</div>
+            </div>
+            <a href="${pdfHistoricoUrl}" target="_blank"
+               style="margin-left:auto;background:#92400e;color:#fff;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">
+              Abrir PDF →
+            </a>
+          </div>` : ''}
           <div class="endo-grid">
             ${e.motivoExamen  ? `<div class="endo-field"><label>Motivo del Examen</label><p>${e.motivoExamen}</p></div>` : ''}
             ${e.antecedentes  ? `<div class="endo-field"><label>Antecedentes</label><p>${e.antecedentes}</p></div>` : ''}
@@ -3231,10 +3264,9 @@ function renderEndoscopias(list) {
           <div class="endo-fotos" style="margin-top:12px">
             ${fotos.map((url, fi) => {
               const thumb = driveThumb(url);
-              const isPdf = url && url.includes('/file/d/');
               return `<img class="endo-foto-thumb" src="${thumb}" alt="Foto ${fi+1}"
                 onerror="this.onerror=null;this.src='';this.style.background='#f0f9f4';this.style.display='flex'"
-                onclick="openFotoViewer('${url}', ${isPdf})" title="${isPdf ? 'Ver PDF' : 'Foto ' + (fi+1)}">`;
+                onclick="openFotoViewer('${url}', false)" title="Foto ${fi+1}">`;
             }).join('')}
           </div>` : ''}
         </div>
@@ -3293,7 +3325,40 @@ function driveViewerUrl(url) {
   return 'https://drive.google.com/file/d/' + id + '/preview';
 }
 
+// ── PDF HISTÓRICO: ver en nueva pestaña ──────────────────────────────────
+function verPDFHistorico(url) {
+  if (!url) { toast('URL del PDF no disponible', 'error'); return; }
+  const id = driveFileId(url);
+  const previewUrl = id ? 'https://drive.google.com/file/d/' + id + '/view' : url;
+  window.open(previewUrl, '_blank');
+}
+
+// ── PDF HISTÓRICO: abrir para imprimir ───────────────────────────────────
+function imprimirPDFHistorico(url) {
+  if (!url) { toast('URL del PDF no disponible', 'error'); return; }
+  const id = driveFileId(url);
+  // /preview permite Ctrl+P desde Drive
+  const previewUrl = id ? 'https://drive.google.com/file/d/' + id + '/view' : url;
+  const w = window.open(previewUrl, '_blank');
+  // No podemos invocar print() en ventana de Drive por cross-origin,
+  // se abre directo para que el usuario imprima desde Drive
+}
+
+// ── INFORME NUEVO: abrir viewer sin imprimir ─────────────────────────────
+function verInformeEndoscopia(endoId) {
+  const pac  = App.pacienteActual;
+  const list = App.endoscopiasList || [];
+  const e    = list.find(x => x.id == endoId);
+  if (!e || !pac) { toast('No se encontró el estudio', 'error'); return; }
+  // Reusar imprimirEndoscopia pero en modo "ver" (sin autoprint)
+  _abrirInformeEndoscopia(endoId, false);
+}
+
 function imprimirEndoscopia(endoId) {
+  _abrirInformeEndoscopia(endoId, true);
+}
+
+function _abrirInformeEndoscopia(endoId, autoPrint) {
   const pac  = App.pacienteActual;
   const list = App.endoscopiasList || [];
   const e    = list.find(x => x.id == endoId);
@@ -3534,7 +3599,7 @@ function imprimirEndoscopia(endoId) {
   </div>
 
 </div>
-<script>window.onload=function(){window.print();}<\/script>
+<script>window.onload=function(){ if(window.__autoPrint) window.print(); }<\/script>
 </body>
 </html>`;
 
@@ -3543,6 +3608,7 @@ function imprimirEndoscopia(endoId) {
   printWin.document.open();
   printWin.document.write(htmlPDF);
   printWin.document.close();
+  printWin.__autoPrint = autoPrint;
 }
 
 function confirmarEliminarEndoscopia(id) {
