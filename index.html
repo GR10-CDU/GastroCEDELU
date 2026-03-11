@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- GastroCDELU index.html · 2026-03-10 18:00 ARG -->
 <!-- ============================================================ -->
-<!-- Gastro CDELU — 2026-03-11 17:00 ARG - index.html (Frontend SPA)                    -->
+<!-- Gastro CDELU — 2026-03-11 19:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
 <!-- Etapa 1: Auth + Pacientes + HC + Consultas                   -->
 <!-- ============================================================ -->
@@ -2003,16 +2003,10 @@ function fmtDate(val) {
   if (!val) return '—';
   try {
     const s = val.toString().trim();
-    // ISO format: YYYY-MM-DD
-    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-      const [y, m, d] = s.split('T')[0].split('-');
-      return d + '/' + m + '/' + y;
-    }
-    // Ya está en DD/MM/YYYY — devolver tal cual
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) { const [y,m,d]=s.split('T')[0].split('-'); return d+'/'+m+'/'+y; }
     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
-    // Fallback: intentar parsear como Date
     const d = new Date(val);
-    if (!isNaN(d)) return d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' });
+    if (!isNaN(d)) return d.toLocaleDateString('es-AR', {day:'2-digit',month:'2-digit',year:'numeric'});
     return val;
   } catch { return val; }
 }
@@ -3304,16 +3298,10 @@ function renderEndoscopias(list) {
   App.endoscopiasList = list;
 
   // Separar y ordenar descendente
-  // Normaliza cualquier formato de fecha a YYYY-MM-DD para comparar correctamente
   function fechaSort(f) {
     if (!f) return '';
     const s = f.toString().trim();
-    // DD/MM/YYYY → YYYY-MM-DD
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
-      const [d, m, y] = s.split('/');
-      return y + '-' + m + '-' + d;
-    }
-    // ISO YYYY-MM-DD ya está bien
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) { const [d,m,y]=s.split('/'); return y+'-'+m+'-'+d; }
     return s.split('T')[0];
   }
   const sortDesc = arr => [...arr].sort((a,b) => fechaSort(b.fecha).localeCompare(fechaSort(a.fecha)));
@@ -3346,8 +3334,7 @@ function renderEndoscopias(list) {
            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirPDFHistorico('${pdfHistoricoUrl}')" title="Imprimir PDF original">🖨</button>`
         : `<!-- NUEVO -->
            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verInformeEndoscopia('${e.id}')" title="Ver informe">Ver</button>
-           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();descargarInformeEndoscopia('${e.id}')" title="Descargar PDF" style="font-size:15px;padding:6px 10px">⬇</button>
-           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')" title="Imprimir informe">🖨</button>`;
+           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();descargarInformeEndoscopia('${e.id}')" title="Descargar PDF" style="font-size:15px;padding:6px 10px">⬇</button>\n           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')" title="Imprimir informe">🖨</button>`;
 
       // Color de fondo de la fila: diferente para históricos
       const rowBg = esHistorico ? '#fffbeb' : 'transparent';
@@ -3503,7 +3490,25 @@ function imprimirEndoscopia(endoId) {
   _abrirInformeEndoscopia(endoId, true);
 }
 
-function _abrirInformeEndoscopia(endoId, autoPrint) {
+function descargarInformeEndoscopia(endoId) {
+  const pac  = App.pacienteActual;
+  const list = App.endoscopiasList || [];
+  const e    = list.find(x => x.id == endoId);
+  if (!e || !pac) { toast('No se encontró el estudio', 'error'); return; }
+  function sanitize(s) {
+    return (s||'').toString()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  }
+  const tipo = (e.tipoEstudio||'').toUpperCase().includes('COLON') ? 'VCC' : 'VEDA';
+  let rawF = (e.fecha||'').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(rawF)) { const [y,m,d]=rawF.split('-'); rawF=d+'-'+m+'-'+y; }
+  else rawF = rawF.replace(/\//g,'-');
+  const fileName = sanitize(pac.apellidoNombre) + '_' + tipo + '_' + rawF;
+  _abrirInformeEndoscopia(endoId, true, fileName);
+}
+
+function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   const pac  = App.pacienteActual;
   const list = App.endoscopiasList || [];
   const e    = list.find(x => x.id == endoId);
@@ -3749,67 +3754,23 @@ function _abrirInformeEndoscopia(endoId, autoPrint) {
 </body>
 </html>`;
 
-  window.__lastInformeHTML = htmlPDF; // guardado para descargarInformeEndoscopia
+  // Reemplazar título con fileName si se provee (Chrome usa <title> como nombre de archivo al guardar PDF)
+  const htmlFinal = fileName
+    ? htmlPDF.replace(/(<title>)[^<]*(<\/title>)/, '$1' + fileName + '$2')
+    : htmlPDF;
 
   const printWin = window.open('', '_blank', 'width=900,height=700');
   if (!printWin) { toast('Permití ventanas emergentes para generar el PDF', 'warn'); return; }
   printWin.document.open();
-  printWin.document.write(htmlPDF);
+  printWin.document.write(htmlFinal);
   printWin.document.close();
-  printWin.__autoPrint = autoPrint;
-}
-
-// Genera el HTML del informe sin abrir ventana, interceptando window.open
-function _getHtmlInformeEndoscopia(endoId) {
-  const _orig = window.open;
-  window.open = () => ({ document: { open(){}, write(){}, close(){} }, __autoPrint: false });
-  _abrirInformeEndoscopia(endoId, false);
-  window.open = _orig;
-  return window.__lastInformeHTML || null;
-}
-
-// Descarga el informe como PDF con nombre APELLIDO_ESTUDIO_FECHA
-function descargarInformeEndoscopia(endoId) {
-  const pac  = App.pacienteActual;
-  const list = App.endoscopiasList || [];
-  const e    = list.find(x => x.id == endoId);
-  if (!e || !pac) { toast('No se encontró el estudio', 'error'); return; }
-
-  function sanitize(s) {
-    return (s||'').toString()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .replace(/[^a-zA-Z0-9]/g,'_')
-      .replace(/_+/g,'_').replace(/^_|_$/g,'');
+  // Llamar print() desde la ventana padre con delay — evita el problema de __autoPrint
+  // con document.write (el script interno no puede setearse antes de onload)
+  if (autoPrint) {
+    setTimeout(function() {
+      try { printWin.print(); } catch(e) {}
+    }, 800);
   }
-  const tipo     = (e.tipoEstudio||'VEDA').toUpperCase().includes('COLON') ? 'VCC' : 'VEDA';
-  // Fecha normalizada a DD-MM-YYYY para el nombre de archivo
-  const rawFecha = e.fecha || '';
-  let fechaStr   = rawFecha.replace(/\//g,'-');
-  // Si viene YYYY-MM-DD convertir a DD-MM-YYYY
-  if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
-    const [y,m,d] = fechaStr.split('-');
-    fechaStr = d+'-'+m+'-'+y;
-  }
-  const fileName = sanitize(pac.apellidoNombre) + '_' + tipo + '_' + fechaStr;
-
-  const html = _getHtmlInformeEndoscopia(endoId);
-  if (!html) { toast('No se pudo generar el informe', 'error'); return; }
-
-  // Poner el nombre en el <title> — Chrome lo usa como nombre por defecto al guardar PDF
-  const htmlFinal = html
-    .replace(/<title>[^<]*<\/title>/, `<title>${fileName}</title>`)
-    .replace(
-      /<script>window\.onload=function\(\)\{ if\(window\.__autoPrint\) window\.print\(\); \}<\\\/script>/,
-      `<script>window.onload=function(){ document.title="${fileName}"; window.print(); }<\\/script>`
-    );
-
-  const win = window.open('', '_blank', 'width=900,height=700');
-  if (!win) { toast('Permití ventanas emergentes para descargar el PDF', 'warn'); return; }
-  win.document.open();
-  win.document.write(htmlFinal);
-  win.document.close();
-  // Toast informativo con el nombre exacto
-  toast('En el diálogo elegí Destino → "Guardar como PDF". Nombre: ' + fileName + '.pdf', 'success');
 }
 
 function confirmarEliminarEndoscopia(id) {
