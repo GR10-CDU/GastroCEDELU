@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-11 14:00 ARG -->
+<!-- GastroCDELU index.html · 2026-03-10 18:00 ARG -->
 <!-- ============================================================ -->
-<!-- Gastro CDELU — 2026-03-11 14:00 ARG - index.html (Frontend SPA)                    -->
+<!-- Gastro CDELU — 2026-03-11 15:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
 <!-- Etapa 1: Auth + Pacientes + HC + Consultas                   -->
 <!-- ============================================================ -->
@@ -1242,7 +1242,6 @@ text-align:center;
 color:#555;
 }
 
-
 /* ══ ESTADÍSTICAS ═══════════════════════════════════════════ */
 @keyframes statspin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 .stats-kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
@@ -1626,7 +1625,7 @@ color:#555;
         </div>
         <div class="page-body">
           <div id="stats-loading-state" style="text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;display:none">
-            <div class="stats-spinner" id="stats-spinner">◉</div>
+            <div class="stats-spinner">◉</div>
             <div id="stats-loading-msg" style="margin-top:12px">Procesando datos clínicos…</div>
           </div>
           <div id="stats-content" style="display:none">
@@ -1655,7 +1654,7 @@ color:#555;
                   <div class="bar-list" id="bars-diags"></div>
                 </div>
                 <div class="stats-card">
-                  <div class="stats-card-header"><h3>Distribución por Sistema</h3></div>
+                  <div class="stats-card-header"><h3>Distribución</h3></div>
                   <div class="pie-wrap" id="pie-diags-wrap"></div>
                 </div>
               </div>
@@ -2255,61 +2254,62 @@ function normStats_(t) {
     .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
 }
 
-const MOTIVO_MAP = [
-  { label:'Distensión abdominal',      p:['distension abdominal','distension'] },
-  { label:'Acidez / Pirosis / ERGE',   p:['acidez','pirosis','erge','reflujo','ardor'] },
-  { label:'Diarrea',                   p:['diarrea'] },
-  { label:'Epigastralgia',             p:['epigastralgia','epigastrio'] },
-  { label:'Náuseas / Vómitos',         p:['nausea','vomito','arcada'] },
-  { label:'Dolor abdominal',           p:['dolor abdominal','dolor'] },
-  { label:'Constipación',              p:['constip','estreni'] },
-  { label:'Proctorragia',              p:['proctorragia','sangrado rectal','rectorragia'] },
-  { label:'Meteorismo / Gases',        p:['meteorismo','gases','flatulencia'] },
-  { label:'Hígado graso / NASH',       p:['higado graso','nash','esteatosis'] },
-  { label:'Hepatograma alterado',      p:['hepatograma','transaminasa','hepatitis','tgo','tgp','ggt','fan'] },
-  { label:'Derivado / Control',        p:['derivad','control'] },
-  { label:'Pérdida de peso',           p:['perdida de peso','descenso de peso'] },
-  { label:'Otro / Síntomas mixtos',    p:[] },
-];
-const DIAG_MAP = [
-  { label:'SIBO',                        p:['sibo'] },
-  { label:'NASH / Hígado graso',         p:['nash','higado graso','esteatosis','esteatohepatitis'] },
-  { label:'ERGE / Dispepsia',            p:['erge','dispepsia','reflujo','acidez','esofagitis'] },
-  { label:'SII / Colon irritable',       p:['sii','colon irritable','intestino irritable'] },
-  { label:'Constipación crónica',        p:['constip','estreni'] },
-  { label:'Cirrosis / Hepatopatía',      p:['cirros','hepatopat','fibrosis hepat','hepatitis cronica'] },
-  { label:'Enfermedad celíaca',          p:['celiac','celiaca','enfermedad celiaca'] },
-  { label:'Hemorroides',                 p:['hemorroid'] },
-  { label:'Hepatitis viral/autoinmune',  p:['hepatitis a','hepatitis b','hepatitis c','autoinmune','hcv','hbv'] },
-  { label:'Diarrea crónica/aguda',       p:['diarrea cronica','diarrea aguda','gastroenteritis'] },
-  { label:'Pancreatitis',                p:['pancreatit'] },
-  { label:'Conducta / Estudios',         p:['solxito','soxlito','reseteo','indico','solicito labo','pido labo','veda','colonoscop','laboratorio'] },
-  { label:'Otro / No especificado',      p:[] },
-];
-const DIAG_SISTEMA = {
-  'SIBO':'Intestino delgado','NASH / Hígado graso':'Hígado/Biliar',
-  'ERGE / Dispepsia':'Alto (esófago/gástrico)','SII / Colon irritable':'Colon',
-  'Constipación crónica':'Colon','Cirrosis / Hepatopatía':'Hígado/Biliar',
-  'Enfermedad celíaca':'Intestino delgado','Hemorroides':'Anorrecto',
-  'Hepatitis viral/autoinmune':'Hígado/Biliar','Diarrea crónica/aguda':'Intestino/Colon',
-  'Pancreatitis':'Páncreas','Conducta / Estudios':'Conducta médica',
-  'Otro / No especificado':'Otro',
-};
-const PIE_COLORS = ['#1a9c5b','#1565c0','#6a3de8','#e67e22','#e74c3c','#16a085','#8e44ad','#2980b9','#27ae60','#d35400'];
+// Grupos médicos validados contra datos reales de la DB.
+// Cada HC puede caer en MÚLTIPLES grupos (una HC puede tener SIBO + Hepatograma).
+// La clasificación es por presencia de patrón, no excluyente.
 
-function classifyStats_(text, map) {
+const DIAG_GROUPS = [
+  { label:'SIBO',                          p:['sibo'] },
+  { label:'NASH / Hígado graso',           p:['nash','higado graso','estetaosis','esteatosis','esteatohepatitis','mafld'] },
+  { label:'Enfermedad celíaca',            p:['celiac','celiaca','enfermedad celiaca','ac ec pos','histologia celiac'] },
+  { label:'Hepatograma alterado',          p:['hepatograma','alteracion hepat','transaminasa','citolitico','patron mixto','colestasis','colestais','dili'] },
+  { label:'Cirrosis / Hepatopatía',        p:['cirros','cirrosis','hepatopat','heatopatia','hepatitis cronica','cbp','colangitis','fibrosis hepat','fib4'] },
+  { label:'ERGE / Dispepsia',              p:['erge','dispepsia','disppesia','esofagitis','reflujo gastro'] },
+  { label:'Hepatitis viral (HCV/HBV)',     p:['hcv','hbv','hepatitis c','hepatitis b','hepatitis a','serologias viral'] },
+  { label:'Síndrome de Gilbert',           p:['gilbert','sme gilbert'] },
+  { label:'Diarrea',                       p:['diarrea cronica','diarrea aguda','diarrea post','diarrea'] },
+  { label:'SII / Colon irritable',         p:['sii','colon irritable','intestino irritable'] },
+  { label:'Constipación',                  p:['constip','constipacion','cosntipavion'] },
+  { label:'Parasitosis',                   p:['parasitolog','parasitosis','giardia','blastocistis'] },
+  { label:'Hemorroides',                   p:['hemorroid','hemorroidal','crisis hemorroidal'] },
+  { label:'Intolerancia a la lactosa',     p:['lactosa','intolerancia lactosa','test lactosa'] },
+  { label:'Colestasis / Colangitis biliar',p:['colangitis biliar','colestasis biliar','litiasis biliar','litiasis','colecistitis','colico biliar'] },
+  { label:'Colitis',                       p:['colitis'] },
+  { label:'Diverticulitis',               p:['diverticulit','diverticulos','diverticular'] },
+  { label:'Pancreatitis / Páncreas',       p:['pancreatit','pancreas','pancreatica'] },
+  { label:'Ca / Neoplasia',               p:['cancer','tumor','neoplasia','carcinoma','adenocarcinoma','ca cabeza','proceso uncinado'] },
+  { label:'Enfermedad inflamatoria (EII)', p:['crohn','enfermedad inflamatoria','eii','colitis ulcerosa'] },
+];
+
+const MOTIVO_GROUPS = [
+  { label:'Distensión abdominal',          p:['distension abdominal','distension'] },
+  { label:'Acidez / Pirosis / ERGE',       p:['acidez','pirosis','erge','reflujo','ardor','eructos'] },
+  { label:'Diarrea',                       p:['diarrea'] },
+  { label:'Epigastralgia',                 p:['epigastralgia','epigastrio'] },
+  { label:'Náuseas / Vómitos',             p:['nausea','vomito','vomitos','arcada'] },
+  { label:'Dolor abdominal',               p:['dolro abdominal','dolor abdominal','dolor'] },
+  { label:'Constipación',                  p:['constip','estreni'] },
+  { label:'Proctorragia / Sangrado rectal',p:['proctorragia','sangrado','snagrado','rectorragia'] },
+  { label:'Meteorismo / Gases',            p:['meteorismo','gases','flatulencia'] },
+  { label:'Hígado graso / NASH',           p:['higado graso','nash','esteatosis'] },
+  { label:'Hepatograma alterado',          p:['hepatograma','alteracion hepat','transaminasa'] },
+  { label:'Pérdida de peso',               p:['perdida de peso','descenso de peso','bajo de peso'] },
+  { label:'Disfagia / Odinofagia',         p:['disfagia','odino','disglucia','disglusia'] },
+  { label:'Proctología / Ano-rectal',      p:['proctolog','hemorroides','fisura','prurito anal'] },
+];
+
+const PIE_COLORS = ['#1a9c5b','#1565c0','#6a3de8','#e67e22','#e74c3c','#16a085','#8e44ad','#2980b9','#27ae60','#d35400','#c0392b','#7f8c8d'];
+
+function classifyAllGroups_(text, groups) {
+  // Devuelve TODOS los grupos que matchean (una HC puede tener múltiples diagnósticos)
   const n = normStats_(text);
-  for (const e of map) {
-    if (!e.p.length) continue;
-    if (e.p.some(p => n.includes(p))) return e.label;
-  }
-  return map[map.length-1].label;
+  return groups.filter(g => g.p.some(p => n.includes(p))).map(g => g.label);
 }
 
 function buildStatsBars_(items, maxV, cls) {
   return items.map(it => `
     <div class="bar-item">
-      <div class="bar-label-row"><span class="bar-label">${it.label}</span><span class="bar-count">${it.value}</span></div>
+      <div class="bar-label-row"><span class="bar-label">${it.label}</span><span class="bar-count">${it.value} HC</span></div>
       <div class="bar-track"><div class="bar-fill ${cls||''}" style="width:${Math.round(it.value/maxV*100)}%"></div></div>
     </div>`).join('');
 }
@@ -2317,27 +2317,28 @@ function buildStatsBars_(items, maxV, cls) {
 function buildStatsPie_(data, r) {
   const total = data.reduce((s,d)=>s+d.value,0);
   if (!total) return '<p style="color:var(--muted);font-size:13px">Sin datos</p>';
-  const sz = r*2+4; let start = -Math.PI/2; let paths='';
+  const sz=r*2+4; let start=-Math.PI/2; let paths='';
   data.forEach((d,i)=>{
     const pct=d.value/total, angle=pct*2*Math.PI, end=start+angle;
     const x1=r+2+r*Math.cos(start), y1=r+2+r*Math.sin(start);
     const x2=r+2+r*Math.cos(end),   y2=r+2+r*Math.sin(end);
-    if (pct>0.005) paths+=`<path d="M${r+2},${r+2} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${angle>Math.PI?1:0},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${PIE_COLORS[i%PIE_COLORS.length]}" stroke="#fff" stroke-width="1.5"/>`;
+    if(pct>0.005) paths+=`<path d="M${r+2},${r+2} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${angle>Math.PI?1:0},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${PIE_COLORS[i%PIE_COLORS.length]}" stroke="#fff" stroke-width="1.5"/>`;
     start=end;
   });
-  const legend = data.slice(0,8).map((d,i)=>
+  const legend=data.slice(0,10).map((d,i)=>
     `<div class="pie-legend-item"><div class="pie-dot" style="background:${PIE_COLORS[i%PIE_COLORS.length]}"></div><span>${d.label}</span><span class="pie-pct">${Math.round(d.value/total*100)}%</span></div>`
   ).join('');
   return `<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}" style="flex-shrink:0">${paths}</svg><div class="pie-legend">${legend}</div>`;
 }
 
 function buildTendencia_(byMonth) {
-  if (!byMonth.length) return '<p style="color:var(--muted)">Sin datos de fecha</p>';
-  const max=Math.max(...byMonth.map(m=>m.v)); const W=Math.max(600,byMonth.length*36);
-  const H=130, barW=Math.min(26,(W/byMonth.length)-4), pad={t:10,b:42,l:8,r:8}, cH=H-pad.t-pad.b;
+  if(!byMonth.length) return '<p style="color:var(--muted)">Sin datos de fecha</p>';
+  const max=Math.max(...byMonth.map(m=>m.v));
+  const W=Math.max(600,byMonth.length*36), H=130, barW=Math.min(26,(W/byMonth.length)-4);
+  const pad={t:10,b:42}, cH=H-pad.t-pad.b;
   const bars=byMonth.map((m,i)=>{
     const bh=max>0?Math.round(m.v/max*cH):0;
-    const x=pad.l+i*(W/byMonth.length)+(W/byMonth.length-barW)/2, y=pad.t+cH-bh;
+    const x=8+i*(W/byMonth.length)+(W/byMonth.length-barW)/2, y=pad.t+cH-bh;
     const mo=['E','F','M','A','M','J','J','A','S','O','N','D'][parseInt(m.k.slice(5,7))-1]||'';
     const isYr=m.k.endsWith('-01')||i===0;
     return `<rect x="${x.toFixed(1)}" y="${y}" width="${barW}" height="${bh}" rx="2" fill="url(#tg)" opacity=".85"/>
@@ -2356,19 +2357,21 @@ function switchStatsTab(tab) {
 }
 
 function renderEstadisticas_(allHC, totalPac) {
-  const mCount={}, dCount={}, sCount={}, byMonth={}, pairs={};
-  MOTIVO_MAP.forEach(m=>{ mCount[m.label]=0; });
-  DIAG_MAP.forEach(d=>{ dCount[d.label]=0; });
+  // Contar grupos (una HC puede sumar en varios grupos)
+  const mCount={}, dCount={}, pairs={}, byMonth={};
 
-  allHC.forEach(hc=>{
-    const ml=classifyStats_(hc.motivoConsulta, MOTIVO_MAP);
-    const dl=classifyStats_(hc.diagPresuntivo, DIAG_MAP);
-    mCount[ml]=(mCount[ml]||0)+1;
-    dCount[dl]=(dCount[dl]||0)+1;
-    const sys=DIAG_SISTEMA[dl]||'Otro';
-    sCount[sys]=(sCount[sys]||0)+1;
-    if (ml&&dl) { const k=ml+' → '+dl; pairs[k]=(pairs[k]||0)+1; }
-    const raw=hc.fechaConsulta||hc.fechaCreacion;
+  allHC.forEach(hc => {
+    const mLabels = classifyAllGroups_(hc.motivoConsulta, MOTIVO_GROUPS);
+    const dLabels = classifyAllGroups_(hc.diagPresuntivo, DIAG_GROUPS);
+    mLabels.forEach(l => { mCount[l]=(mCount[l]||0)+1; });
+    dLabels.forEach(l => { dCount[l]=(dCount[l]||0)+1; });
+    // Pares: el primer motivo x el primer diagnóstico (más representativo)
+    if (mLabels.length && dLabels.length) {
+      const k = mLabels[0]+' → '+dLabels[0];
+      pairs[k]=(pairs[k]||0)+1;
+    }
+    // Tendencia
+    const raw = hc.fechaConsulta||hc.fechaCreacion;
     if (raw) {
       let ym='';
       if (typeof raw==='string'&&raw.includes('/')) { const p=raw.split('/'); if(p.length===3) ym=p[2]+'-'+p[1].padStart(2,'0'); }
@@ -2377,30 +2380,42 @@ function renderEstadisticas_(allHC, totalPac) {
     }
   });
 
-  const topM=Object.entries(mCount).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([label,value])=>({label,value}));
-  const topD=Object.entries(dCount).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([label,value])=>({label,value}));
-  const topS=Object.entries(sCount).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([label,value])=>({label,value}));
-  const topPairs=Object.entries(pairs).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value])=>({label,value}));
-  const months=Object.entries(byMonth).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>({k,v}));
-  const topDiagReal=topD.find(d=>d.label!=='Conducta / Estudios'&&d.label!=='Otro / No especificado');
+  const topM = Object.entries(mCount).sort((a,b)=>b[1]-a[1]).map(([label,value])=>({label,value}));
+  const topD = Object.entries(dCount).sort((a,b)=>b[1]-a[1]).map(([label,value])=>({label,value}));
+  const topPairs = Object.entries(pairs).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([label,value])=>({label,value}));
+  const months = Object.entries(byMonth).sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>({k,v}));
 
+  // KPIs
   document.getElementById('stats-kpis').innerHTML=`
     <div class="kpi-card"><div class="kpi-value">${totalPac}</div><div class="kpi-label">Pacientes</div></div>
     <div class="kpi-card"><div class="kpi-value">${allHC.length}</div><div class="kpi-label">Historias clínicas</div></div>
-    <div class="kpi-card"><div class="kpi-value sm">${topM[0]?.label.split('/')[0].trim()||'—'}</div><div class="kpi-label">Motivo más frecuente</div></div>
-    <div class="kpi-card"><div class="kpi-value sm">${topDiagReal?.label.split('/')[0].trim()||'—'}</div><div class="kpi-label">Diagnóstico más frecuente</div></div>`;
+    <div class="kpi-card"><div class="kpi-value sm">${topM[0]?.label||'—'}</div><div class="kpi-label">Motivo más frecuente</div></div>
+    <div class="kpi-card"><div class="kpi-value sm">${topD[0]?.label||'—'}</div><div class="kpi-label">Diagnóstico más frecuente</div></div>`;
 
-  document.getElementById('bars-motivos').innerHTML=buildStatsBars_(topM, topM[0]?.value||1, '');
-  document.getElementById('stats-badge-motivos').textContent=topM.length+' categorías';
-  document.getElementById('pie-motivos-wrap').innerHTML=buildStatsPie_(topM.slice(0,8), 80);
-  document.getElementById('bars-diags').innerHTML=buildStatsBars_(topD, topD[0]?.value||1, 'diag');
-  document.getElementById('stats-badge-diags').textContent=topD.length+' categorías';
-  document.getElementById('pie-diags-wrap').innerHTML=buildStatsPie_(topS.slice(0,8), 80);
-  document.getElementById('chart-tendencia').innerHTML=buildTendencia_(months);
-  document.getElementById('list-pairs').innerHTML=topPairs.map((p,i)=>{
-    const pts=p.label.split(' → ');
-    return `<div class="top-pair-item"><div class="top-pair-rank">${i+1}</div><div class="top-pair-text"><div class="top-pair-motivo">${pts[0]||''}</div><div class="top-pair-diag">→ ${pts[1]||''}</div></div><div class="top-pair-count">${p.value}×</div></div>`;
-  }).join('');
+  // Barras motivos
+  document.getElementById('bars-motivos').innerHTML = topM.length
+    ? buildStatsBars_(topM, topM[0].value, '')
+    : '<p style="color:var(--muted);font-size:13px">Sin datos</p>';
+  document.getElementById('stats-badge-motivos').textContent = topM.length+' categorías';
+  document.getElementById('pie-motivos-wrap').innerHTML = buildStatsPie_(topM.slice(0,10), 80);
+
+  // Barras diagnósticos
+  document.getElementById('bars-diags').innerHTML = topD.length
+    ? buildStatsBars_(topD, topD[0].value, 'diag')
+    : '<p style="color:var(--muted);font-size:13px">Sin datos</p>';
+  document.getElementById('stats-badge-diags').textContent = topD.length+' categorías';
+  document.getElementById('pie-diags-wrap').innerHTML = buildStatsPie_(topD.slice(0,10), 80);
+
+  // Tendencia
+  document.getElementById('chart-tendencia').innerHTML = buildTendencia_(months);
+
+  // Pares
+  document.getElementById('list-pairs').innerHTML = topPairs.length
+    ? topPairs.map((p,i)=>{
+        const pts=p.label.split(' → ');
+        return `<div class="top-pair-item"><div class="top-pair-rank">${i+1}</div><div class="top-pair-text"><div class="top-pair-motivo">${pts[0]||''}</div><div class="top-pair-diag">→ ${pts[1]||''}</div></div><div class="top-pair-count">${p.value}×</div></div>`;
+      }).join('')
+    : '<p style="color:var(--muted);font-size:13px">Sin datos</p>';
 
   document.getElementById('stats-loading-state').style.display='none';
   document.getElementById('stats-content').style.display='block';
