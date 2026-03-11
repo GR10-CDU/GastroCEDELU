@@ -524,16 +524,17 @@ button { cursor: pointer; border: none; }
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f2faf5;
+  background: #155a32;
+  border-radius: 10px 10px 0 0;
 }
 .form-card-header h3 {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--muted2);
+  letter-spacing: 1.5px;
+  color: #ffffff;
 }
-.form-card-header .icon { color: var(--accent); }
+.form-card-header .icon { color: #7edba8; }
 .form-card-body { padding: 20px; }
 .form-actions {
   display: flex;
@@ -556,18 +557,21 @@ button { cursor: pointer; border: none; }
   margin: 10px 0 18px;
 }
 .section-divider span {
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #1a9c5b;
-  font-weight: 600;
+  color: #ffffff;
+  font-weight: 700;
   white-space: nowrap;
+  background: #1a7a4a;
+  padding: 4px 14px;
+  border-radius: 20px;
 }
 .section-divider::before, .section-divider::after {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--border);
+  background: #c2e0ce;
 }
 
 /* ─── MEDICAMENTOS ──────────────────────────────────────────── */
@@ -681,7 +685,9 @@ button { cursor: pointer; border: none; }
   background: #155a32;
   padding: 7px 14px;
   border-radius: 6px;
-  display: inline-block;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
 }
 .hc-field { margin-bottom: 12px; }
 .hc-field:last-child { margin-bottom: 0; }
@@ -1755,10 +1761,18 @@ color:#555;
     <input type="hidden" id="hc-id">
     <input type="hidden" id="hc-paciente-id">
 
+    <!-- ── Sección: Consulta ── -->
+    <div class="section-divider"><span>Consulta</span></div>
     <div class="field">
       <label>Fecha</label>
       <input type="date" id="hc-fecha" style="max-width:200px">
     </div>
+    <div class="field">
+      <label>Motivo de Consulta</label>
+      <textarea id="hc-motivo" rows="3" placeholder="Motivo por el cual consulta..."></textarea>
+    </div>
+    <!-- ── Sección: Antecedentes ── -->
+    <div class="section-divider" style="margin-top:20px"><span>Antecedentes</span></div>
     <div class="field">
       <label>Antecedentes Personales</label>
       <textarea id="hc-antec" rows="3" placeholder="Antecedentes médicos, quirúrgicos, alergias, hábitos..."></textarea>
@@ -1768,13 +1782,11 @@ color:#555;
       <textarea id="hc-rec1" rows="3" placeholder="Antecedentes de relevancia en familiares directos..."></textarea>
     </div>
     <div class="field">
-      <label>Motivo de Consulta</label>
-      <textarea id="hc-motivo" rows="3" placeholder="Motivo por el cual consulta..."></textarea>
-    </div>
-    <div class="field">
       <label>Estudios Complementarios</label>
-      <textarea id="hc-rec2" rows="6" placeholder="Resultados de laboratorio, imágenes, endoscopias previas, otros estudios..."></textarea>
+      <textarea id="hc-rec2" rows="5" placeholder="Resultados de laboratorio, imágenes, endoscopias previas, otros estudios..."></textarea>
     </div>
+    <!-- ── Sección: Examen y Diagnóstico ── -->
+    <div class="section-divider" style="margin-top:20px"><span>Examen y Diagnóstico</span></div>
     <div class="field">
       <label>Examen Físico</label>
       <textarea id="hc-exfisico" rows="3" placeholder="Hallazgos del examen físico..."></textarea>
@@ -1783,6 +1795,8 @@ color:#555;
       <label>Diagnóstico Presuntivo</label>
       <textarea id="hc-diag" rows="2" placeholder="Diagnóstico principal..."></textarea>
     </div>
+    <!-- ── Sección: Conducta ── -->
+    <div class="section-divider" style="margin-top:20px"><span>Conducta / Tratamiento</span></div>
     <div class="field">
       <label>Conducta / Tratamiento</label>
       <textarea id="hc-tratamiento" rows="4" placeholder="Plan de tratamiento, indicaciones, conducta médica..."></textarea>
@@ -2411,9 +2425,10 @@ function renderHC(hc) {
 
 function hcField(label, val) {
   const v = val && val.toString().trim();
+  if (!v) return '';
   return `<div class="hc-field">
     <label>${label}</label>
-    <p class="${v ? '' : 'empty'}">${v || 'No registrado'}</p>
+    <p>${v}</p>
   </div>`;
 }
 
