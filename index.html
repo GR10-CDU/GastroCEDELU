@@ -1748,7 +1748,8 @@ color:#555;
   <!-- Visor de foto ampliada -->
   <div class="foto-viewer-overlay" id="foto-viewer" onclick="closeFotoViewer()">
     <button class="foto-viewer-close" onclick="closeFotoViewer()">✕</button>
-    <img id="foto-viewer-img" src="" alt="Foto endoscopía">
+    <img id="foto-viewer-img" src="" alt="Foto endoscopía" style="display:none">
+    <iframe id="foto-viewer-pdf" src="" style="display:none;width:90vw;max-width:900px;height:85vh;border:none;border-radius:8px" allowfullscreen></iframe>
   </div>
 
 </div><!-- /app -->
@@ -2972,12 +2973,30 @@ function removeFoto(idx) {
   renderFotosPreviews();
 }
 
-function openFotoViewer(src) {
-  document.getElementById('foto-viewer-img').src = src;
+function openFotoViewer(src, isPdf) {
+  const img   = document.getElementById('foto-viewer-img');
+  const iframe = document.getElementById('foto-viewer-pdf');
+  // Detectar si es PDF: o lo indica el caller, o la URL tiene /file/d/ (migrados)
+  const esPDF = isPdf || (src && src.includes('/file/d/'));
+  if (esPDF) {
+    const id = driveFileId(src);
+    const previewUrl = id ? 'https://drive.google.com/file/d/' + id + '/preview' : src;
+    iframe.src = previewUrl;
+    iframe.style.display = 'block';
+    img.style.display    = 'none';
+    img.src = '';
+  } else {
+    img.src              = src;
+    img.style.display    = 'block';
+    iframe.style.display = 'none';
+    iframe.src           = '';
+  }
   document.getElementById('foto-viewer').classList.add('show');
 }
 function closeFotoViewer() {
   document.getElementById('foto-viewer').classList.remove('show');
+  document.getElementById('foto-viewer-img').src = '';
+  document.getElementById('foto-viewer-pdf').src = '';
 }
 
 // ─── SUBIR FOTOS A DRIVE ────────────────────────────────────
@@ -3212,9 +3231,10 @@ function renderEndoscopias(list) {
           <div class="endo-fotos" style="margin-top:12px">
             ${fotos.map((url, fi) => {
               const thumb = driveThumb(url);
+              const isPdf = url && url.includes('/file/d/');
               return `<img class="endo-foto-thumb" src="${thumb}" alt="Foto ${fi+1}"
                 onerror="this.onerror=null;this.src='';this.style.background='#f0f9f4';this.style.display='flex'"
-                onclick="openFotoViewer('${thumb}')" title="Foto ${fi+1}">`;
+                onclick="openFotoViewer('${url}', ${isPdf})" title="${isPdf ? 'Ver PDF' : 'Foto ' + (fi+1)}">`;
             }).join('')}
           </div>` : ''}
         </div>
@@ -3247,9 +3267,30 @@ function fmtFechaPDF(raw) {
 function driveThumb(url) {
   // Convierte URL de Drive a thumbnail que funciona embebida
   if (!url) return '';
-  const m = url.match(/[?&]id=([^&]+)/);
-  if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w300-h250';
+  // Formato ?id=XXX (fotos nuevas subidas via uploadFoto)
+  const m1 = url.match(/[?&]id=([^&]+)/);
+  if (m1) return 'https://drive.google.com/thumbnail?id=' + m1[1] + '&sz=w300-h250';
+  // Formato /file/d/XXX/view (PDFs migrados históricos)
+  const m2 = url.match(/\/file\/d\/([^/]+)/);
+  if (m2) return 'https://drive.google.com/thumbnail?id=' + m2[1] + '&sz=w300-h250';
   return url;
+}
+
+function driveFileId(url) {
+  // Extrae el file ID de cualquier formato de URL de Drive
+  if (!url) return null;
+  const m1 = url.match(/[?&]id=([^&]+)/);
+  if (m1) return m1[1];
+  const m2 = url.match(/\/file\/d\/([^/]+)/);
+  if (m2) return m2[1];
+  return null;
+}
+
+function driveViewerUrl(url) {
+  // Para PDFs: usa el viewer de Drive embebible
+  const id = driveFileId(url);
+  if (!id) return url;
+  return 'https://drive.google.com/file/d/' + id + '/preview';
 }
 
 function imprimirEndoscopia(endoId) {
