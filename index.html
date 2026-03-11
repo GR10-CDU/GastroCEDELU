@@ -3299,7 +3299,10 @@ function imprimirEndoscopia(endoId) {
   const e    = list.find(x => x.id == endoId);
   if (!e || !pac) { toast('No se encontró el estudio', 'error'); return; }
 
-  const fotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
+  // Separar fotos de imagen de PDFs migrados (que tienen /file/d/ en la URL)
+  const todasFotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
+  const fotos    = todasFotos.filter(url => !url.includes('/file/d/'));
+  const pdfsMigrados = todasFotos.filter(url => url.includes('/file/d/'));
   const fotoImgs = fotos.map(url =>
     `<img src="${driveThumb(url)}" style="width:4.2cm;height:4.2cm;object-fit:cover;border-radius:6px;border:1px solid #ddd;display:block">`
   ).join('');
@@ -3477,7 +3480,15 @@ function imprimirEndoscopia(endoId) {
         Región Alcanzada: ${regionAlcanzada}
       </span>` : ''}
     </div>
-    <div class="informe-text">${informe||'Sin informe registrado.'}</div>
+    ${informe
+      ? `<div class="informe-text">${informe}</div>`
+      : pdfsMigrados.length
+        ? `<div class="informe-text" style="color:#555;font-style:italic">
+            Informe disponible en el documento adjunto (PDF histórico).<br>
+            ${pdfsMigrados.map(url => `<a href="${url}" target="_blank" style="color:#1a7a4a;font-weight:600">Ver PDF original →</a>`).join('<br>')}
+           </div>`
+        : `<div class="informe-text" style="color:#999;font-style:italic">Sin informe registrado.</div>`
+    }
   </div>
 
   <!-- DIAGNÓSTICO -->
