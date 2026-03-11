@@ -524,17 +524,16 @@ button { cursor: pointer; border: none; }
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #155a32;
-  border-radius: 10px 10px 0 0;
+  background: #f2faf5;
 }
 .form-card-header h3 {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: #ffffff;
+  letter-spacing: 1px;
+  color: var(--muted2);
 }
-.form-card-header .icon { color: #7edba8; }
+.form-card-header .icon { color: var(--accent); }
 .form-card-body { padding: 20px; }
 .form-actions {
   display: flex;
@@ -557,21 +556,18 @@ button { cursor: pointer; border: none; }
   margin: 10px 0 18px;
 }
 .section-divider span {
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #ffffff;
-  font-weight: 700;
+  color: #1a9c5b;
+  font-weight: 600;
   white-space: nowrap;
-  background: #1a7a4a;
-  padding: 4px 14px;
-  border-radius: 20px;
 }
 .section-divider::before, .section-divider::after {
   content: '';
   flex: 1;
   height: 1px;
-  background: #c2e0ce;
+  background: var(--border);
 }
 
 /* ─── MEDICAMENTOS ──────────────────────────────────────────── */
@@ -1751,14 +1747,21 @@ color:#555;
     <input type="hidden" id="hc-id">
     <input type="hidden" id="hc-paciente-id">
 
-    <div class="field">
-      <label>Fecha</label>
-      <input type="date" id="hc-fecha" style="max-width:200px">
+    <!-- ── Sección: Consulta ── -->
+    <div class="section-divider"><span>Consulta</span></div>
+    <div class="field-row cols-2">
+      <div class="field">
+        <label>Fecha</label>
+        <input type="date" id="hc-fecha" style="max-width:200px">
+      </div>
     </div>
     <div class="field">
       <label>Motivo de Consulta</label>
       <textarea id="hc-motivo" rows="3" placeholder="Motivo por el cual consulta..."></textarea>
     </div>
+
+    <!-- ── Sección: Antecedentes ── -->
+    <div class="section-divider" style="margin-top:20px"><span>Antecedentes</span></div>
     <div class="field">
       <label>Antecedentes Personales</label>
       <textarea id="hc-antec" rows="3" placeholder="Antecedentes médicos, quirúrgicos, alergias, hábitos..."></textarea>
@@ -1769,8 +1772,11 @@ color:#555;
     </div>
     <div class="field">
       <label>Estudios Complementarios</label>
-      <textarea id="hc-rec2" rows="6" placeholder="Resultados de laboratorio, imágenes, endoscopias previas, otros estudios..."></textarea>
+      <textarea id="hc-rec2" rows="5" placeholder="Resultados de laboratorio, imágenes, endoscopias previas, otros estudios..."></textarea>
     </div>
+
+    <!-- ── Sección: Examen y Diagnóstico ── -->
+    <div class="section-divider" style="margin-top:20px"><span>Examen y Diagnóstico</span></div>
     <div class="field">
       <label>Examen Físico</label>
       <textarea id="hc-exfisico" rows="3" placeholder="Hallazgos del examen físico..."></textarea>
@@ -1779,6 +1785,9 @@ color:#555;
       <label>Diagnóstico Presuntivo</label>
       <textarea id="hc-diag" rows="2" placeholder="Diagnóstico principal..."></textarea>
     </div>
+
+    <!-- ── Sección: Conducta ── -->
+    <div class="section-divider" style="margin-top:20px"><span>Conducta / Tratamiento</span></div>
     <div class="field">
       <label>Conducta / Tratamiento</label>
       <textarea id="hc-tratamiento" rows="4" placeholder="Plan de tratamiento, indicaciones, conducta médica..."></textarea>
@@ -2382,6 +2391,7 @@ function renderHC(hc) {
       <div class="hc-section">
         <div class="hc-section-title">Diagnóstico</div>
         ${hcField('Diagnóstico Presuntivo', hc.diagPresuntivo)}
+        ${hcField('Código OMS', hc.diagOMS)}
       </div>
       <div class="hc-section">
         <div class="hc-section-title">Conducta / Tratamiento</div>
