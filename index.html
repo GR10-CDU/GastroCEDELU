@@ -672,22 +672,30 @@ button { cursor: pointer; border: none; }
 }
 .hc-section:last-child { border-bottom: none; }
 .hc-section-title {
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #1a9c5b;
-  font-weight: 600;
-  margin-bottom: 10px;
+  color: #ffffff;
+  font-weight: 700;
+  margin-bottom: 14px;
+  background: #155a32;
+  padding: 7px 14px;
+  border-radius: 6px;
+  display: inline-block;
 }
 .hc-field { margin-bottom: 12px; }
 .hc-field:last-child { margin-bottom: 0; }
 .hc-field label {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 5px;
-  display: block;
+  font-size: 11px;
+  color: #ffffff;
+  background: #1a7a4a;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  display: inline-block;
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-weight: 600;
 }
 .hc-field p {
   font-size: 16px;
@@ -1747,21 +1755,10 @@ color:#555;
     <input type="hidden" id="hc-id">
     <input type="hidden" id="hc-paciente-id">
 
-    <!-- ── Sección: Consulta ── -->
-    <div class="section-divider"><span>Consulta</span></div>
-    <div class="field-row cols-2">
-      <div class="field">
-        <label>Fecha</label>
-        <input type="date" id="hc-fecha" style="max-width:200px">
-      </div>
-    </div>
     <div class="field">
-      <label>Motivo de Consulta</label>
-      <textarea id="hc-motivo" rows="3" placeholder="Motivo por el cual consulta..."></textarea>
+      <label>Fecha</label>
+      <input type="date" id="hc-fecha" style="max-width:200px">
     </div>
-
-    <!-- ── Sección: Antecedentes ── -->
-    <div class="section-divider" style="margin-top:20px"><span>Antecedentes</span></div>
     <div class="field">
       <label>Antecedentes Personales</label>
       <textarea id="hc-antec" rows="3" placeholder="Antecedentes médicos, quirúrgicos, alergias, hábitos..."></textarea>
@@ -1771,12 +1768,13 @@ color:#555;
       <textarea id="hc-rec1" rows="3" placeholder="Antecedentes de relevancia en familiares directos..."></textarea>
     </div>
     <div class="field">
-      <label>Estudios Complementarios</label>
-      <textarea id="hc-rec2" rows="5" placeholder="Resultados de laboratorio, imágenes, endoscopias previas, otros estudios..."></textarea>
+      <label>Motivo de Consulta</label>
+      <textarea id="hc-motivo" rows="3" placeholder="Motivo por el cual consulta..."></textarea>
     </div>
-
-    <!-- ── Sección: Examen y Diagnóstico ── -->
-    <div class="section-divider" style="margin-top:20px"><span>Examen y Diagnóstico</span></div>
+    <div class="field">
+      <label>Estudios Complementarios</label>
+      <textarea id="hc-rec2" rows="6" placeholder="Resultados de laboratorio, imágenes, endoscopias previas, otros estudios..."></textarea>
+    </div>
     <div class="field">
       <label>Examen Físico</label>
       <textarea id="hc-exfisico" rows="3" placeholder="Hallazgos del examen físico..."></textarea>
@@ -1785,9 +1783,6 @@ color:#555;
       <label>Diagnóstico Presuntivo</label>
       <textarea id="hc-diag" rows="2" placeholder="Diagnóstico principal..."></textarea>
     </div>
-
-    <!-- ── Sección: Conducta ── -->
-    <div class="section-divider" style="margin-top:20px"><span>Conducta / Tratamiento</span></div>
     <div class="field">
       <label>Conducta / Tratamiento</label>
       <textarea id="hc-tratamiento" rows="4" placeholder="Plan de tratamiento, indicaciones, conducta médica..."></textarea>
@@ -2382,16 +2377,15 @@ function renderHC(hc) {
     <div class="hc-viewer">
       <div class="hc-section">
         <div class="hc-section-title">Consulta Inicial · ${fmtDate(hc.fechaConsulta)}</div>
+        ${hcField('Motivo de Consulta', hc.motivoConsulta)}
         ${hcField('Antecedentes Personales', hc.antecGrales)}
         ${hcField('Antecedentes Familiares', hc.recomendaciones)}
-        ${hcField('Motivo de Consulta', hc.motivoConsulta)}
         ${hcField('Estudios Complementarios', hc.recomendaciones2)}
         ${hcField('Examen Físico', hc.exFisico)}
       </div>
       <div class="hc-section">
         <div class="hc-section-title">Diagnóstico</div>
         ${hcField('Diagnóstico Presuntivo', hc.diagPresuntivo)}
-        ${hcField('Código OMS', hc.diagOMS)}
       </div>
       <div class="hc-section">
         <div class="hc-section-title">Conducta / Tratamiento</div>
