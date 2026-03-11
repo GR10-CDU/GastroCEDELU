@@ -524,16 +524,17 @@ button { cursor: pointer; border: none; }
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f2faf5;
+  background: #155a32;
+  border-radius: 10px 10px 0 0;
 }
 .form-card-header h3 {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--muted2);
+  letter-spacing: 1.5px;
+  color: #ffffff;
 }
-.form-card-header .icon { color: var(--accent); }
+.form-card-header .icon { color: #7edba8; }
 .form-card-body { padding: 20px; }
 .form-actions {
   display: flex;
@@ -556,18 +557,21 @@ button { cursor: pointer; border: none; }
   margin: 10px 0 18px;
 }
 .section-divider span {
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #1a9c5b;
-  font-weight: 600;
+  color: #ffffff;
+  font-weight: 700;
   white-space: nowrap;
+  background: #1a7a4a;
+  padding: 4px 14px;
+  border-radius: 20px;
 }
 .section-divider::before, .section-divider::after {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--border);
+  background: #c2e0ce;
 }
 
 /* ─── MEDICAMENTOS ──────────────────────────────────────────── */
@@ -1752,16 +1756,16 @@ color:#555;
       <input type="date" id="hc-fecha" style="max-width:200px">
     </div>
     <div class="field">
+      <label>Motivo de Consulta</label>
+      <textarea id="hc-motivo" rows="3" placeholder="Motivo por el cual consulta..."></textarea>
+    </div>
+    <div class="field">
       <label>Antecedentes Personales</label>
       <textarea id="hc-antec" rows="3" placeholder="Antecedentes médicos, quirúrgicos, alergias, hábitos..."></textarea>
     </div>
     <div class="field">
       <label>Antecedentes Familiares</label>
       <textarea id="hc-rec1" rows="3" placeholder="Antecedentes de relevancia en familiares directos..."></textarea>
-    </div>
-    <div class="field">
-      <label>Motivo de Consulta</label>
-      <textarea id="hc-motivo" rows="3" placeholder="Motivo por el cual consulta..."></textarea>
     </div>
     <div class="field">
       <label>Estudios Complementarios</label>
@@ -2378,7 +2382,6 @@ function renderHC(hc) {
       <div class="hc-section">
         <div class="hc-section-title">Diagnóstico</div>
         ${hcField('Diagnóstico Presuntivo', hc.diagPresuntivo)}
-        ${hcField('Código OMS', hc.diagOMS)}
       </div>
       <div class="hc-section">
         <div class="hc-section-title">Conducta / Tratamiento</div>
@@ -3099,11 +3102,6 @@ function renderEndoscopias(list) {
   const cnt = document.getElementById('tab-endo-count');
   cnt.textContent = list.length || '';
 
-  // ✅ FIX: siempre actualizar la lista en memoria, incluso si está vacía
-  // Antes se hacía solo si list.length > 0, causando que imprimirEndoscopia
-  // buscara en la lista vieja cuando getEndoscopias fallaba o devolvía []
-  App.endoscopiasList = list;
-
   const container = document.getElementById('endoscopias-list');
   if (!list.length) {
     container.innerHTML = `<div class="empty-state">
@@ -3113,6 +3111,8 @@ function renderEndoscopias(list) {
     </div>`;
     return;
   }
+
+  App.endoscopiasList = list;
 
   // Separar y ordenar descendente
   const sortDesc = arr => [...arr].sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
