@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- GastroCDELU index.html · 2026-03-10 18:00 ARG -->
 <!-- ============================================================ -->
-<!-- Gastro CDELU — 2026-03-11 20:30 ARG - index.html (Frontend SPA)                    -->
+<!-- Gastro CDELU — 2026-03-11 22:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
 <!-- Etapa 1: Auth + Pacientes + HC + Consultas                   -->
 <!-- ============================================================ -->
@@ -1535,7 +1535,7 @@ color:#555;
           <!-- Tab: Consultas -->
           <div class="tab-content" id="tab-content-consultas">
             <div style="display:flex; justify-content:flex-end; margin-bottom:14px">
-              <button class="btn btn-primary btn-sm" onclick="showModal('modal-consulta')">Nueva Consulta</button>
+              <button class="btn btn-primary btn-sm" onclick="prepModalConsulta();showModal('modal-consulta')">Nueva Consulta</button>
             </div>
             <div id="consultas-list">
               <div class="empty-state">
@@ -1715,6 +1715,39 @@ color:#555;
             <option value="Recto">Recto</option>
           </select>
         </div>
+        <!-- ESCALA DE BOSTON -->
+        <div style="margin-bottom:10px">
+          <label style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Escala de Boston (preparación colónica)</label>
+          <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:12px;font-weight:600;color:var(--muted)">Colon Derecho</span>
+              <select id="endo-boston-cd" onchange="calcBoston()" style="width:62px;font-size:13px">
+                <option value="">—</option>
+                <option value="0">0</option><option value="1">1</option>
+                <option value="2">2</option><option value="3">3</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:12px;font-weight:600;color:var(--muted)">Colon Transverso</span>
+              <select id="endo-boston-ct" onchange="calcBoston()" style="width:62px;font-size:13px">
+                <option value="">—</option>
+                <option value="0">0</option><option value="1">1</option>
+                <option value="2">2</option><option value="3">3</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:12px;font-weight:600;color:var(--muted)">Colon Izquierdo</span>
+              <select id="endo-boston-ci" onchange="calcBoston()" style="width:62px;font-size:13px">
+                <option value="">—</option>
+                <option value="0">0</option><option value="1">1</option>
+                <option value="2">2</option><option value="3">3</option>
+              </select>
+            </div>
+            <div id="boston-total-badge" style="display:none;background:#f0f9f4;border:1.5px solid #9fd4b2;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;color:#155a32;white-space:nowrap">
+              BOSTON: <span id="boston-total-val">0</span>/9
+            </div>
+          </div>
+        </div>
         <div class="field">
           <textarea id="endo-colon-informe" rows="14" placeholder="Completá el informe manualmente o seleccioná una plantilla..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
         </div>
@@ -1840,12 +1873,35 @@ color:#555;
     <div class="field-row cols-2">
       <div class="field">
         <label>Fecha de Consulta</label>
-        <input type="date" id="cons-fecha">
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="cons-fecha-dia" style="width:72px" onchange="syncConsFecha()">
+            <option value="">Día</option>
+          </select>
+          <select id="cons-fecha-mes" style="width:115px" onchange="syncConsFecha()">
+            <option value="">Mes</option>
+            <option value="01">Enero</option><option value="02">Febrero</option>
+            <option value="03">Marzo</option><option value="04">Abril</option>
+            <option value="05">Mayo</option><option value="06">Junio</option>
+            <option value="07">Julio</option><option value="08">Agosto</option>
+            <option value="09">Septiembre</option><option value="10">Octubre</option>
+            <option value="11">Noviembre</option><option value="12">Diciembre</option>
+          </select>
+          <select id="cons-fecha-anio" style="width:88px" onchange="syncConsFecha()">
+            <option value="">Año</option>
+          </select>
+        </div>
+        <input type="hidden" id="cons-fecha">
       </div>
       <div class="field">
         <label>Lugar de Atención</label>
-        <input type="text" id="cons-lugar" placeholder="Ciudad / Localidad" list="cons-lugar-dl" onblur="autoguardarLocalidad(this.value)">
-      <datalist id="cons-lugar-dl"></datalist>
+        <select id="cons-lugar" onchange="toggleConsLugarOtro(this.value)">
+          <option value="">— Seleccionar —</option>
+          <option value="Clínica Uruguay">Clínica Uruguay</option>
+          <option value="Salutia">Salutia</option>
+          <option value="TELEmedicina">TELEmedicina</option>
+          <option value="__otro__">Otro...</option>
+        </select>
+        <input type="text" id="cons-lugar-otro" placeholder="Especificá el lugar..." style="display:none;margin-top:6px">
       </div>
     </div>
     <div class="field">
@@ -2147,6 +2203,22 @@ async function doLogin() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Ingresar al Sistema';
+  }
+}
+
+function calcBoston() {
+  const cdV = (document.getElementById('endo-boston-cd') || {}).value || '';
+  const ctV = (document.getElementById('endo-boston-ct') || {}).value || '';
+  const ciV = (document.getElementById('endo-boston-ci') || {}).value || '';
+  const badge = document.getElementById('boston-total-badge');
+  const valEl = document.getElementById('boston-total-val');
+  if (!badge || !valEl) return;
+  if (cdV !== '' || ctV !== '' || ciV !== '') {
+    const total = (parseInt(cdV)||0) + (parseInt(ctV)||0) + (parseInt(ciV)||0);
+    valEl.textContent = total;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
   }
 }
 
@@ -2725,10 +2797,57 @@ function confirmarEliminarConsulta(id, idx) {
 }
 
 function prepModalConsulta() {
-  document.getElementById('cons-fecha').value = todayInput();
-  ['lugar','motivo','exfisico','tratamiento','pendiente'].forEach(f => {
+  const lugarSel = document.getElementById('cons-lugar');
+  if (lugarSel) lugarSel.value = '';
+  const lugarOtro = document.getElementById('cons-lugar-otro');
+  if (lugarOtro) { lugarOtro.value = ''; lugarOtro.style.display = 'none'; }
+
+  const hoy  = new Date();
+  const dd   = String(hoy.getDate()).padStart(2,'0');
+  const mm   = String(hoy.getMonth()+1).padStart(2,'0');
+  const yyyy = String(hoy.getFullYear());
+
+  const diaEl  = document.getElementById('cons-fecha-dia');
+  const mesEl  = document.getElementById('cons-fecha-mes');
+  const anioEl = document.getElementById('cons-fecha-anio');
+
+  if (diaEl && diaEl.options.length <= 1) {
+    for (let d = 1; d <= 31; d++) {
+      const o = document.createElement('option');
+      o.value = String(d).padStart(2,'0'); o.textContent = String(d).padStart(2,'0');
+      diaEl.appendChild(o);
+    }
+  }
+  if (anioEl && anioEl.options.length <= 1) {
+    for (let y = hoy.getFullYear(); y >= hoy.getFullYear() - 10; y--) {
+      const o = document.createElement('option');
+      o.value = String(y); o.textContent = String(y);
+      anioEl.appendChild(o);
+    }
+  }
+  if (diaEl)  diaEl.value  = dd;
+  if (mesEl)  mesEl.value  = mm;
+  if (anioEl) anioEl.value = yyyy;
+  syncConsFecha();
+
+  ['motivo','exfisico','tratamiento','pendiente'].forEach(f => {
     document.getElementById('cons-'+f).value = '';
   });
+}
+
+function syncConsFecha() {
+  const d = (document.getElementById('cons-fecha-dia')  || {}).value || '';
+  const m = (document.getElementById('cons-fecha-mes')  || {}).value || '';
+  const y = (document.getElementById('cons-fecha-anio') || {}).value || '';
+  const h = document.getElementById('cons-fecha');
+  if (h && d && m && y) h.value = y + '-' + m + '-' + d;
+}
+
+function toggleConsLugarOtro(val) {
+  const otro = document.getElementById('cons-lugar-otro');
+  if (!otro) return;
+  otro.style.display = val === '__otro__' ? 'block' : 'none';
+  if (val !== '__otro__') otro.value = '';
 }
 
 async function submitConsulta() {
@@ -2745,7 +2864,7 @@ async function submitConsulta() {
     pacienteId:          pac.id,
     apellidoNombre:      pac.apellidoNombre,
     fechaConsulta:       document.getElementById('cons-fecha').value,
-    lugarAtencion:       document.getElementById('cons-lugar').value,
+    lugarAtencion:       (()=>{ const v=document.getElementById('cons-lugar').value; return v==='__otro__' ? (document.getElementById('cons-lugar-otro').value||'Otro') : v; })(),
     motivoConsulta:      document.getElementById('cons-motivo').value,
     exFisico:            document.getElementById('cons-exfisico').value,
     impresionDiagnostica:'',
@@ -2764,11 +2883,7 @@ async function submitConsulta() {
   finally { hideLoading(); }
 }
 
-// Override modal-consulta open to prep
-document.querySelector('[onclick="showModal(\'modal-consulta\')"]').onclick = () => {
-  prepModalConsulta();
-  showModal('modal-consulta');
-};
+// El botón 'Nueva Consulta' llama prepModalConsulta() directo en su onclick (ver HTML)
 
 // ─── ENDOSCOPIAS ─────────────────────────────────────────────
 // ─── CAMBIAR CONTRASEÑA ──────────────────────────────────────
@@ -3038,6 +3153,10 @@ function resetFormEndoscopia() {
     const el = document.getElementById('endo-' + f);
     if (el) el.value = '';
   });
+  ['endo-boston-cd','endo-boston-ct','endo-boston-ci'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const bBadge = document.getElementById('boston-total-badge'); if (bBadge) bBadge.style.display = 'none';
   const anlg = document.getElementById('endo-analgesia');
   if (anlg) anlg.value = '';
   const regAlc = document.getElementById('endo-region-alcanzada');
@@ -3226,6 +3345,9 @@ async function submitEndoscopia(generarPDF = false) {
     esofago:         informeTexto,
     Endoscopia:      document.getElementById('endo-endoscopia-tipo').value,
     RegionAlcanzada: document.getElementById('endo-region').value,
+    bostonCD:        (document.getElementById('endo-boston-cd')||{}).value || '',
+    bostonCT:        (document.getElementById('endo-boston-ct')||{}).value || '',
+    bostonCI:        (document.getElementById('endo-boston-ci')||{}).value || '',
     impresionDiagnostica: document.getElementById('endo-impresion').value,
     analgesia:       document.getElementById('endo-analgesia').value,
     anestesista:     document.getElementById('endo-anestesista').value,
@@ -3525,6 +3647,13 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   const informe         = e.esofago || e.colonInforme || '';
   const regionAlcanzada = e.RegionAlcanzada || e.regionAlcanzada || e.region || '';
   const tipoEndo        = e.Endoscopia || e.estomago || '—';
+  const _bCD = (e.bostonCD !== undefined && e.bostonCD !== '') ? parseInt(e.bostonCD) : null;
+  const _bCT = (e.bostonCT !== undefined && e.bostonCT !== '') ? parseInt(e.bostonCT) : null;
+  const _bCI = (e.bostonCI !== undefined && e.bostonCI !== '') ? parseInt(e.bostonCI) : null;
+  const bostonHtml = (_bCD !== null || _bCT !== null || _bCI !== null)
+    ? (() => { const tot=(_bCD||0)+(_bCT||0)+(_bCI||0);
+        return `<span style="display:inline-block;background:#d4f5e4;color:#155a32;font-size:10px;font-weight:800;padding:2px 12px;border-radius:20px;text-transform:uppercase;border:1px solid #a8e6c6;margin-left:4px">BOSTON: ${tot}/9 &nbsp;&middot;&nbsp; CD: ${_bCD!==null?_bCD:'—'}/3 &nbsp;&middot;&nbsp; CT: ${_bCT!==null?_bCT:'—'}/3 &nbsp;&middot;&nbsp; CI: ${_bCI!==null?_bCI:'—'}/3</span>`; })()
+    : '';
   const fecha       = fmtFechaPDF(e.fecha);
 
   // ── FIRMA: URL pública de Drive configurada en el sistema ──────────────
@@ -3695,6 +3824,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
       <span style="background:#d4f5e4;color:#1a7a4a;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;border:1px solid #a8e6c6">
         Región Alcanzada: ${regionAlcanzada}
       </span>` : ''}
+    ${bostonHtml}
     </div>
     ${informe
       ? `<div class="informe-text">${informe}</div>`
