@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- GastroCDELU index.html · 2026-03-10 18:00 ARG -->
 <!-- ============================================================ -->
-<!-- Gastro CDELU — 2026-03-11 19:00 ARG - index.html (Frontend SPA)                    -->
+<!-- Gastro CDELU — 2026-03-11 20:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
 <!-- Etapa 1: Auth + Pacientes + HC + Consultas                   -->
 <!-- ============================================================ -->
@@ -3519,7 +3519,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   const fotos    = todasFotos.filter(url => !url.includes('/file/d/'));
   const pdfsMigrados = todasFotos.filter(url => url.includes('/file/d/'));
   const fotoImgs = fotos.map(url =>
-    `<img src="${driveThumb(url)}" style="width:4.2cm;height:4.2cm;object-fit:cover;border-radius:6px;border:1px solid #ddd;display:block">`
+    `<img src="${driveThumb(url)}">`
   ).join('');
 
   const informe         = e.esofago || e.colonInforme || '';
@@ -3602,10 +3602,16 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .diag-anest b { color:#111; }
 
   /* ── FOTOS + FIRMA ── */
-  .bottom-row { display:flex; align-items:flex-end; gap:12px; padding:4px 14px 6px; break-inside:avoid; page-break-inside:avoid; }
-  .fotos-wrap { display:flex; gap:6px; flex-wrap:wrap; flex:1; align-content:flex-start; }
-  .firma-wrap { text-align:center; min-width:170px; }
-  .firma-img { width:165px; max-height:70px; object-fit:contain; display:block; margin:0 auto 2px; }
+  /* fotos en grid 4 columnas, firma debajo separada */
+  .fotos-firma-wrap { padding:4px 14px 0; break-inside:avoid; page-break-inside:avoid; }
+  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-bottom:6px; }
+  .fotos-grid img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:5px; border:1px solid #ddd; display:block; }
+  .firma-row { display:flex; justify-content:flex-end; padding:0 0 4px; }
+  .firma-wrap { text-align:center; min-width:160px; }
+  .firma-img { width:155px; max-height:60px; object-fit:contain; display:block; margin:0 auto 2px; }
+  /* compat — mantener bottom-row por si se usa en otro lado */
+  .bottom-row { display:flex; align-items:flex-end; gap:12px; padding:4px 14px 6px; }
+  .fotos-wrap { display:flex; gap:6px; flex-wrap:wrap; flex:1; }
   .firma-name { font-size:11px; font-weight:800; }
   .firma-mp, .firma-mn { font-size:9.5px; color:#555; }
 
@@ -3724,16 +3730,16 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
 
 
   <!-- FOTOS + FIRMA -->
-  <div class="bottom-row">
-    <div class="fotos-wrap">
-      ${fotoImgs}
-    </div>
-    <div class="firma-wrap">
-      ${firmaImgHtml}
-      <div style="width:165px;height:1px;background:#1a7a4a;margin:4px auto 5px"></div>
-      <div class="firma-name">Dra. Lorena Notari</div>
-      <div class="firma-mp">MP 12.710</div>
-      <div class="firma-mn">MN 126.095</div>
+  <div class="fotos-firma-wrap">
+    ${fotoImgs ? `<div class="fotos-grid">${fotoImgs}</div>` : ''}
+    <div class="firma-row">
+      <div class="firma-wrap">
+        ${firmaImgHtml}
+        <div style="width:155px;height:1px;background:#1a7a4a;margin:3px auto 4px"></div>
+        <div class="firma-name">Dra. Lorena Notari</div>
+        <div class="firma-mp">MP 12.710</div>
+        <div class="firma-mn">MN 126.095</div>
+      </div>
     </div>
   </div>
 
@@ -3754,7 +3760,6 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
 </body>
 </html>`;
 
-  // Reemplazar título con fileName si se provee (Chrome usa <title> como nombre de archivo al guardar PDF)
   const htmlFinal = fileName
     ? htmlPDF.replace(/(<title>)[^<]*(<\/title>)/, '$1' + fileName + '$2')
     : htmlPDF;
@@ -3764,13 +3769,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   printWin.document.open();
   printWin.document.write(htmlFinal);
   printWin.document.close();
-  // Llamar print() desde la ventana padre con delay — evita el problema de __autoPrint
-  // con document.write (el script interno no puede setearse antes de onload)
-  if (autoPrint) {
-    setTimeout(function() {
-      try { printWin.print(); } catch(e) {}
-    }, 800);
-  }
+  if (autoPrint) setTimeout(function(){ try { printWin.print(); } catch(e){} }, 800);
 }
 
 function confirmarEliminarEndoscopia(id) {
