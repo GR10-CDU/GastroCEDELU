@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- GastroCDELU index.html · 2026-03-10 18:00 ARG -->
 <!-- ============================================================ -->
-<!-- Gastro CDELU — 2026-03-11 20:00 ARG - index.html (Frontend SPA)                    -->
+<!-- Gastro CDELU — 2026-03-11 20:30 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
 <!-- Etapa 1: Auth + Pacientes + HC + Consultas                   -->
 <!-- ============================================================ -->
@@ -3547,14 +3547,14 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;600;700;800;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Inter',Arial,sans-serif; font-size:10.5px; color:#1a1a1a; background:#fff; }
-  .page { padding:0; max-width:794px; margin:0 auto; position:relative; min-height:calc(297mm - 22mm); padding-bottom:28mm; }
+  .page { padding:0; max-width:794px; margin:0 auto; position:relative; min-height:0; padding-bottom:0; }
 
   /* ── HEADER ── */
   .header {
     background:#fff;
-    padding:14px 24px 10px; position:relative; overflow:hidden;
-    border-bottom:3px solid #e0ece6;
-    min-height:82px;
+    padding:10px 24px 8px; position:relative; overflow:hidden;
+    border-bottom:2px solid #e0ece6;
+    min-height:70px;
   }
   /* Círculos grandes con border-radius:50% — solo asoma el arco desde top-right */
   .hdr-circle { position:absolute; border-radius:50%; }
@@ -3569,67 +3569,62 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .hdr-dra { font-size:12px; color:#555; }
 
   /* ── TÍTULO CENTRAL ── */
-  .titulo-wrap { text-align:center; padding:12px 20px 6px; }
-  .titulo-main { font-size:19px; font-weight:900; color:#1a7a4a; letter-spacing:1.2px; text-transform:uppercase; line-height:1; }
+  .titulo-wrap { text-align:center; padding:7px 20px 4px; }
+  .titulo-main { font-size:17px; font-weight:900; color:#1a7a4a; letter-spacing:1.2px; text-transform:uppercase; line-height:1; }
   .titulo-sub  { font-size:10px; color:#555; margin-top:3px; font-weight:400; letter-spacing:.25px; }
 
   /* ── CARD CONTENIDO ── */
-  .card { margin:0 16px 10px; border:1px solid #e0ece6; border-radius:10px; overflow:hidden; }
+  .card { margin:0 12px 6px; border:1px solid #e0ece6; border-radius:10px; overflow:hidden; }
 
   /* ── SECCIÓN BADGE ── */
-  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:13px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; padding:3px 10px; border-radius:4px; margin:10px 14px 6px; }
+  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:12px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; padding:2px 8px; border-radius:4px; margin:7px 12px 4px; }
 
   /* ── TABLA PACIENTE ── */
   .pac-nombre { font-size:15px; font-weight:900; color:#111; padding:0 14px 4px; }
   .pac-row    { display:flex; gap:0; border-top:1px solid #e8f2ec; }
-  .pac-cell   { flex:1; padding:5px 14px; border-right:1px solid #e8f2ec; }
+  .pac-cell   { flex:1; padding:3px 12px; border-right:1px solid #e8f2ec; }
   .pac-cell:last-child { border-right:none; }
   .pac-lbl { font-size:12.5px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.5px; }
   .pac-val { font-size:13px; font-weight:600; margin-top:1px; }
-  .pac-row-full { padding:5px 14px; border-top:1px solid #e8f2ec; display:flex; gap:24px; }
+  .pac-row-full { padding:3px 12px; border-top:1px solid #e8f2ec; display:flex; gap:24px; }
 
   /* ── INFORME ── */
-  .informe-text { font-size:12.5px; line-height:1.08; white-space:pre-wrap; padding:8px 14px 10px; color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
+  .informe-text { font-size:12px; line-height:1.05; white-space:pre-wrap; padding:5px 12px 7px; color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
 
   /* ── DIAGNÓSTICO ── */
-  .diag-wrap { margin:0 14px 10px; }
-  .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:6px; padding:8px 14px; }
+  .diag-wrap { margin:0 12px 6px; }
+  .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:6px; padding:5px 12px; }
   .diag-row { display:flex; gap:20px; }
   .diag-bullets { flex:1; }
-  .diag-bullet { display:flex; align-items:flex-start; gap:6px; margin-bottom:3px; font-size:13px; font-weight:600; }
+  .diag-bullet { display:flex; align-items:flex-start; gap:6px; margin-bottom:2px; font-size:12px; font-weight:600; }
   .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:14px; line-height:1; margin-top:-1px; }
   .diag-anest { font-size:10px; color:#555; text-align:right; white-space:nowrap; padding-top:2px; }
   .diag-anest b { color:#111; }
 
-  /* ── FOTOS + FIRMA ── */
-  /* fotos en grid 4 columnas, firma debajo separada */
-  .fotos-firma-wrap { padding:4px 14px 0; break-inside:avoid; page-break-inside:avoid; }
-  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-bottom:6px; }
-  .fotos-grid img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:5px; border:1px solid #ddd; display:block; }
-  .firma-row { display:flex; justify-content:flex-end; padding:0 0 4px; }
-  .firma-wrap { text-align:center; min-width:160px; }
-  .firma-img { width:155px; max-height:60px; object-fit:contain; display:block; margin:0 auto 2px; }
-  /* compat — mantener bottom-row por si se usa en otro lado */
-  .bottom-row { display:flex; align-items:flex-end; gap:12px; padding:4px 14px 6px; }
-  .fotos-wrap { display:flex; gap:6px; flex-wrap:wrap; flex:1; }
-  .firma-name { font-size:11px; font-weight:800; }
-  .firma-mp, .firma-mn { font-size:9.5px; color:#555; }
+  /* ── FOTOS: grid 4 columnas ── */
+  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; padding:4px 14px 0; break-inside:avoid; page-break-inside:avoid; }
+  .fotos-grid img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:4px; border:1px solid #ddd; display:block; }
 
-  /* ── FOOTER ── */
-  .footer { border-top:2px solid #1a7a4a; padding:8px 20px; text-align:center; font-size:9.5px; color:#555; line-height:1.5; position:fixed; bottom:0; left:0; right:0; background:#fff; }
+  /* ── FIRMA: fila propia alineada a la derecha ── */
+  .firma-row { display:flex; justify-content:flex-end; padding:4px 14px 4px; }
+  .firma-wrap { text-align:center; min-width:150px; }
+  .firma-img { width:148px; max-height:56px; object-fit:contain; display:block; margin:0 auto 2px; }
+  .firma-name { font-size:10.5px; font-weight:800; }
+  .firma-mp, .firma-mn { font-size:9px; color:#555; }
+
+  /* ── FOOTER estático — no fixed, nunca rompe a 2da pág ── */
+  .footer { border-top:2px solid #1a7a4a; padding:5px 20px; text-align:center; font-size:9px; color:#555; line-height:1.4; background:#fff; margin-top:4px; }
   .footer b { color:#1a7a4a; }
-  .footer-dots { color:#1a7a4a; margin:0 6px; }
+  .footer-dots { color:#1a7a4a; margin:0 5px; }
 
   @media print {
-    html,body{margin:0;padding:0}
-    .page{max-width:100%}
+    html,body { margin:0; padding:0; }
+    .page { max-width:100%; padding-bottom:0; }
     * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
-    .footer { position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:2px solid #1a7a4a; }
-    .page { padding-bottom:28mm; }
   }
   @page {
     size: A4 portrait;
-    margin: 12mm 10mm 10mm 10mm;
+    margin: 10mm 10mm 8mm 10mm;
   }
 </style>
 </head>
@@ -3729,21 +3724,21 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   </div>
 
 
-  <!-- FOTOS + FIRMA -->
-  <div class="fotos-firma-wrap">
-    ${fotoImgs ? `<div class="fotos-grid">${fotoImgs}</div>` : ''}
-    <div class="firma-row">
-      <div class="firma-wrap">
-        ${firmaImgHtml}
-        <div style="width:155px;height:1px;background:#1a7a4a;margin:3px auto 4px"></div>
-        <div class="firma-name">Dra. Lorena Notari</div>
-        <div class="firma-mp">MP 12.710</div>
-        <div class="firma-mn">MN 126.095</div>
-      </div>
+  <!-- FOTOS (grid 4 col) -->
+  ${fotoImgs ? `<div class="fotos-grid">${fotoImgs}</div>` : ''}
+
+  <!-- FIRMA -->
+  <div class="firma-row">
+    <div class="firma-wrap">
+      ${firmaImgHtml}
+      <div style="width:148px;height:1px;background:#1a7a4a;margin:3px auto 3px"></div>
+      <div class="firma-name">Dra. Lorena Notari</div>
+      <div class="firma-mp">MP 12.710</div>
+      <div class="firma-mn">MN 126.095</div>
     </div>
   </div>
 
-  <!-- FOOTER -->
+  <!-- FOOTER estático -->
   <div class="footer">
     <b>Clínica Uruguay SRL</b>
     <span class="footer-dots">•</span>
