@@ -2371,16 +2371,16 @@ async function abrirPaciente(id) {
 
 function abrirFiliatorios() {
   const p = App.pacienteActual;
-  if (!p) return;
+  if (!p) { toast('No hay paciente cargado', 'error'); return; }
   const m = document.getElementById('modal-filiatorios');
   document.getElementById('fil-nombre').textContent = p.apellidoNombre || '—';
   document.getElementById('fil-dni').textContent    = p.dni || '—';
-  document.getElementById('fil-fnac').textContent   = p.fnac || p.fechaNacimiento || '—';
+  document.getElementById('fil-fnac').textContent   = p.fechaNac || '—';
   document.getElementById('fil-edad').textContent   = p.edad ? p.edad + ' años' : '—';
   document.getElementById('fil-sexo').textContent   = p.sexo || '—';
   document.getElementById('fil-os').textContent     = p.obraSocial || '—';
   document.getElementById('fil-afil').textContent   = p.nroAfiliado || '—';
-  document.getElementById('fil-dir').textContent    = p.direccion || '—';
+  document.getElementById('fil-dir').textContent    = p.direccion || p.lugarResidencia || '—';
   document.getElementById('fil-tel').textContent    = p.telefono || '—';
   m.style.display = 'flex';
 }
