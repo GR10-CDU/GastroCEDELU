@@ -2369,15 +2369,100 @@ async function abrirPaciente(id) {
   }
 }
 
+function formatFechaNac(raw) {
+  if (!raw) return '—';
+  const s = String(raw).trim();
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) return s;
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+  return s;
+}
+
+function calcularEdad(fechaNac) {
+  if (!fechaNac) return null;
+  const s = String(fechaNac).trim();
+  let d, m, y;
+  // DD/MM/YYYY
+  const dmy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (dmy) { d = +dmy[1]; m = +dmy[2]; y = +dmy[3]; }
+  else {
+    // ISO
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) { y = +iso[1]; m = +iso[2]; d = +iso[3]; }
+    else return null;
+  }
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - y;
+  const cumple = new Date(hoy.getFullYear(), m - 1, d);
+  if (hoy < cumple) edad--;
+  return edad > 0 && edad < 130 ? edad : null;
+}
+
+function inferirSexo(nombre) {
+  if (!nombre) return null;
+  // Tomar el primer nombre (puede ser "ABBUD NADIA" → buscar en todas las palabras)
+  const palabras = nombre.toUpperCase().split(/[\s,]+/).filter(Boolean);
+
+  const femeninos = new Set([
+    'MARIA','MARTA','ANA','LAURA','LUCIA','PATRICIA','ANDREA','CLAUDIA','GABRIELA',
+    'CAROLINA','SILVINA','MARCELA','ROXANA','GRACIELA','MONICA','SANDRA','VALERIA',
+    'DANIELA','FLORENCIA','NATALIA','CECILIA','VERONICA','ALEJANDRA','VIVIANA',
+    'SUSANA','ELENA','BEATRIZ','ROSA','MIRTA','NORA','ALICIA','NELIDA','NORMA',
+    'STELLA','ELSA','IRMA','DORA','LIDIA','RAQUEL','CRISTINA','SILVIA','ADRIANA',
+    'KARINA','PAOLA','ROMINA','SABRINA','NOELIA','MICAELA','CINTIA','BRENDA',
+    'BELEN','AGUSTINA','CAMILA','JULIETA','VALENTINA','VICTORIA','JIMENA',
+    'MELINA','GISELA','YANINA','LORENA','MARIELA','VANESA','NADIA','SOLEDAD',
+    'ANALIA','CARINA','GRISELDA','GLADYS','ESTELA','LILIANA','MABEL','INES',
+    'YOLANDA','HILDA','OLGA','ALBA','HAYDEE','GRACIELA','EMILIA','ISABEL',
+    'MERCEDES','DOLORES','PILAR','TERESA','LUISA','CLARA','SARA','RITA','JULIA',
+    'PAULA','ROCIO','MAGALI','MARISOL','GISELLE','JOHANA','DAIANA','MARINA',
+    'CELIA','MIRIAM','NOEMÍ','NOEMI','ZULMA','ELBA','EDITH','MABEL','NELLY',
+    'ALDANA','AILEN','AILÉN','ANAHI','ANAHÍ','CELESTE','MAILÉN','MAILEN',
+    'PRISCILA','LOURDES','SOFÍA','SOFIA','ANTONELLA','GIULIANA','MORENA',
+    'MELANIE','TANIA','TANYA','WENDY','LARA','ABRIL','SERENA','CANDELA',
+    'CATALINA','MARTINA','MAGDALENA','JOSEFINA','FRANCISCA','TRINIDAD',
+    'ESPERANZA','CONCEPCION','CONCEPCIÓN','INMACULADA','DOLORES','ENCARNACION',
+    'AMPARO','ASUNCION','ASUNCIÓN','REMEDIOS','MERCEDES','PIEDAD','CARIDAD',
+    'FATIMA','FÁTIMA','LORETO','LETICIA','ANABELLA','MACARENA','NATHALIA'
+  ]);
+
+  const masculinos = new Set([
+    'JUAN','JOSE','JORGE','CARLOS','LUIS','MIGUEL','ROBERTO','DANIEL','PABLO',
+    'SERGIO','MARCELO','DIEGO','MARIO','GABRIEL','HUGO','OSCAR','RAMÓN','RAMON',
+    'GUSTAVO','ALEJANDRO','SEBASTIAN','HERNAN','MARTIN','NICOLAS','FEDERICO',
+    'LEONARDO','CHRISTIAN','CRISTIAN','MAXIMILIANO','EZEQUIEL','ANDRES','MATIAS',
+    'FACUNDO','LUCAS','IVAN','FRANCO','LEANDRO','DAMIAN','RODRIGO','CLAUDIO',
+    'JAVIER','ALBERTO','Fernando','EDUARDO','ERNESTO','RICARDO','RUBEN','OMAR',
+    'RAUL','NESTOR','HECTOR','VICTOR','WALTER','ARIEL','HERNAN','SANTIAGO',
+    'IGNACIO','GONZALO','EMILIANO','ALAN','BRIAN','JONATHAN','KEVIN','MATEO',
+    'TOMAS','NICOLAS','AGUSTIN','FRANCO','LAUTARO','THIAGO','NAHUEL','BRAIAN',
+    'ELIAN','ALEXIS','MAURO','NORBERTO','ALBERTO','ANTONIO','PEDRO','MANUEL',
+    'FRANCISCO','PABLO','RAFAEL','HORACIO','ENRIQUE','ALFREDO','JULIO','HUGO',
+    'EUGENIO','ADRIANO','PATRICIO','GUSTAVO','GERARDO','HÉCTOR','HÉCTOR',
+    'DARIO','DARÍO','ESTEBAN','MARCOS','ADRIÁN','ADRIAN','CRISTÓBAL','ABEL',
+    'ROLANDO','ORLANDO','OSVALDO','ARNALDO','REINALDO','ROLANDO','ROGELIO',
+    'DOMINGO','ARMANDO','CAMILO','WALDO','NELSON','WILSON','EDGAR','EDGAR',
+    'ANIBAL','ANÍBAL','EXEQUIEL','EZEQUIEL','ISMAEL','NAHUEL','AXEL','BAUTISTA'
+  ]);
+
+  for (const p of palabras) {
+    if (femeninos.has(p)) return 'Femenino';
+    if (masculinos.has(p)) return 'Masculino';
+  }
+  return null;
+}
+
 function abrirFiliatorios() {
   const p = App.pacienteActual;
   if (!p) { toast('No hay paciente cargado', 'error'); return; }
   const m = document.getElementById('modal-filiatorios');
   document.getElementById('fil-nombre').textContent = p.apellidoNombre || '—';
   document.getElementById('fil-dni').textContent    = p.dni || '—';
-  document.getElementById('fil-fnac').textContent   = p.fechaNac || '—';
-  document.getElementById('fil-edad').textContent   = p.edad ? p.edad + ' años' : '—';
-  document.getElementById('fil-sexo').textContent   = p.sexo || '—';
+  document.getElementById('fil-fnac').textContent   = formatFechaNac(p.fechaNac);
+  const edadCalc = calcularEdad(p.fechaNac) || p.edad;
+  document.getElementById('fil-edad').textContent   = edadCalc ? edadCalc + ' años' : '—';
+  const sexoInf = p.sexo || inferirSexo(p.apellidoNombre) || '—';
+  document.getElementById('fil-sexo').textContent   = sexoInf;
   document.getElementById('fil-os').textContent     = p.obraSocial || '—';
   document.getElementById('fil-afil').textContent   = p.nroAfiliado || '—';
   document.getElementById('fil-dir').textContent    = p.direccion || p.lugarResidencia || '—';
