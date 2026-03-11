@@ -683,7 +683,7 @@ button { cursor: pointer; border: none; }
   font-weight: 700;
   margin-bottom: 14px;
   background: #155a32;
-  padding: 7px 14px;
+  padding: 7px 16px;
   border-radius: 6px;
   display: block;
   width: 100%;
@@ -694,17 +694,19 @@ button { cursor: pointer; border: none; }
 .hc-field label {
   font-size: 11px;
   color: #ffffff;
-  background: #1a7a4a;
-  padding: 3px 10px;
+  background: #2e7d52;
+  padding: 3px 12px;
   border-radius: 4px;
   margin-bottom: 6px;
-  display: inline-block;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 600;
 }
 .hc-field p {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text);
   line-height: 1.6;
   white-space: pre-wrap;
@@ -757,13 +759,13 @@ button { cursor: pointer; border: none; }
   letter-spacing: 1.5px;
   color: #ffffff;
   background: #2e7d52;
-  padding: 3px 10px;
+  padding: 3px 12px;
   border-radius: 4px;
   font-weight: 600;
   display: block;
-  margin-bottom: 6px;
   width: 100%;
   box-sizing: border-box;
+  margin-bottom: 6px;
 }
 .consulta-field p { font-size: 15px; line-height: 1.6; color: var(--text); }
 
@@ -1826,7 +1828,6 @@ color:#555;
 <div class="modal-overlay" id="modal-consulta">
   <div class="modal modal-lg">
     <h2>Nueva Consulta / Evolución</h2>
-
     <div class="section-divider"><span>Datos de la Consulta</span></div>
     <div class="field-row cols-2">
       <div class="field">
@@ -1843,7 +1844,6 @@ color:#555;
       <label>Motivo de Consulta</label>
       <textarea id="cons-motivo" rows="3" placeholder="Motivo de la consulta..."></textarea>
     </div>
-
     <div class="section-divider" style="margin-top:20px"><span>Evolución y Conducta</span></div>
     <div class="field">
       <label>Evolución</label>
@@ -2404,14 +2404,16 @@ function renderHC(hc) {
         ${hcField('Estudios Complementarios', hc.recomendaciones2)}
         ${hcField('Examen Físico', hc.exFisico)}
       </div>
+      ${hc.diagPresuntivo ? `
       <div class="hc-section">
         <div class="hc-section-title">Diagnóstico</div>
         ${hcField('Diagnóstico Presuntivo', hc.diagPresuntivo)}
-      </div>
+      </div>` : ''}
+      ${hc.tratamiento ? `
       <div class="hc-section">
         <div class="hc-section-title">Conducta / Tratamiento</div>
         ${hcField('Conducta / Tratamiento', hc.tratamiento)}
-      </div>
+      </div>` : ''}
       ${meds.length ? `
       <div class="hc-section">
         <div class="hc-section-title">Medicamentos</div>
@@ -2422,11 +2424,12 @@ function renderHC(hc) {
           </div>`).join('')}
         </div>
       </div>` : ''}
+      ${(hc.control || hc.pendiente) ? `
       <div class="hc-section">
         <div class="hc-section-title">Seguimiento</div>
         ${hcField('Control', hc.control)}
         ${hcField('Pendiente', hc.pendiente)}
-      </div>
+      </div>` : ''}
     </div>`;
 }
 
@@ -2765,13 +2768,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const savedSession = localStorage.getItem('gastro_session');
   if (savedSession) {
     try {
-      App.session = JSON.parse(savedSession);
-      if (App.session && App.session.medicoId) {
-        initApp();
-      }
-    } catch(e) {
-      localStorage.removeItem('gastro_session');
-    }
+      const s = JSON.parse(savedSession);
+      if (s && s.medicoId) { App.session = s; initApp(); }
+    } catch(e) { localStorage.removeItem('gastro_session'); }
   }
 
   const fnacInput = document.getElementById('pac-fnac');
