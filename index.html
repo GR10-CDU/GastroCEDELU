@@ -365,7 +365,7 @@ button { cursor: pointer; border: none; }
   overflow: hidden;
   height: 100vh;
 }
-.page { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+.page { display: none; flex-direction: column; height: 100%; overflow-y: auto; overflow-x: hidden; }
 .page.active { display: flex; }
 .page-header {
   padding: 20px 28px;
@@ -1591,13 +1591,11 @@ color:#555;
               <!-- rango de fechas -->
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                 <label style="font-size:12px;color:var(--text2);font-weight:600;white-space:nowrap">Rango:</label>
-                <input type="text" id="mis-endo-desde" placeholder="DD/MM/AAAA" maxlength="10"
-                  oninput="autoFmtFecha(this)"
-                  style="border:1px solid var(--border1);border-radius:6px;padding:5px 8px;font-size:13px;background:var(--bg1);color:var(--text1);outline:none;width:110px;text-align:center">
+                <input type="date" id="mis-endo-desde"
+                  style="border:1px solid var(--border1);border-radius:6px;padding:5px 8px;font-size:13px;background:var(--bg1);color:var(--text1);outline:none;cursor:pointer">
                 <span style="font-size:12px;color:var(--text2)">→</span>
-                <input type="text" id="mis-endo-hasta" placeholder="DD/MM/AAAA" maxlength="10"
-                  oninput="autoFmtFecha(this)"
-                  style="border:1px solid var(--border1);border-radius:6px;padding:5px 8px;font-size:13px;background:var(--bg1);color:var(--text1);outline:none;width:110px;text-align:center">
+                <input type="date" id="mis-endo-hasta"
+                  style="border:1px solid var(--border1);border-radius:6px;padding:5px 8px;font-size:13px;background:var(--bg1);color:var(--text1);outline:none;cursor:pointer">
                 <button onclick="aplicarRangoMisEndo()"
                   style="background:var(--primary);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:13px;font-weight:600;cursor:pointer">Ver</button>
               </div>
@@ -2407,9 +2405,10 @@ function _parseDMY(s) {
 }
 
 // ─── filtra _misEndoAllData por rango de fechas ───────────────
+// desdeStr / hastaStr vienen como YYYY-MM-DD (valor de input type=date)
 function _filtrarPorRango(desdeStr, hastaStr) {
-  const desde = _parseDMY(desdeStr);
-  const hasta = hastaStr ? (() => { const d = _parseDMY(hastaStr); if(d){d.setHours(23,59,59);} return d; })() : null;
+  const desde = desdeStr ? new Date(desdeStr + 'T00:00:00') : null;
+  const hasta = hastaStr ? new Date(hastaStr + 'T23:59:59') : null;
   return _misEndoAllData.filter(e => {
     const d = _parseDMY((e.fecha||'').trim());
     if (!d) return false;
@@ -2455,18 +2454,17 @@ async function onMisEndoMesChange() {
 
 // ─── callback: botón Ver rango ────────────────────────────────
 async function aplicarRangoMisEndo() {
-  const desde = document.getElementById('mis-endo-desde').value.trim();
-  const hasta = document.getElementById('mis-endo-hasta').value.trim();
+  const desde = document.getElementById('mis-endo-desde').value; // YYYY-MM-DD
+  const hasta = document.getElementById('mis-endo-hasta').value; // YYYY-MM-DD
   if (!desde && !hasta) { toast('Ingresá al menos una fecha', 'error'); return; }
-  // validar formato si se ingresó algo
-  if (desde && !_parseDMY(desde)) { toast('Fecha "desde" inválida. Usá DD/MM/AAAA', 'error'); return; }
-  if (hasta && !_parseDMY(hasta)) { toast('Fecha "hasta" inválida. Usá DD/MM/AAAA', 'error'); return; }
 
   _misEndoFiltro = { tipo: 'rango', desde, hasta };
 
+  const fmtLabel = s => s ? s.split('-').reverse().join('/') : '';
+
   if (_misEndoAllData.length > 0) {
-    const rows = _filtrarPorRango(desde, hasta);
-    const label = [desde ? `desde ${desde}` : '', hasta ? `hasta ${hasta}` : ''].filter(Boolean).join(' ');
+    const rows  = _filtrarPorRango(desde, hasta);
+    const label = [desde ? `desde ${fmtLabel(desde)}` : '', hasta ? `hasta ${fmtLabel(hasta)}` : ''].filter(Boolean).join(' ');
     _showMisEndoBadge(rows.length, label);
     _renderMisEndoLista(rows);
     document.getElementById('mis-endo-subtitle').textContent = label;
