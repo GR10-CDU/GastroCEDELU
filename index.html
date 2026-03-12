@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 02:09 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 11:45 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1296,6 +1296,14 @@ color:#555;
         <div class="nav-item" onclick="showPage('admin')" id="nav-admin" style="display:none">
           <span class="icon">◎</span> Usuarios
         </div>
+        <div class="nav-section">Estudios</div>
+        <div class="nav-item" onclick="nuevaEndoscopiaDesdeNav()" id="nav-endoscopia">
+          <span class="icon">◈</span> Nueva Endoscopía
+        </div>
+        <div class="nav-section">Análisis</div>
+        <div class="nav-item" onclick="showPage('estadisticas')" id="nav-estadisticas">
+          <span class="icon">▦</span> Estadísticas
+        </div>
         <div class="nav-section">Cuenta</div>
         <div class="nav-item" onclick="showModal('modal-pass')">
           <span class="icon">◇</span> Cambiar Contraseña
@@ -1574,6 +1582,57 @@ color:#555;
       </div>
 
 
+
+
+      <!-- ════════ PÁGINA: ESTADÍSTICAS ════════ -->
+      <div class="page" id="page-estadisticas">
+        <div class="page-header">
+          <div>
+            <h1>Estadísticas</h1>
+            <div class="subtitle">Análisis de historias clínicas y diagnósticos</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="_reloadStats()" id="btn-reload-stats">⟳ Actualizar</button>
+        </div>
+        <div class="page-body">
+          <div id="stats-loading" style="display:flex;align-items:center;gap:12px;color:var(--muted);padding:40px;font-size:14px;">
+            <div style="font-size:20px;animation:spin 1s linear infinite">⊙</div>&nbsp;Cargando datos clínicos…
+          </div>
+          <div id="stats-content" style="display:none">
+            <div id="stats-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
+            <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">
+              <div class="stab active" id="stab-motivos"   onclick="switchStatsTab('motivos')"   style="padding:8px 16px;cursor:pointer;font-size:13px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px">Motivos</div>
+              <div class="stab"        id="stab-diags"     onclick="switchStatsTab('diags')"     style="padding:8px 16px;cursor:pointer;font-size:13px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px">Diagnósticos</div>
+              <div class="stab"        id="stab-tendencia" onclick="switchStatsTab('tendencia')" style="padding:8px 16px;cursor:pointer;font-size:13px;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px">Tendencia</div>
+            </div>
+            <div class="stab-content active" id="stab-content-motivos">
+              <div style="display:grid;grid-template-columns:1fr 220px;gap:24px;align-items:start">
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">
+                    Motivos más frecuentes <span id="stats-badge-motivos" style="font-weight:400;background:var(--card2);padding:2px 8px;border-radius:20px;margin-left:4px"></span>
+                  </div>
+                  <div id="bars-motivos"></div>
+                </div>
+                <div id="pie-motivos-wrap" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:20px"></div>
+              </div>
+            </div>
+            <div class="stab-content" id="stab-content-diags" style="display:none">
+              <div style="display:grid;grid-template-columns:1fr 220px;gap:24px;align-items:start">
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">
+                    Diagnósticos más frecuentes <span id="stats-badge-diags" style="font-weight:400;background:var(--card2);padding:2px 8px;border-radius:20px;margin-left:4px"></span>
+                  </div>
+                  <div id="bars-diags"></div>
+                </div>
+                <div id="pie-diags-wrap" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:20px"></div>
+              </div>
+            </div>
+            <div class="stab-content" id="stab-content-tendencia" style="display:none">
+              <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Consultas por mes</div>
+              <div style="overflow-x:auto;padding-bottom:8px"><div id="chart-tendencia"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div><!-- /main-content -->
   </div><!-- /screen-app -->
@@ -2138,7 +2197,8 @@ function showPage(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page)?.classList.add('active');
   document.getElementById('nav-' + page)?.classList.add('active');
-  if (page === 'admin') loadUsuarios();
+  if (page === 'admin')       loadUsuarios();
+  if (page === 'estadisticas') loadEstadisticas();
 }
 
 function showTab(tab) {
@@ -3399,8 +3459,8 @@ function renderEndoscopias(list) {
       const botonesHtml = esHistorico
         ? `<!-- HISTÓRICO -->
            <span style="background:#78350f;color:#fef3c7;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.5px">HISTÓRICO</span>
-           <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verPDFHistorico('${pdfHistoricoUrl}')" title="Ver PDF original">Ver PDF</button>
-           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirPDFHistorico('${pdfHistoricoUrl}')" title="Imprimir PDF original">🖨</button>`
+           <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verPDFHistoricoById('${e.id}')" title="Ver PDF original">Ver PDF</button>
+           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirPDFHistoricoById('${e.id}')" title="Imprimir PDF original">🖨</button>`
         : `<!-- NUEVO -->
            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verInformeEndoscopia('${e.id}')" title="Ver informe">Ver</button>
            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();descargarInformeEndoscopia('${e.id}')" title="Descargar PDF" style="font-size:15px;padding:6px 10px">⬇</button>\n           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')" title="Imprimir informe">🖨</button>`;
@@ -3433,7 +3493,7 @@ function renderEndoscopias(list) {
               <div style="font-weight:700;color:#92400e;font-size:12px">Registro histórico</div>
               <div style="font-size:11px;color:#78350f">Este estudio fue importado del sistema anterior. El informe original está en el PDF adjunto.</div>
             </div>
-            <a href="${pdfHistoricoUrl}" target="_blank"
+            <a href="#" onclick="event.preventDefault();verPDFHistoricoById('${e.id}')"
                style="margin-left:auto;background:#92400e;color:#fff;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap">
               Abrir PDF →
             </a>
@@ -3526,23 +3586,42 @@ function driveViewerUrl(url) {
   return 'https://drive.google.com/file/d/' + id + '/preview';
 }
 
-// ── PDF HISTÓRICO: ver en nueva pestaña ──────────────────────────────────
-function verPDFHistorico(url) {
-  if (!url) { toast('URL del PDF no disponible', 'error'); return; }
-  const id = driveFileId(url);
-  const previewUrl = id ? 'https://drive.google.com/file/d/' + id + '/view' : url;
-  window.open(previewUrl, '_blank');
+// ── PDF HISTÓRICO: busca la URL por ID desde App.endoscopiasList ─────────
+// Robusto: nunca incrusta URLs en atributos HTML → evita errores de escaping
+function _getPDFHistoricoUrl(endoId) {
+  const list = App.endoscopiasList || [];
+  const e = list.find(x => String(x.id) === String(endoId));
+  if (!e) { toast('Estudio no encontrado', 'error'); return null; }
+  const todasFotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
+  const url = todasFotos.find(u => u && u.includes('/file/d/'));
+  if (!url || url === 'undefined') { toast('PDF no disponible para este estudio', 'warn'); return null; }
+  return url;
 }
 
-// ── PDF HISTÓRICO: abrir para imprimir ───────────────────────────────────
-function imprimirPDFHistorico(url) {
-  if (!url) { toast('URL del PDF no disponible', 'error'); return; }
+function verPDFHistoricoById(endoId) {
+  const url = _getPDFHistoricoUrl(endoId);
+  if (!url) return;
   const id = driveFileId(url);
-  // /preview permite Ctrl+P desde Drive
-  const previewUrl = id ? 'https://drive.google.com/file/d/' + id + '/view' : url;
-  const w = window.open(previewUrl, '_blank');
-  // No podemos invocar print() en ventana de Drive por cross-origin,
-  // se abre directo para que el usuario imprima desde Drive
+  window.open(id ? 'https://drive.google.com/file/d/' + id + '/view' : url, '_blank');
+}
+
+function imprimirPDFHistoricoById(endoId) {
+  const url = _getPDFHistoricoUrl(endoId);
+  if (!url) return;
+  const id = driveFileId(url);
+  window.open(id ? 'https://drive.google.com/file/d/' + id + '/view' : url, '_blank');
+}
+
+// ── PDF HISTÓRICO: ver en nueva pestaña (legacy, mantener por compatibilidad) ──
+function verPDFHistorico(url) {
+  if (!url || url === 'undefined') { toast('URL del PDF no disponible', 'error'); return; }
+  const id = driveFileId(url);
+  window.open(id ? 'https://drive.google.com/file/d/' + id + '/view' : url, '_blank');
+}
+
+// ── PDF HISTÓRICO: abrir para imprimir (legacy) ──────────────────────────
+function imprimirPDFHistorico(url) {
+  verPDFHistorico(url);
 }
 
 // ── INFORME NUEVO: abrir viewer sin imprimir ─────────────────────────────
@@ -3711,6 +3790,26 @@ async function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
     margin: 10mm 10mm 8mm 10mm;
   }
 
+
+/* ── ESTADÍSTICAS ──────────────────────────────────────────── */
+.stab { color: var(--muted2); transition: color .15s; }
+.stab:hover { color: var(--text); }
+.stab.active { color: var(--accent); border-bottom-color: var(--accent) !important; }
+.stab-content { display: none; }
+.stab-content.active { display: block; }
+#stats-kpis .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; }
+.kpi-val { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1.1; word-break: break-word; }
+.kpi-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-top: 4px; }
+.bar-item { margin-bottom: 10px; }
+.bar-row  { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+.bar-label { color: var(--text); font-weight: 500; max-width: 70%; }
+.bar-count { color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+.bar-track { background: var(--card2); border-radius: 4px; height: 8px; overflow: hidden; }
+.bar-fill  { height: 100%; background: linear-gradient(90deg,#1a9c5b,#1565c0); border-radius: 4px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+.bar-fill.diag { background: linear-gradient(90deg,#1565c0,#7c3aed); }
+.pie-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text); margin-bottom: 5px; }
+.pie-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.pie-pct  { margin-left: auto; color: var(--muted); font-weight: 600; padding-left: 8px; }
 </style>
 </head>
 <body>
@@ -4147,6 +4246,153 @@ function insertarPlantillaColon(idx) {
 
 // ─── GENERAR PDF ────────────────────────────────────────────────────────────
 
+
+
+// ── ESTADÍSTICAS ────────────────────────────────────────────────────────────
+
+function _normText(t) {
+  if (!t) return '';
+  return t.toString().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+const MOTIVO_GROUPS = [
+  {label:'Distensión abdominal',       terms:['distension abdominal','distension','meteorismo','gases','flatulencia']},
+  {label:'Acidez / ERGE / Pirosis',    terms:['acidez','pirosis','erge','reflujo','ardor']},
+  {label:'Diarrea',                    terms:['diarrea']},
+  {label:'Epigastralgia',              terms:['epigastralgia','dolor epigastrico','epigastrio']},
+  {label:'Náuseas / Vómitos',          terms:['nausea','vomito','nauseas','arcadas']},
+  {label:'Dolor abdominal',            terms:['dolor abdominal','dolor']},
+  {label:'Constipación',               terms:['constip','estrenimiento','estrenimi']},
+  {label:'Proctorragia / Rectorragia', terms:['proctorragia','sangrado rectal','rectorragia']},
+  {label:'Hígado graso / NASH',        terms:['higado graso','nash','esteatosis','esteatohepatitis']},
+  {label:'Hepatograma alterado',       terms:['hepatograma','transaminasa','ggt','tgo','tgp','fan']},
+  {label:'Pérdida de peso',            terms:['perdida de peso','descenso de peso','adelgaz']},
+  {label:'Colon irritable / SII',      terms:['colon irritable','intestino irritable','sii']},
+];
+const DIAG_GROUPS = [
+  {label:'SIBO',                   terms:['sibo']},
+  {label:'NASH / Hígado graso',    terms:['nash','higado graso','esteatosis','esteatohepatitis']},
+  {label:'ERGE / Esofagitis',      terms:['erge','esofagitis','reflujo','dispepsia','acidez']},
+  {label:'SII / Colon irritable',  terms:['sii','colon irritable','intestino irritable']},
+  {label:'Constipación crónica',   terms:['constip','estrenimiento','estrenimi']},
+  {label:'Cirrosis / Hepatopatía', terms:['cirros','hepatopat','fibrosis hepat','hepatitis cronica']},
+  {label:'Celíaca',                terms:['celiac']},
+  {label:'Hemorroides',            terms:['hemorroid']},
+  {label:'Hepatitis viral',        terms:['hepatitis a','hepatitis b','hepatitis c','hcv','hbv']},
+  {label:'Pancreatitis',           terms:['pancreatit']},
+  {label:'Colitis',                terms:['colitis']},
+  {label:'Gastritis',              terms:['gastritis']},
+];
+function _matchGroup(text, groups) {
+  if (!text) return null;
+  const t = _normText(text);
+  for (const g of groups)
+    for (const term of g.terms)
+      if (t.includes(term)) return g.label;
+  return null;
+}
+const PIE_COLORS = ['#1a9c5b','#1565c0','#7c3aed','#e67e22','#e74c3c','#16a085','#8e44ad','#2980b9','#27ae60','#d35400','#c0392b','#7f8c8d'];
+function _buildPie(data, radius) {
+  const total = data.reduce((s,d)=>s+d.value,0);
+  if (!total) return '<p style="color:var(--muted);font-size:13px;padding:12px 0">Sin datos</p>';
+  const sz=radius*2+4; let startAngle=-Math.PI/2, paths='', legend='';
+  data.forEach((d,i)=>{
+    const pct=d.value/total, angle=pct*2*Math.PI, end=startAngle+angle;
+    const x1=radius+2+radius*Math.cos(startAngle), y1=radius+2+radius*Math.sin(startAngle);
+    const x2=radius+2+radius*Math.cos(end), y2=radius+2+radius*Math.sin(end);
+    const la=angle>Math.PI?1:0, col=PIE_COLORS[i%PIE_COLORS.length];
+    if(pct>0.005) paths+=`<path d="M${radius+2},${radius+2} L${x1.toFixed(1)},${y1.toFixed(1)} A${radius},${radius} 0 ${la},1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${col}" stroke="#fff" stroke-width="1.5"/>`;
+    legend+=`<div class="pie-legend-item"><div class="pie-dot" style="background:${col}"></div><span>${d.label}</span><span class="pie-pct">${Math.round(pct*100)}%</span></div>`;
+    startAngle=end;
+  });
+  return `<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}">${paths}</svg><div style="width:100%">${legend}</div>`;
+}
+function _buildBars(items, maxVal, fillClass) {
+  return items.map(it=>{
+    const pct=maxVal>0?Math.round(it.value/maxVal*100):0;
+    return `<div class="bar-item"><div class="bar-row"><span class="bar-label">${it.label}</span><span class="bar-count">${it.value}</span></div><div class="bar-track"><div class="bar-fill ${fillClass||''}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+function _buildTendencia(byMonth) {
+  if (!byMonth.length) return '<p style="color:var(--muted);padding:20px 0">Sin datos de tendencia</p>';
+  const max=Math.max(...byMonth.map(m=>m.value));
+  const BAR=Math.min(30,Math.floor(700/byMonth.length)-4), STEP=BAR+4;
+  const W=Math.max(600,byMonth.length*STEP+16), H=140, PT=10, PB=42, PL=8, CH=H-PT-PB;
+  const MO=['E','F','M','A','M','J','J','A','S','O','N','D'];
+  const bars=byMonth.map((m,i)=>{
+    const bh=max>0?Math.round(m.value/max*CH):0, x=PL+i*STEP, y=PT+CH-bh;
+    const mo=MO[parseInt(m.label.slice(5,7))-1]||'';
+    const yr=(i===0||m.label.endsWith('-01'))?`<text x="${(x+BAR/2).toFixed(1)}" y="${H-PB+28}" text-anchor="middle" font-size="8" fill="var(--muted2)" font-weight="600">${m.label.slice(0,4)}</text>`:'';
+    return `<rect x="${x}" y="${y}" width="${BAR}" height="${bh}" rx="2" fill="url(#tg)" opacity=".85"/>
+      <text x="${(x+BAR/2).toFixed(1)}" y="${H-PB+14}" text-anchor="middle" font-size="9" fill="var(--muted)">${mo}</text>${yr}
+      ${bh>14?`<text x="${(x+BAR/2).toFixed(1)}" y="${y-3}" text-anchor="middle" font-size="8" fill="var(--accent)">${m.value}</text>`:''}`;
+  }).join('');
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="min-width:${W}px"><defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a9c5b"/><stop offset="100%" stop-color="#1565c0"/></linearGradient></defs>${bars}</svg>`;
+}
+let _statsCache = null;
+function _reloadStats() { _statsCache = null; loadEstadisticas(); }
+async function loadEstadisticas() {
+  const loadEl=document.getElementById('stats-loading'), ctEl=document.getElementById('stats-content'), btnEl=document.getElementById('btn-reload-stats');
+  if (_statsCache) { renderStats_(_statsCache); return; }
+  if (loadEl) { loadEl.style.display='flex'; loadEl.innerHTML='<div style="font-size:20px;animation:spin 1s linear infinite">⊙</div>&nbsp;Cargando datos clínicos…'; }
+  if (ctEl) ctEl.style.display='none';
+  if (btnEl) btnEl.disabled=true;
+  try {
+    const res = await serverCall('getEstadisticasHC', App.session.medicoId, App.session.rol);
+    if (!res.ok) throw new Error(res.error||'Error del servidor');
+    _statsCache = res;
+    renderStats_(res);
+  } catch(e) {
+    console.error('loadEstadisticas:', e);
+    if (loadEl) loadEl.innerHTML=`<div style="color:var(--danger);padding:20px">⚠ Error: ${e.message}</div>`;
+  } finally {
+    if (btnEl) btnEl.disabled=false;
+  }
+}
+function renderStats_(res) {
+  const allHC=res.data||[], totalPacientes=res.totalPacientes||0;
+  const motivoCounts={}, diagCounts={}, byMonth={};
+  allHC.forEach(hc=>{
+    const mL=_matchGroup(hc.motivoConsulta, MOTIVO_GROUPS); if (mL) motivoCounts[mL]=(motivoCounts[mL]||0)+1;
+    const dL=_matchGroup(hc.diagPresuntivo, DIAG_GROUPS);   if (dL) diagCounts[dL]=(diagCounts[dL]||0)+1;
+    const raw=hc.fechaConsulta;
+    if (raw) {
+      const s=String(raw); let ym='';
+      if(s.includes('/')) { const p=s.split('/'); if(p.length===3) ym=p[2]+'-'+p[1].padStart(2,'0'); }
+      else if(s.includes('-')) ym=s.slice(0,7);
+      if(ym.length===7) byMonth[ym]=(byMonth[ym]||0)+1;
+    }
+  });
+  const topM=Object.entries(motivoCounts).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([label,value])=>({label,value}));
+  const topD=Object.entries(diagCounts).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([label,value])=>({label,value}));
+  const months=Object.entries(byMonth).sort((a,b)=>a[0].localeCompare(b[0])).map(([label,value])=>({label,value}));
+  const kpiEl=document.getElementById('stats-kpis');
+  if (kpiEl) kpiEl.innerHTML=`
+    <div class="kpi-card"><div class="kpi-val">${totalPacientes}</div><div class="kpi-lbl">Pacientes</div></div>
+    <div class="kpi-card"><div class="kpi-val">${allHC.length}</div><div class="kpi-lbl">Historias Clínicas</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="font-size:16px">${topM[0]?.label||'—'}</div><div class="kpi-lbl">Motivo más frecuente</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="font-size:16px">${topD[0]?.label||'—'}</div><div class="kpi-lbl">Diagnóstico más frecuente</div></div>`;
+  const set=(id,html)=>{ const el=document.getElementById(id); if(el) el.innerHTML=html; };
+  set('bars-motivos', _buildBars(topM, topM[0]?.value||1,''));
+  set('stats-badge-motivos', topM.length+' categorías');
+  set('pie-motivos-wrap', _buildPie(topM.slice(0,8),80));
+  set('bars-diags', _buildBars(topD, topD[0]?.value||1,'diag'));
+  set('stats-badge-diags', topD.length+' categorías');
+  set('pie-diags-wrap', _buildPie(topD.slice(0,8),80));
+  set('chart-tendencia', _buildTendencia(months));
+  const loadEl=document.getElementById('stats-loading'), ctEl=document.getElementById('stats-content');
+  if (loadEl) loadEl.style.display='none';
+  if (ctEl) ctEl.style.display='block';
+}
+function switchStatsTab(tab) {
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.stab-content').forEach(t=>{ t.classList.remove('active'); t.style.display='none'; });
+  const tEl=document.getElementById('stab-'+tab), cEl=document.getElementById('stab-content-'+tab);
+  if (tEl) tEl.classList.add('active');
+  if (cEl) { cEl.classList.add('active'); cEl.style.display='block'; }
+}
 
 </script>
 
