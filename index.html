@@ -1614,6 +1614,68 @@ color:#555;
 
         <!-- resultado -->
         <div id="mis-endo-lista" style="margin-top:12px"></div>
+
+        <!-- botón liquidar (aparece cuando hay estudios) -->
+        <div id="mis-endo-btn-liquidar" style="display:none;margin-top:16px">
+          <button onclick="abrirLiquidacion()"
+            style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Liquidar período
+          </button>
+        </div>
+
+        <!-- panel de liquidación -->
+        <div id="mis-endo-liquidacion" style="display:none;margin-top:20px">
+
+          <!-- título del panel -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+            <h2 style="font-size:17px;font-weight:700;color:var(--text1);margin:0">Liquidación</h2>
+            <button onclick="cerrarLiquidacion()"
+              style="background:none;border:1px solid var(--border1);border-radius:6px;padding:5px 14px;font-size:13px;color:var(--text2);cursor:pointer">✕ Cerrar</button>
+          </div>
+
+          <!-- config MACA / descuento / porcentajes -->
+          <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end">
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:.05em">MACA POR ESTUDIO ($)</label>
+              <input type="text" id="liq-maca" value="2500" oninput="recalcularLiquidacion()"
+                style="border:1px solid var(--border1);border-radius:6px;padding:6px 10px;font-size:14px;font-weight:600;width:120px;background:var(--bg2);color:var(--text1);outline:none;text-align:right">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:.05em">DESCUENTO (%)</label>
+              <input type="text" id="liq-descuento" value="18" oninput="recalcularLiquidacion()"
+                style="border:1px solid var(--border1);border-radius:6px;padding:6px 10px;font-size:14px;font-weight:600;width:90px;background:var(--bg2);color:var(--text1);outline:none;text-align:right">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:.05em">% OSCAR</label>
+              <input type="text" id="liq-pct-oscar" value="60" oninput="recalcularLiquidacion()"
+                style="border:1px solid var(--border1);border-radius:6px;padding:6px 10px;font-size:14px;font-weight:600;width:80px;background:var(--bg2);color:var(--text1);outline:none;text-align:right">
+            </div>
+            <div style="color:var(--text2);font-size:13px;padding-bottom:8px">
+              % Lorena Notari: <strong id="liq-pct-lorena-label" style="color:var(--text1)">40%</strong>
+            </div>
+          </div>
+
+          <!-- tabla de ingreso de montos -->
+          <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:10px;padding:16px 20px;overflow-x:auto;margin-bottom:16px">
+            <table style="width:100%;border-collapse:collapse;font-size:14px" id="liq-tabla">
+              <thead><tr style="border-bottom:2px solid var(--border1)">
+                <th style="text-align:left;padding:8px 10px 8px 4px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;white-space:nowrap">FECHA</th>
+                <th style="text-align:left;padding:8px 10px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em">PACIENTE</th>
+                <th style="text-align:left;padding:8px 10px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em">ESTUDIO</th>
+                <th style="text-align:left;padding:8px 10px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em">OBRA SOCIAL</th>
+                <th style="text-align:right;padding:8px 10px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;white-space:nowrap">MONTO OS ($)</th>
+                <th style="text-align:right;padding:8px 4px 8px 10px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;white-space:nowrap">NETO EST.</th>
+              </tr></thead>
+              <tbody id="liq-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- resumen final -->
+          <div id="liq-resumen" style="display:none;background:var(--bg1);border:2px solid var(--primary);border-radius:12px;padding:20px 24px;margin-bottom:32px">
+          </div>
+
+        </div>
       </div>
 
       <!-- ─── PÁGINA: ADMIN ─────────────────────────────────────── -->
@@ -2494,11 +2556,162 @@ function _renderMisEndoLista(rows) {
   const lista = document.getElementById('mis-endo-lista');
   lista.style.display = 'block';
   lista.innerHTML = `<div style="background:var(--bg1);border:1px solid var(--border1);border-radius:10px;padding:16px 20px;overflow-x:auto">${_misEndoTableHtml(rows)}</div>`;
+  // mostrar / ocultar botón liquidar
+  const btnLiq = document.getElementById('mis-endo-btn-liquidar');
+  if (btnLiq) btnLiq.style.display = rows.length > 0 ? 'block' : 'none';
+  // cerrar panel de liquidación si estaba abierto
+  const panelLiq = document.getElementById('mis-endo-liquidacion');
+  if (panelLiq) panelLiq.style.display = 'none';
 }
 
 // alias para compatibilidad si hubiera alguna llamada vieja
 function renderMisEndoLista(data)  { _renderMisEndoLista(data); }
 function renderMisEndoPorMes(data) { _renderMisEndoLista(data); }
+
+// ─── LIQUIDACIÓN ─────────────────────────────────────────────
+let _liqRows = [];   // estudios actuales que se están liquidando
+
+function _fmtPesos(n) {
+  return '$ ' + Math.round(n).toLocaleString('es-AR');
+}
+
+function abrirLiquidacion() {
+  // tomar los estudios actualmente visibles
+  _liqRows = (_misEndoAllData.length > 0 && _misEndoFiltro)
+    ? (_misEndoFiltro.tipo === 'rango'
+        ? _filtrarPorRango(_misEndoFiltro.desde, _misEndoFiltro.hasta)
+        : _filtrarPorMes(_misEndoFiltro.mesKey))
+    : [];
+
+  if (!_liqRows.length) { toast('Sin estudios para liquidar', 'error'); return; }
+
+  // construir tbody con inputs de monto
+  const tbody = document.getElementById('liq-tbody');
+  tbody.innerHTML = '';
+  _liqRows.forEach((e, i) => {
+    const bg = i % 2 === 0 ? '' : 'background:var(--bg2)';
+    tbody.innerHTML += `<tr style="border-bottom:1px solid var(--border1);${bg}" id="liq-row-${i}">
+      <td style="padding:9px 10px 9px 4px;white-space:nowrap;font-size:13px">${e.fecha||'—'}</td>
+      <td style="padding:9px 10px;font-weight:500;font-size:13px">${e.apellidoNombre||'—'}</td>
+      <td style="padding:9px 10px;white-space:nowrap">${_misEndoBadge(e.tipo)}</td>
+      <td style="padding:9px 10px;color:var(--text2);font-size:13px">${e.obraSocial||'—'}</td>
+      <td style="padding:9px 10px;text-align:right">
+        <input type="text" id="liq-monto-${i}" value=""
+          oninput="fmtMontoLiq(this);recalcularLiquidacion()"
+          placeholder="0"
+          style="border:1px solid var(--border1);border-radius:5px;padding:5px 8px;font-size:13px;width:120px;text-align:right;background:var(--bg1);color:var(--text1);outline:none;font-variant-numeric:tabular-nums">
+      </td>
+      <td id="liq-neto-${i}" style="padding:9px 4px 9px 10px;text-align:right;font-size:13px;color:var(--text2);white-space:nowrap">—</td>
+    </tr>`;
+  });
+
+  recalcularLiquidacion();
+
+  document.getElementById('mis-endo-liquidacion').style.display = 'block';
+  document.getElementById('mis-endo-btn-liquidar').style.display = 'none';
+  // scroll al panel
+  document.getElementById('mis-endo-liquidacion').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cerrarLiquidacion() {
+  document.getElementById('mis-endo-liquidacion').style.display = 'none';
+  document.getElementById('mis-endo-btn-liquidar').style.display = 'block';
+}
+
+// auto-formato miles al tipear en inputs de monto
+function fmtMontoLiq(input) {
+  // solo números
+  const raw = input.value.replace(/\D/g,'');
+  input.value = raw ? parseInt(raw,10).toLocaleString('es-AR') : '';
+}
+
+function _parseMonto(str) {
+  if (!str) return 0;
+  return parseFloat(str.toString().replace(/\./g,'').replace(/,/g,'.')) || 0;
+}
+
+function recalcularLiquidacion() {
+  const maca       = _parseMonto(document.getElementById('liq-maca')?.value) || 0;
+  const pctDesc    = _parseMonto(document.getElementById('liq-descuento')?.value) || 0;
+  const pctOscar   = _parseMonto(document.getElementById('liq-pct-oscar')?.value) || 60;
+  const pctLorena  = 100 - pctOscar;
+  const lbl = document.getElementById('liq-pct-lorena-label');
+  if (lbl) lbl.textContent = pctLorena.toFixed(0) + '%';
+
+  let totalOS   = 0;
+  let totalMaca = 0;
+  let totalNeto = 0;  // suma de (montoOS - maca) por estudio
+  let algunMonto = false;
+
+  _liqRows.forEach((e, i) => {
+    const input = document.getElementById(`liq-monto-${i}`);
+    const netoCell = document.getElementById(`liq-neto-${i}`);
+    if (!input || !netoCell) return;
+    const monto = _parseMonto(input.value);
+    const neto  = monto > 0 ? monto - maca : 0;
+    if (monto > 0) algunMonto = true;
+    totalOS   += monto;
+    totalMaca += monto > 0 ? maca : 0;
+    totalNeto += neto;
+    netoCell.textContent = monto > 0 ? _fmtPesos(neto) : '—';
+    netoCell.style.color = neto >= 0 ? 'var(--text1)' : '#c62828';
+  });
+
+  // resumen
+  const resumen = document.getElementById('liq-resumen');
+  if (!algunMonto) { resumen.style.display = 'none'; return; }
+
+  const descMonto   = totalNeto * pctDesc / 100;
+  const neto        = totalNeto - descMonto;
+  const paraOscar   = neto * pctOscar  / 100;
+  const paraLorena  = neto * pctLorena / 100;
+
+  resumen.style.display = 'block';
+  resumen.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;border-radius:8px;overflow:hidden;border:1px solid var(--border1)">
+
+      <div style="padding:14px 18px;border-right:1px solid var(--border1);border-bottom:1px solid var(--border1)">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">TOTAL OS</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text1);font-variant-numeric:tabular-nums">${_fmtPesos(totalOS)}</div>
+      </div>
+
+      <div style="padding:14px 18px;border-right:1px solid var(--border1);border-bottom:1px solid var(--border1)">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">TOTAL MACA (${_liqRows.filter((_,i)=>_parseMonto(document.getElementById('liq-monto-'+i)?.value)>0).length} est.)</div>
+        <div style="font-size:18px;font-weight:700;color:#c62828;font-variant-numeric:tabular-nums">− ${_fmtPesos(totalMaca)}</div>
+      </div>
+
+      <div style="padding:14px 18px;border-right:1px solid var(--border1);border-bottom:1px solid var(--border1)">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">SUBTOTAL (OS − MACA)</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text1);font-variant-numeric:tabular-nums">${_fmtPesos(totalNeto)}</div>
+      </div>
+
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border1)">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">DESCUENTO ${pctDesc}%</div>
+        <div style="font-size:18px;font-weight:700;color:#c62828;font-variant-numeric:tabular-nums">− ${_fmtPesos(descMonto)}</div>
+      </div>
+
+    </div>
+
+    <!-- neto final + distribución -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border-radius:8px;overflow:hidden;border:1px solid var(--primary);margin-top:12px">
+
+      <div style="padding:16px 20px;background:var(--primary-light,#e8f5e9);border-right:1px solid var(--primary)">
+        <div style="font-size:11px;font-weight:600;color:var(--primary);letter-spacing:.05em;margin-bottom:4px">NETO FINAL</div>
+        <div style="font-size:22px;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums">${_fmtPesos(neto)}</div>
+      </div>
+
+      <div style="padding:16px 20px;border-right:1px solid var(--primary)">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">OSCAR (${pctOscar.toFixed(0)}%)</div>
+        <div style="font-size:22px;font-weight:800;color:#1565c0;font-variant-numeric:tabular-nums">${_fmtPesos(paraOscar)}</div>
+      </div>
+
+      <div style="padding:16px 20px">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">LORENA NOTARI (${pctLorena.toFixed(0)}%)</div>
+        <div style="font-size:22px;font-weight:800;color:#6a1b9a;font-variant-numeric:tabular-nums">${_fmtPesos(paraLorena)}</div>
+      </div>
+
+    </div>`;
+}
 
 // ─── INIT APP ────────────────────────────────────────────────
 async function initApp() {
