@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-10 18:00 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 00:30 ARG -->
 <!-- ============================================================ -->
-<!-- Gastro CDELU — 2026-03-11 20:30 ARG - index.html (Frontend SPA)                    -->
+<!-- Gastro CDELU — 2026-03-12 00:30 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
 <!-- Etapa 1: Auth + Pacientes + HC + Consultas                   -->
 <!-- ============================================================ -->
@@ -2652,7 +2652,7 @@ function prepModalHC() {
 }
 
 // Override modal-hc open button to prep data
-document.getElementById('btn-ver-hc').onclick = prepModalHC;
+const _btnVerHC = document.getElementById('btn-ver-hc'); if (_btnVerHC) _btnVerHC.onclick = prepModalHC;
 
 async function submitHC() {
   const pac = App.pacienteActual;
