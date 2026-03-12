@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 13:30 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 13:45 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -2284,21 +2284,43 @@ function renderPacientes(list) {
     return;
   }
 
-  tbody.innerHTML = list.map(p => `
+  // Ordenar por fechaAlta descendente (más nuevos primero)
+  const toMs = f => {
+    if (!f) return 0;
+    const s = String(f).trim();
+    const dmy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (dmy) return new Date(+dmy[3], +dmy[2]-1, +dmy[1]).getTime();
+    const t = Date.parse(s);
+    return isNaN(t) ? 0 : t;
+  };
+  const sorted = [...list].sort((a, b) => toMs(b.fechaAlta) - toMs(a.fechaAlta));
+
+  // Fecha de importación masiva (10/03/2026 en cualquier formato)
+  const esImportado = f => {
+    if (!f) return false;
+    const s = String(f).trim();
+    return s === '10/03/2026' || s.startsWith('2026-03-10') || s.startsWith('10/03/2026');
+  };
+
+  tbody.innerHTML = sorted.map(p => {
+    const fechaLabel = esImportado(p.fechaAlta)
+      ? `<span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;border:1px solid #fde68a;white-space:nowrap">Importado</span>`
+      : fmtDate(p.fechaAlta);
+    return `
     <tr onclick="abrirPaciente('${p.id}')">
       <td class="td-name">${safe(p.apellidoNombre, '—')}</td>
       <td class="td-dni">${safe(p.dni, '—')}</td>
       <td class="td-os">${safe(p.obraSocial, '—')}</td>
       <td>${safe(p.telefono, '—')}</td>
-      <td>${fmtDate(p.fechaAlta)}</td>
+      <td>${fechaLabel}</td>
       <td onclick="event.stopPropagation()">
         <button class="btn btn-ghost btn-sm btn-icon"
           title="Eliminar"
           onclick="confirmarEliminarPaciente('${p.id}', '${(p.apellidoNombre||'').replace(/'/g,'\\\'')}')"
         >×</button>
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 function confirmarEliminarPaciente(id, nombre) {
