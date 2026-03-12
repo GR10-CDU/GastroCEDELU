@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 12:45 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 13:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -3193,10 +3193,12 @@ function nuevaEndoscopia(tipo) {
     'Nueva ' + tipo + ' — ' + pac.apellidoNombre;
 
   // Auto-llenar datos del paciente en la cabecera
+  const _edadEndo = calcEdadFiliatorios(pac.fechaNac) || pac.edad;
+  const _sexoEndo = pac.sexo || inferirSexo(pac.apellidoNombre) || '—';
   document.getElementById('endo-pac-nombre').textContent = pac.apellidoNombre || '';
   document.getElementById('endo-pac-dni').textContent    = pac.dni || '—';
-  document.getElementById('endo-pac-edad').textContent   = pac.edad ? pac.edad + ' años' : '—';
-  document.getElementById('endo-pac-sexo').textContent   = pac.sexo || '—';
+  document.getElementById('endo-pac-edad').textContent   = _edadEndo ? _edadEndo + ' años' : '—';
+  document.getElementById('endo-pac-sexo').textContent   = _sexoEndo;
   document.getElementById('endo-pac-os').textContent     = pac.obraSocial || '—';
   document.getElementById('endo-pac-afil').textContent   = pac.nroAfiliado || '—';
 
