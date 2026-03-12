@@ -1632,26 +1632,45 @@ color:#555;
               style="background:none;border:1px solid var(--border1);border-radius:6px;padding:5px 14px;font-size:13px;color:var(--text2);cursor:pointer">✕ Cerrar</button>
           </div>
 
-          <!-- config MACA / descuento / porcentajes -->
-          <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end">
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:.05em">MACA POR ESTUDIO ($)</label>
+          <!-- config MACA / descuento / porcentajes — badges editables -->
+          <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:12px;padding:14px 20px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <span style="font-size:12px;color:var(--text2);font-weight:600;margin-right:4px">Configuración:</span>
+
+            <!-- MACA badge -->
+            <div style="display:flex;align-items:center;gap:6px;background:#fff8e1;border:1px solid #ffe082;border-radius:20px;padding:5px 12px">
+              <span style="font-size:11px;font-weight:700;color:#f57f17;letter-spacing:.03em">MACA</span>
+              <span style="color:#bbb;font-size:13px">$</span>
               <input type="text" id="liq-maca" value="2500" oninput="recalcularLiquidacion()"
-                style="border:1px solid var(--border1);border-radius:6px;padding:6px 10px;font-size:14px;font-weight:600;width:120px;background:var(--bg2);color:var(--text1);outline:none;text-align:right">
+                title="Monto MACA por estudio"
+                style="border:none;background:transparent;font-size:14px;font-weight:700;color:#e65100;width:70px;outline:none;text-align:center;padding:0">
+              <span style="font-size:10px;color:#f57f17;opacity:.7">c/estudio</span>
             </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:.05em">DESCUENTO (%)</label>
+
+            <!-- Descuento badge -->
+            <div style="display:flex;align-items:center;gap:6px;background:#fce4ec;border:1px solid #f48fb1;border-radius:20px;padding:5px 12px">
+              <span style="font-size:11px;font-weight:700;color:#c62828;letter-spacing:.03em">DESCUENTO</span>
               <input type="text" id="liq-descuento" value="18" oninput="recalcularLiquidacion()"
-                style="border:1px solid var(--border1);border-radius:6px;padding:6px 10px;font-size:14px;font-weight:600;width:90px;background:var(--bg2);color:var(--text1);outline:none;text-align:right">
+                title="Porcentaje de descuento sobre el subtotal"
+                style="border:none;background:transparent;font-size:14px;font-weight:700;color:#c62828;width:36px;outline:none;text-align:center;padding:0">
+              <span style="font-size:13px;color:#c62828;font-weight:700">%</span>
             </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px;letter-spacing:.05em">% OSCAR</label>
+
+            <!-- Oscar badge -->
+            <div style="display:flex;align-items:center;gap:6px;background:#e3f2fd;border:1px solid #90caf9;border-radius:20px;padding:5px 12px">
+              <span style="font-size:11px;font-weight:700;color:#1565c0;letter-spacing:.03em">OSCAR</span>
               <input type="text" id="liq-pct-oscar" value="60" oninput="recalcularLiquidacion()"
-                style="border:1px solid var(--border1);border-radius:6px;padding:6px 10px;font-size:14px;font-weight:600;width:80px;background:var(--bg2);color:var(--text1);outline:none;text-align:right">
+                title="Porcentaje para Oscar"
+                style="border:none;background:transparent;font-size:14px;font-weight:700;color:#1565c0;width:36px;outline:none;text-align:center;padding:0">
+              <span style="font-size:13px;color:#1565c0;font-weight:700">%</span>
             </div>
-            <div style="color:var(--text2);font-size:13px;padding-bottom:8px">
-              % Lorena Notari: <strong id="liq-pct-lorena-label" style="color:var(--text1)">40%</strong>
+
+            <!-- Lorena badge (calculado) -->
+            <div style="display:flex;align-items:center;gap:6px;background:#f3e5f5;border:1px solid #ce93d8;border-radius:20px;padding:5px 12px">
+              <span style="font-size:11px;font-weight:700;color:#6a1b9a;letter-spacing:.03em">LORENA</span>
+              <span id="liq-pct-lorena-label" style="font-size:14px;font-weight:700;color:#6a1b9a">40%</span>
             </div>
+
+            <span style="font-size:11px;color:var(--text2);margin-left:4px;font-style:italic">Tocá cualquier valor para editar</span>
           </div>
 
           <!-- tabla de ingreso de montos -->
@@ -2665,47 +2684,38 @@ function recalcularLiquidacion() {
   const paraLorena  = neto * pctLorena / 100;
 
   resumen.style.display = 'block';
+
+  const totalDescuentos = totalMaca + descMonto; // MACA + %descuento
+
   resumen.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;border-radius:8px;overflow:hidden;border:1px solid var(--border1)">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border1);border-radius:12px;overflow:hidden">
 
-      <div style="padding:14px 18px;border-right:1px solid var(--border1);border-bottom:1px solid var(--border1)">
-        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">TOTAL OS</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text1);font-variant-numeric:tabular-nums">${_fmtPesos(totalOS)}</div>
+      <!-- TOTAL -->
+      <div style="background:var(--bg1);padding:20px 22px">
+        <div style="font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.08em;margin-bottom:8px;text-transform:uppercase">Total OS</div>
+        <div style="font-size:26px;font-weight:800;color:var(--text1);font-variant-numeric:tabular-nums;line-height:1">${_fmtPesos(totalOS)}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:6px">${_liqRows.filter((_,i)=>_parseMonto(document.getElementById('liq-monto-'+i)?.value)>0).length} estudios cargados</div>
       </div>
 
-      <div style="padding:14px 18px;border-right:1px solid var(--border1);border-bottom:1px solid var(--border1)">
-        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">TOTAL MACA (${_liqRows.filter((_,i)=>_parseMonto(document.getElementById('liq-monto-'+i)?.value)>0).length} est.)</div>
-        <div style="font-size:18px;font-weight:700;color:#c62828;font-variant-numeric:tabular-nums">− ${_fmtPesos(totalMaca)}</div>
+      <!-- DESCUENTOS -->
+      <div style="background:#fff5f5;padding:20px 22px">
+        <div style="font-size:10px;font-weight:700;color:#c62828;letter-spacing:.08em;margin-bottom:8px;text-transform:uppercase">Descuentos</div>
+        <div style="font-size:26px;font-weight:800;color:#c62828;font-variant-numeric:tabular-nums;line-height:1">− ${_fmtPesos(totalDescuentos)}</div>
+        <div style="font-size:11px;color:#e57373;margin-top:6px">MACA ${_fmtPesos(totalMaca)} + ${pctDesc}% ${_fmtPesos(descMonto)}</div>
       </div>
 
-      <div style="padding:14px 18px;border-right:1px solid var(--border1);border-bottom:1px solid var(--border1)">
-        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">SUBTOTAL (OS − MACA)</div>
-        <div style="font-size:18px;font-weight:700;color:var(--text1);font-variant-numeric:tabular-nums">${_fmtPesos(totalNeto)}</div>
+      <!-- OSCAR -->
+      <div style="background:#f0f7ff;padding:20px 22px">
+        <div style="font-size:10px;font-weight:700;color:#1565c0;letter-spacing:.08em;margin-bottom:8px;text-transform:uppercase">Oscar · ${pctOscar.toFixed(0)}%</div>
+        <div style="font-size:26px;font-weight:800;color:#1565c0;font-variant-numeric:tabular-nums;line-height:1">${_fmtPesos(paraOscar)}</div>
+        <div style="font-size:11px;color:#5c9bd6;margin-top:6px">del neto ${_fmtPesos(neto)}</div>
       </div>
 
-      <div style="padding:14px 18px;border-bottom:1px solid var(--border1)">
-        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">DESCUENTO ${pctDesc}%</div>
-        <div style="font-size:18px;font-weight:700;color:#c62828;font-variant-numeric:tabular-nums">− ${_fmtPesos(descMonto)}</div>
-      </div>
-
-    </div>
-
-    <!-- neto final + distribución -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border-radius:8px;overflow:hidden;border:1px solid var(--primary);margin-top:12px">
-
-      <div style="padding:16px 20px;background:var(--primary-light,#e8f5e9);border-right:1px solid var(--primary)">
-        <div style="font-size:11px;font-weight:600;color:var(--primary);letter-spacing:.05em;margin-bottom:4px">NETO FINAL</div>
-        <div style="font-size:22px;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums">${_fmtPesos(neto)}</div>
-      </div>
-
-      <div style="padding:16px 20px;border-right:1px solid var(--primary)">
-        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">OSCAR (${pctOscar.toFixed(0)}%)</div>
-        <div style="font-size:22px;font-weight:800;color:#1565c0;font-variant-numeric:tabular-nums">${_fmtPesos(paraOscar)}</div>
-      </div>
-
-      <div style="padding:16px 20px">
-        <div style="font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.05em;margin-bottom:4px">LORENA NOTARI (${pctLorena.toFixed(0)}%)</div>
-        <div style="font-size:22px;font-weight:800;color:#6a1b9a;font-variant-numeric:tabular-nums">${_fmtPesos(paraLorena)}</div>
+      <!-- LORENA -->
+      <div style="background:#faf0ff;padding:20px 22px">
+        <div style="font-size:10px;font-weight:700;color:#6a1b9a;letter-spacing:.08em;margin-bottom:8px;text-transform:uppercase">Lorena Notari · ${pctLorena.toFixed(0)}%</div>
+        <div style="font-size:26px;font-weight:800;color:#6a1b9a;font-variant-numeric:tabular-nums;line-height:1">${_fmtPesos(paraLorena)}</div>
+        <div style="font-size:11px;color:#ab67d1;margin-top:6px">del neto ${_fmtPesos(neto)}</div>
       </div>
 
     </div>`;
