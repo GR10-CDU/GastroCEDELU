@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 15:15 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 16:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -301,6 +301,9 @@ button { cursor: pointer; border: none; }
 }
 .nav-item:hover { background: rgba(255,255,255,0.12); color: #ffffff; }
 .nav-item.active { background: rgba(100,220,140,0.2); color: #a8f0be; font-weight: 500; }
+.nav-section-config { margin-top: 32px; opacity: 0.65; font-size: 10px; letter-spacing: 0.08em; }
+.nav-item-config { opacity: 0.8; font-size: 13px; }
+.nav-item-config:hover { opacity: 1; }
 .nav-item .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
 .sidebar-user {
   border-top: 1px solid rgba(255,255,255,0.1);
@@ -1295,13 +1298,15 @@ color:#555;
         <div class="nav-item" onclick="showPage('nuevo-paciente')" id="nav-nuevo">
           <span class="icon">+</span> Nuevo Paciente
         </div>
+        <div class="nav-item" onclick="showPage('mis-endoscopias')" id="nav-mis-endoscopias">
+          <span class="icon">◉</span> Mis Endoscopías
+        </div>
 
-        <div class="nav-section" id="nav-admin-section" style="display:none">Panel Admin</div>
-        <div class="nav-item" onclick="showPage('admin')" id="nav-admin" style="display:none">
+        <div class="nav-section nav-section-config" id="nav-config-section">Configuración</div>
+        <div class="nav-item nav-item-config" id="nav-admin" onclick="showPage('admin')" style="display:none">
           <span class="icon">◎</span> Usuarios
         </div>
-        <div class="nav-section">Cuenta</div>
-        <div class="nav-item" onclick="showModal('modal-pass')">
+        <div class="nav-item nav-item-config" onclick="showModal('modal-pass')">
           <span class="icon">◇</span> Cambiar Contraseña
         </div>
       </nav>
@@ -1555,6 +1560,29 @@ color:#555;
             <div id="endoscopias-list"></div>
           </div>
         </div>
+      </div>
+
+      <!-- ─── PÁGINA: MIS ENDOSCOPÍAS ─────────────────────────────── -->
+      <div class="page" id="page-mis-endoscopias">
+        <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <h1>Mis Endoscopías</h1>
+            <p id="mis-endo-subtitle" style="color:var(--text2);font-size:13px;margin-top:2px"></p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" id="btn-endo-30"
+              onclick="loadMisEndoscopias(30)"
+              style="background:var(--primary);color:#fff;border:none">Últimos 30 días</button>
+            <button class="btn btn-sm btn-secondary" id="btn-endo-pormes"
+              onclick="loadMisEndoscopias('mes')">Por mes</button>
+          </div>
+        </div>
+
+        <!-- vista: lista plana 30 días -->
+        <div id="mis-endo-lista" style="margin-top:8px"></div>
+
+        <!-- vista: agrupado por mes -->
+        <div id="mis-endo-pormes" style="margin-top:8px;display:none"></div>
       </div>
 
       <!-- ─── PÁGINA: ADMIN ─────────────────────────────────────── -->
@@ -2147,6 +2175,7 @@ function showPage(page) {
   document.getElementById('page-' + page)?.classList.add('active');
   document.getElementById('nav-' + page)?.classList.add('active');
   if (page === 'admin') loadUsuarios();
+  if (page === 'mis-endoscopias') loadMisEndoscopias(30);
 }
 
 function showTab(tab) {
@@ -2219,6 +2248,130 @@ document.addEventListener('keydown', e => {
     doLogin();
   }
 });
+
+// ─── MIS ENDOSCOPÍAS ─────────────────────────────────────────
+let _misEndoData  = [];
+let _misEndoMode  = 30;
+
+async function loadMisEndoscopias(modo) {
+  _misEndoMode = modo;
+
+  const btn30  = document.getElementById('btn-endo-30');
+  const btnMes = document.getElementById('btn-endo-pormes');
+  btn30.className  = modo === 30    ? 'btn btn-sm'           : 'btn btn-sm btn-secondary';
+  btnMes.className = modo === 'mes' ? 'btn btn-sm'           : 'btn btn-sm btn-secondary';
+  btn30.style.cssText  = modo === 30    ? 'background:var(--primary);color:#fff' : '';
+  btnMes.style.cssText = modo === 'mes' ? 'background:var(--primary);color:#fff' : '';
+
+  // Si ya tenemos datos y solo cambia la vista, no volver a llamar al servidor
+  if (_misEndoData.length > 0 && modo === 'mes') {
+    renderMisEndoPorMes(_misEndoData);
+    return;
+  }
+  if (_misEndoData.length > 0 && modo === 30) {
+    renderMisEndoLista(_misEndoData);
+    return;
+  }
+
+  const lista  = document.getElementById('mis-endo-lista');
+  const pormes = document.getElementById('mis-endo-pormes');
+  lista.innerHTML  = _loadingTabHtml('Cargando endoscopías…');
+  pormes.innerHTML = '';
+  lista.style.display  = 'block';
+  pormes.style.display = 'none';
+
+  try {
+    const res = await serverCall('getEndoscopiasRecientes',
+      App.session.medicoId, App.session.rol, 30);
+    if (!res.ok) { toast('Error: ' + res.error, 'error'); return; }
+
+    _misEndoData = res.data || [];
+    document.getElementById('mis-endo-subtitle').textContent =
+      `${_misEndoData.length} estudio${_misEndoData.length !== 1 ? 's' : ''} en los últimos 30 días`;
+
+    if (modo === 30) renderMisEndoLista(_misEndoData);
+    else             renderMisEndoPorMes(_misEndoData);
+  } catch(e) {
+    toast('Error de conexión', 'error');
+  }
+}
+
+function _misEndoTableHtml(rows) {
+  if (!rows.length) return '<p style="color:var(--text2);padding:20px 4px;font-size:14px">Sin estudios en este período.</p>';
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:14px">
+    <thead><tr style="border-bottom:2px solid var(--border1)">
+      <th style="text-align:left;padding:8px 12px 8px 4px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;white-space:nowrap">FECHA</th>
+      <th style="text-align:left;padding:8px 12px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em">APELLIDO Y NOMBRE</th>
+      <th style="text-align:left;padding:8px 12px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;white-space:nowrap">ESTUDIO</th>
+      <th style="text-align:left;padding:8px 4px 8px 12px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em">OBRA SOCIAL</th>
+    </tr></thead><tbody>`;
+
+  rows.forEach((e, i) => {
+    const bg = i % 2 === 0 ? '' : 'background:var(--bg2)';
+    const t  = (e.tipo || '').toUpperCase();
+    const tipo = t.includes('VEDA') ? 'VEDA' : (t.includes('COL') ? 'VCC' : (e.tipo || '—'));
+    const badge = tipo === 'VEDA'
+      ? `<span style="background:#e8f5e9;color:#2e7d32;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:600">VEDA</span>`
+      : tipo === 'VCC'
+      ? `<span style="background:#e3f2fd;color:#1565c0;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:600">VCC</span>`
+      : `<span style="color:var(--text2)">${tipo}</span>`;
+    html += `<tr style="border-bottom:1px solid var(--border1);${bg}" onclick="abrirPaciente('${e.pacienteId}')" title="Abrir paciente">
+      <td style="padding:10px 12px 10px 4px;white-space:nowrap;font-variant-numeric:tabular-nums">${e.fecha||'—'}</td>
+      <td style="padding:10px 12px;font-weight:500">${e.apellidoNombre||'—'}</td>
+      <td style="padding:10px 12px;white-space:nowrap">${badge}</td>
+      <td style="padding:10px 4px 10px 12px;color:var(--text2)">${e.obraSocial||'—'}</td>
+    </tr>`;
+  });
+  return html + '</tbody></table>';
+}
+
+function renderMisEndoLista(data) {
+  const lista  = document.getElementById('mis-endo-lista');
+  const pormes = document.getElementById('mis-endo-pormes');
+  lista.style.display  = 'block';
+  pormes.style.display = 'none';
+  lista.innerHTML = `<div style="background:var(--bg1);border:1px solid var(--border1);border-radius:10px;padding:16px 20px;overflow-x:auto">${_misEndoTableHtml(data)}</div>`;
+}
+
+function renderMisEndoPorMes(data) {
+  const lista  = document.getElementById('mis-endo-lista');
+  const pormes = document.getElementById('mis-endo-pormes');
+  lista.style.display  = 'none';
+  pormes.style.display = 'block';
+
+  const grupos = {};
+  data.forEach(e => {
+    const f = (e.fecha || '').trim();
+    const m = f.match(/^(\d{1,2})\/(\d{2})\/(\d{4})$/);
+    const key = m ? `${m[2]}-${m[1].padStart(2,'0')}` : '0000-00';  // YYYY-MM para ordenar
+    if (!grupos[key]) grupos[key] = { label: key, rows: [] };
+    grupos[key].rows.push(e);
+  });
+
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  let html = '';
+  Object.keys(grupos).sort((a,b) => b.localeCompare(a)).forEach(key => {
+    const { rows } = grupos[key];
+    let titulo = key;
+    if (key !== '0000-00') {
+      const [yyyy, mm] = key.split('-');
+      titulo = `${meses[parseInt(mm,10)-1]} ${yyyy}`;
+    }
+    html += `<div style="margin-bottom:28px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <h3 style="font-size:15px;font-weight:600;color:var(--text1);margin:0">${titulo}</h3>
+        <span style="background:#e8f5e9;color:var(--primary);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600">${rows.length}</span>
+      </div>
+      <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:10px;padding:16px 20px;overflow-x:auto">
+        ${_misEndoTableHtml(rows)}
+      </div>
+    </div>`;
+  });
+
+  pormes.innerHTML = html || '<p style="color:var(--text2);padding:20px 4px">Sin estudios.</p>';
+}
 
 // ─── INIT APP ────────────────────────────────────────────────
 async function initApp() {
