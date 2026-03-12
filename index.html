@@ -2827,11 +2827,7 @@ async function submitConsulta() {
   finally { hideLoading(); }
 }
 
-// Override modal-consulta open to prep
-document.querySelector('[onclick="showModal(\'modal-consulta\')"]').onclick = () => {
-  prepModalConsulta();
-  showModal('modal-consulta');
-};
+// prepModalConsulta() se llama directo desde el onclick del botón (ver HTML)
 
 // ─── ENDOSCOPIAS ─────────────────────────────────────────────
 // ─── CAMBIAR CONTRASEÑA ──────────────────────────────────────
