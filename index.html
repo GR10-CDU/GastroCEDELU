@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 12:30 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 12:45 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -1850,8 +1850,8 @@ color:#555;
 <div class="modal-overlay" id="modal-consulta">
   <div class="modal modal-lg">
     <h2>
-      Nueva Consulta / Evolución
-      <span id="cons-modal-paciente" style="font-size:14px;font-weight:400;color:var(--muted2);margin-left:10px"></span>
+      <span id="cons-modal-paciente" style="font-size:24px;font-weight:700;color:var(--text)"></span>
+      <span style="font-size:14px;font-weight:400;color:var(--muted2);margin-left:10px">Nueva Consulta / Evolución</span>
     </h2>
     <input type="hidden" id="cons-id" value="">
     <div class="section-divider"><span>Datos de la Consulta</span></div>
@@ -2926,7 +2926,7 @@ function editConsulta(consultaId) {
 
   // Título del modal
   const sp = document.getElementById('cons-modal-paciente');
-  if (sp) sp.textContent = (App.pacienteActual ? App.pacienteActual.apellidoNombre : '') + ' · Editando consulta';
+  if (sp) sp.textContent = (App.pacienteActual ? App.pacienteActual.apellidoNombre : '');
 
   showModal('modal-consulta');
 }
