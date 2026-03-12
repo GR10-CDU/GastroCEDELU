@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 16:00 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 16:30 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -2296,30 +2296,29 @@ async function loadMisEndoscopias(modo) {
   }
 }
 
+function _misEndoBadge(tipo) {
+  const t = (tipo || '').toUpperCase();
+  if (t.includes('VEDA')) return `<span style="background:#e8f5e9;color:#2e7d32;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:600">VEDA</span>`;
+  if (t.includes('COL'))  return `<span style="background:#e3f2fd;color:#1565c0;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:600">VCC</span>`;
+  return `<span style="color:var(--text2)">${tipo||'—'}</span>`;
+}
+
 function _misEndoTableHtml(rows) {
   if (!rows.length) return '<p style="color:var(--text2);padding:20px 4px;font-size:14px">Sin estudios en este período.</p>';
-  let html = `<table style="width:100%;border-collapse:collapse;font-size:14px">
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:14px;user-select:text">
     <thead><tr style="border-bottom:2px solid var(--border1)">
-      <th style="text-align:left;padding:8px 12px 8px 4px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;white-space:nowrap">FECHA</th>
-      <th style="text-align:left;padding:8px 12px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em">APELLIDO Y NOMBRE</th>
-      <th style="text-align:left;padding:8px 12px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;white-space:nowrap">ESTUDIO</th>
-      <th style="text-align:left;padding:8px 4px 8px 12px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em">OBRA SOCIAL</th>
+      <th style="text-align:left;padding:8px 14px 8px 4px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;white-space:nowrap">FECHA</th>
+      <th style="text-align:left;padding:8px 14px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em">APELLIDO Y NOMBRE</th>
+      <th style="text-align:left;padding:8px 14px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em;white-space:nowrap">ESTUDIO</th>
+      <th style="text-align:left;padding:8px 4px 8px 14px;color:var(--text2);font-weight:600;font-size:11px;letter-spacing:.05em">OBRA SOCIAL</th>
     </tr></thead><tbody>`;
-
   rows.forEach((e, i) => {
     const bg = i % 2 === 0 ? '' : 'background:var(--bg2)';
-    const t  = (e.tipo || '').toUpperCase();
-    const tipo = t.includes('VEDA') ? 'VEDA' : (t.includes('COL') ? 'VCC' : (e.tipo || '—'));
-    const badge = tipo === 'VEDA'
-      ? `<span style="background:#e8f5e9;color:#2e7d32;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:600">VEDA</span>`
-      : tipo === 'VCC'
-      ? `<span style="background:#e3f2fd;color:#1565c0;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:600">VCC</span>`
-      : `<span style="color:var(--text2)">${tipo}</span>`;
-    html += `<tr style="border-bottom:1px solid var(--border1);${bg}" onclick="abrirPaciente('${e.pacienteId}')" title="Abrir paciente">
-      <td style="padding:10px 12px 10px 4px;white-space:nowrap;font-variant-numeric:tabular-nums">${e.fecha||'—'}</td>
-      <td style="padding:10px 12px;font-weight:500">${e.apellidoNombre||'—'}</td>
-      <td style="padding:10px 12px;white-space:nowrap">${badge}</td>
-      <td style="padding:10px 4px 10px 12px;color:var(--text2)">${e.obraSocial||'—'}</td>
+    html += `<tr style="border-bottom:1px solid var(--border1);${bg}">
+      <td style="padding:10px 14px 10px 4px;white-space:nowrap;font-variant-numeric:tabular-nums">${e.fecha||'—'}</td>
+      <td style="padding:10px 14px;font-weight:500">${e.apellidoNombre||'—'}</td>
+      <td style="padding:10px 14px;white-space:nowrap">${_misEndoBadge(e.tipo)}</td>
+      <td style="padding:10px 4px 10px 14px;color:var(--text2)">${e.obraSocial||'—'}</td>
     </tr>`;
   });
   return html + '</tbody></table>';
@@ -2342,8 +2341,9 @@ function renderMisEndoPorMes(data) {
   const grupos = {};
   data.forEach(e => {
     const f = (e.fecha || '').trim();
-    const m = f.match(/^(\d{1,2})\/(\d{2})\/(\d{4})$/);
-    const key = m ? `${m[2]}-${m[1].padStart(2,'0')}` : '0000-00';  // YYYY-MM para ordenar
+    // formato DD/MM/YYYY — grupo 1=día, grupo 2=mes, grupo 3=año
+    const m = f.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    const key = m ? `${m[3]}-${m[2].padStart(2,'0')}` : '0000-00';  // YYYY-MM para ordenar
     if (!grupos[key]) grupos[key] = { label: key, rows: [] };
     grupos[key].rows.push(e);
   });
