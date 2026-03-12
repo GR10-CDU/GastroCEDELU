@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 15:00 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 15:15 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -661,9 +661,9 @@ button { cursor: pointer; border: none; }
   font-weight: 500;
 }
 .tab-content { display: none; }
-@keyframes _skAnim {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+@keyframes _spinTab {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 .tab-content.active { display: block; }
 
@@ -2427,16 +2427,16 @@ async function submitPaciente() {
 }
 
 // ─── DETALLE PACIENTE ────────────────────────────────────────
-// Helper: muestra skeleton en un contenedor mientras carga
-function _skeletonHtml(lines) {
-  lines = lines || 3;
-  let h = '<div style="padding:12px 0">';
-  for (let i = 0; i < lines; i++) {
-    const w = [85,60,75,50][i % 4];
-    h += `<div style="height:14px;width:${w}%;background:linear-gradient(90deg,var(--border1) 25%,var(--bg2) 50%,var(--border1) 75%);background-size:200% 100%;border-radius:6px;margin-bottom:12px;animation:_skAnim 1.4s infinite"></div>`;
-  }
-  h += '</div>';
-  return h;
+// Helper: spinner de carga para tabs
+function _loadingTabHtml(texto) {
+  texto = texto || 'Cargando...';
+  return `<div style="display:flex;align-items:center;gap:10px;padding:28px 4px;color:var(--text2);font-size:14px">
+    <svg width="20" height="20" viewBox="0 0 20 20" style="flex-shrink:0;animation:_spinTab 0.9s linear infinite">
+      <circle cx="10" cy="10" r="8" fill="none" stroke="var(--border2)" stroke-width="2.5"/>
+      <path d="M10 2 A8 8 0 0 1 18 10" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span>${texto}</span>
+  </div>`;
 }
 
 async function abrirPaciente(id) {
@@ -2450,10 +2450,10 @@ async function abrirPaciente(id) {
     App.hcActual = null;
     renderDetalleHeader(pacLocal);
 
-    // Poner skeletons en las 3 tabs mientras carga el resto
-    document.getElementById('hc-viewer').innerHTML = _skeletonHtml(5);
-    document.getElementById('consultas-list').innerHTML = _skeletonHtml(4);
-    document.getElementById('endoscopias-list').innerHTML = _skeletonHtml(3);
+    // Spinners en cada tab mientras carga
+    document.getElementById('hc-viewer').innerHTML = _loadingTabHtml('Cargando historia clínica…');
+    document.getElementById('consultas-list').innerHTML = _loadingTabHtml('Cargando consultas…');
+    document.getElementById('endoscopias-list').innerHTML = _loadingTabHtml('Cargando endoscopías…');
 
     showPage('detalle');
     showTab('hc');
