@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 16:30 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 17:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -2400,14 +2400,11 @@ async function initApp() {
 async function loadPacientes() {
   showLoading('Cargando pacientes...');
   try {
-    const q = document.getElementById('search-input').value;
     const res = await serverCall('getPacientes',
-      App.session.medicoId, App.session.rol, q
+      App.session.medicoId, App.session.rol, ''
     );
     if (res.ok) {
       App.pacientes = res.data;
-      App.pacientesTotal = res.total || res.data.length;
-      App.pacientesMode  = res.mode || 'recent';
       renderPacientes(res.data);
     } else {
       toast('Error cargando pacientes: ' + res.error, 'error');
@@ -2419,27 +2416,41 @@ async function loadPacientes() {
   }
 }
 
-let _filterTimer = null;
 function filterPacientes(q) {
-  clearTimeout(_filterTimer);
-  if (!q.trim()) {
-    // Sin búsqueda: recargar recientes desde servidor
-    _filterTimer = setTimeout(() => loadPacientes(), 300);
-  } else if (q.trim().length >= 2) {
-    // Con búsqueda: buscar en servidor (todos los pacientes)
-    _filterTimer = setTimeout(() => loadPacientes(), 400);
-  }
+  const filtered = (App.pacientes || []).filter(p => {
+    const nom = (p.apellidoNombre || '').toLowerCase();
+    const dni = (p.dni || '').toString();
+    return nom.includes(q.toLowerCase()) || dni.includes(q);
+  });
+  renderPacientes(filtered, q.trim() ? 'search' : 'recent');
 }
 
-function renderPacientes(list) {
+function renderPacientes(list, modo) {
   const tbody = document.getElementById('pacientes-tbody');
-  document.getElementById('stat-total').textContent = App.pacientesTotal || list.length;
-  const modo = App.pacientesMode || 'recent';
-  const total = App.pacientesTotal || list.length;
-  const subtitleText = modo === 'search'
-    ? `${list.length} resultado${list.length !== 1 ? 's' : ''} encontrado${list.length !== 1 ? 's' : ''} de ${total} pacientes`
-    : `Últimos 15 días · ${list.length} paciente${list.length !== 1 ? 's' : ''} · ${total} en total — usá el buscador para ver todos`;
+  const total = (App.pacientes || []).length;
+
+  // Filtro local de 15 días cuando no hay búsqueda activa
+  const _toMs15 = f => {
+    if (!f) return 0;
+    const s = String(f).trim();
+    const dmy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (dmy) return new Date(+dmy[3], +dmy[2]-1, +dmy[1]).getTime();
+    return Date.parse(s) || 0;
+  };
+  let display = list;
+  if (!modo || modo === 'recent') {
+    const cutoff = Date.now() - 15 * 86400000;
+    display = list.filter(p => _toMs15(p.fechaAlta) >= cutoff);
+  }
+
+  document.getElementById('stat-total').textContent = total;
+  const subtitleText = (modo === 'search')
+    ? `${display.length} resultado${display.length !== 1 ? 's' : ''} de ${total} pacientes`
+    : `Últimos 15 días · ${display.length} paciente${display.length !== 1 ? 's' : ''} · ${total} en total — usá el buscador para ver todos`;
   document.getElementById('pacientes-subtitle').textContent = subtitleText;
+  const list2 = display;  // alias para el resto del código que usa 'list'
+  // redefinir list para el resto de la función
+  list = display;
 
   if (!list.length) {
     tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
