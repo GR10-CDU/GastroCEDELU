@@ -1849,7 +1849,11 @@ color:#555;
 
 <div class="modal-overlay" id="modal-consulta">
   <div class="modal modal-lg">
-    <h2>Nueva Consulta / Evolución</h2>
+    <h2>
+      Nueva Consulta / Evolución
+      <span id="cons-modal-paciente" style="font-size:14px;font-weight:400;color:var(--muted2);margin-left:10px"></span>
+    </h2>
+    <input type="hidden" id="cons-id" value="">
     <div class="section-divider"><span>Datos de la Consulta</span></div>
     <div class="field-row cols-2">
       <div class="field">
@@ -1903,7 +1907,7 @@ color:#555;
       <input type="text" id="cons-pendiente" placeholder="Estudios pedidos, derivaciones...">
     </div>
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-consulta')">× Cancelar</button>
+      <button class="btn btn-ghost btn-sm" onclick="cancelarConsulta()">× Cancelar</button>
       <button class="btn btn-primary btn-sm" id="btn-guardar-consulta-bottom" onclick="submitConsulta()">Guardar Consulta</button>
     </div>
   </div>
@@ -2710,6 +2714,7 @@ async function submitHC() {
 
 // ─── CONSULTAS ───────────────────────────────────────────────
 function renderConsultas(list) {
+  App.consultasList = list;   // guardar para edición
   const cnt = document.getElementById('tab-consultas-count');
   cnt.textContent = list.length || '';
 
@@ -2723,12 +2728,15 @@ function renderConsultas(list) {
     return;
   }
 
-  // Orden descendente (más reciente primero)
-  const sorted = [...list].sort((a, b) => {
-    const da = a.fechaConsulta || '';
-    const db = b.fechaConsulta || '';
-    return db.localeCompare(da);
-  });
+  // Orden descendente — soporta ISO (YYYY-MM-DD) y DD/MM/YYYY
+  const toMsC = f => {
+    const s = String(f || '').trim();
+    const mDmy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (mDmy) return new Date(+mDmy[3], +mDmy[2]-1, +mDmy[1]).getTime();
+    const t = Date.parse(s);
+    return isNaN(t) ? 0 : t;
+  };
+  const sorted = [...list].sort((a, b) => toMsC(b.fechaConsulta) - toMsC(a.fechaConsulta));
 
   container.innerHTML = sorted.map((c, i) => {
     const uid = 'cons-detail-' + i;
@@ -2744,6 +2752,8 @@ function renderConsultas(list) {
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
           <span id="${uid}-chevron" style="color:var(--muted);font-size:12px;transition:transform 0.2s">▼</span>
+          <button class="btn btn-secondary btn-sm" title="Editar consulta"
+            onclick="event.stopPropagation();editConsulta('${c.id}')">✎ Editar</button>
           <button class="btn btn-danger btn-sm btn-icon" title="Eliminar consulta"
             onclick="event.stopPropagation();confirmarEliminarConsulta('${c.id}', ${i})">×</button>
         </div>
@@ -2776,6 +2786,61 @@ function confirmarEliminarConsulta(id, idx) {
   });
 }
 
+
+// ── DRAFT DE CONSULTA ────────────────────────────────────────────
+function _consultaDraftRead() {
+  const f = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  return {
+    pacienteId:    App.pacienteActual ? App.pacienteActual.id : null,
+    consId:        f('cons-id'),
+    fecha:         f('cons-fecha'),
+    fechaDia:      f('cons-fecha-dia'),
+    fechaMes:      f('cons-fecha-mes'),
+    fechaAnio:     f('cons-fecha-anio'),
+    lugar:         f('cons-lugar'),
+    lugarOtro:     f('cons-lugar-otro'),
+    motivo:        f('cons-motivo'),
+    exfisico:      f('cons-exfisico'),
+    tratamiento:   f('cons-tratamiento'),
+    pendiente:     f('cons-pendiente'),
+  };
+}
+
+function _consultaDraftRestore(d) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('cons-id',          d.consId);
+  set('cons-fecha-dia',   d.fechaDia);
+  set('cons-fecha-mes',   d.fechaMes);
+  set('cons-fecha-anio',  d.fechaAnio);
+  syncConsFecha();
+  set('cons-lugar',       d.lugar);
+  // Si el lugar era "otro", mostrar el campo
+  if (d.lugar === '__otro__') {
+    const ot = document.getElementById('cons-lugar-otro');
+    if (ot) { ot.style.display = 'block'; ot.value = d.lugarOtro || ''; }
+  }
+  set('cons-motivo',      d.motivo);
+  set('cons-exfisico',    d.exfisico);
+  set('cons-tratamiento', d.tratamiento);
+  set('cons-pendiente',   d.pendiente);
+}
+
+function _consultaDraftHasContent(d) {
+  return !!(d && (d.motivo || d.exfisico || d.tratamiento || d.pendiente));
+}
+
+function cancelarConsulta() {
+  // Guardar draft si hay contenido
+  const draft = _consultaDraftRead();
+  if (_consultaDraftHasContent(draft)) {
+    App.consultaDraft = draft;
+    toast('Borrador guardado. Se restaurará al abrir nueva consulta.', 'info');
+  } else {
+    App.consultaDraft = null;
+  }
+  closeModal('modal-consulta');
+}
+// ─────────────────────────────────────────────────────────────────
 function prepModalConsulta() {
   const lugarSel=document.getElementById('cons-lugar'); if(lugarSel) lugarSel.value='';
   const lugarOtro=document.getElementById('cons-lugar-otro'); if(lugarOtro){lugarOtro.value='';lugarOtro.style.display='none';}
@@ -2787,6 +2852,19 @@ function prepModalConsulta() {
   if(diaEl)diaEl.value=dd; if(mesEl)mesEl.value=mm; if(anioEl)anioEl.value=yyyy;
   syncConsFecha();
   ['motivo','exfisico','tratamiento','pendiente'].forEach(f=>{document.getElementById('cons-'+f).value='';});
+  // Nombre del paciente en el header del modal
+  const pacNom = document.getElementById('cons-modal-paciente');
+  if (pacNom) pacNom.textContent = App.pacienteActual ? App.pacienteActual.apellidoNombre : '';
+  // Resetear modo edición
+  const hidId = document.getElementById('cons-id'); if (hidId) hidId.value = '';
+  // Restaurar draft si hay contenido del mismo paciente
+  const draft = App.consultaDraft;
+  if (draft && draft.pacienteId && App.pacienteActual &&
+      String(draft.pacienteId) === String(App.pacienteActual.id) &&
+      _consultaDraftHasContent(draft) && !draft.consId) {
+    _consultaDraftRestore(draft);
+    toast('Se restauró el borrador que dejaste sin guardar.', 'info');
+  }
 }
 function syncConsFecha(){
   const d=(document.getElementById('cons-fecha-dia')||{}).value||'';
@@ -2799,6 +2877,61 @@ function toggleConsLugarOtro(val){
   otro.style.display=val==='__otro__'?'block':'none'; if(val!=='__otro__')otro.value='';
 }
 
+async 
+// ── EDITAR CONSULTA ──────────────────────────────────────────────
+function editConsulta(consultaId) {
+  const list = App.consultasList || [];
+  const c = list.find(x => String(x.id) === String(consultaId));
+  if (!c) { toast('Consulta no encontrada', 'error'); return; }
+
+  // Primero preparar el modal (setea fecha de hoy, limpia campos)
+  prepModalConsulta();
+
+  // Luego sobreescribir con los datos reales de la consulta
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+
+  // Parsear fecha (ISO YYYY-MM-DD o DD/MM/YYYY)
+  let dd='', mm='', yyyy='';
+  const f = String(c.fechaConsulta || '').trim();
+  const mIso = f.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const mDmy = f.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mIso)      { yyyy=mIso[1]; mm=mIso[2]; dd=mIso[3]; }
+  else if (mDmy) { dd=mDmy[1].padStart(2,'0'); mm=mDmy[2].padStart(2,'0'); yyyy=mDmy[3]; }
+
+  set('cons-fecha-dia',  dd);
+  set('cons-fecha-mes',  mm);
+  set('cons-fecha-anio', yyyy);
+  syncConsFecha();
+
+  // Lugar
+  const lugarEl = document.getElementById('cons-lugar');
+  const lugarVal = c.lugarAtencion || '';
+  const opcionesLugar = ['Clínica Uruguay','Salutia','TELEmedicina'];
+  if (lugarEl) {
+    if (opcionesLugar.includes(lugarVal)) {
+      lugarEl.value = lugarVal;
+    } else if (lugarVal) {
+      lugarEl.value = '__otro__';
+      const ot = document.getElementById('cons-lugar-otro');
+      if (ot) { ot.style.display = 'block'; ot.value = lugarVal; }
+    }
+  }
+
+  set('cons-motivo',      c.motivoConsulta);
+  set('cons-exfisico',    c.exFisico);
+  set('cons-tratamiento', c.tratamiento);
+  set('cons-pendiente',   c.pendiente);
+
+  // Marcar como edición
+  set('cons-id', consultaId);
+
+  // Título del modal
+  const sp = document.getElementById('cons-modal-paciente');
+  if (sp) sp.textContent = (App.pacienteActual ? App.pacienteActual.apellidoNombre : '') + ' · Editando consulta';
+
+  showModal('modal-consulta');
+}
+// ─────────────────────────────────────────────────────────────────
 async function submitConsulta() {
   const pac = App.pacienteActual;
   if (!pac) { toast('No hay paciente activo', 'error'); return; }
@@ -2809,6 +2942,8 @@ async function submitConsulta() {
   const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = 'Guardar Consulta'; });
 
   showLoading('Guardando consulta...');
+  const consId = document.getElementById('cons-id') ? document.getElementById('cons-id').value : '';
+  const esEdicion = !!consId;
   const data = {
     pacienteId:          pac.id,
     apellidoNombre:      pac.apellidoNombre,
@@ -2820,10 +2955,14 @@ async function submitConsulta() {
     tratamiento:         document.getElementById('cons-tratamiento').value,
     pendiente:           document.getElementById('cons-pendiente').value
   };
+  if (esEdicion) data.id = consId;
   try {
-    const res = await serverCall('saveConsulta', data, App.session.medicoId);
+    const accion = esEdicion ? 'updateConsulta' : 'saveConsulta';
+    showLoading(esEdicion ? 'Actualizando consulta...' : 'Guardando consulta...');
+    const res = await serverCall(accion, data, App.session.medicoId);
     if (res.ok) {
-      toast('Consulta guardada', 'success');
+      toast(esEdicion ? 'Consulta actualizada' : 'Consulta guardada', 'success');
+      App.consultaDraft = null;
       closeModal('modal-consulta');
       const r = await serverCall('getConsultas', pac.id);
       renderConsultas(r.ok ? r.data : []);
