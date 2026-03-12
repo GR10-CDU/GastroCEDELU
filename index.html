@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 13:45 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 14:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -2243,12 +2243,14 @@ async function initApp() {
 async function loadPacientes() {
   showLoading('Cargando pacientes...');
   try {
+    const q = document.getElementById('search-input').value;
     const res = await serverCall('getPacientes',
-      App.session.medicoId, App.session.rol,
-      document.getElementById('search-input').value
+      App.session.medicoId, App.session.rol, q
     );
     if (res.ok) {
       App.pacientes = res.data;
+      App.pacientesTotal = res.total || res.data.length;
+      App.pacientesMode  = res.mode || 'recent';
       renderPacientes(res.data);
     } else {
       toast('Error cargando pacientes: ' + res.error, 'error');
@@ -2260,20 +2262,27 @@ async function loadPacientes() {
   }
 }
 
+let _filterTimer = null;
 function filterPacientes(q) {
-  const filtered = App.pacientes.filter(p => {
-    const nom = (p.apellidoNombre || '').toLowerCase();
-    const dni = (p.dni || '').toString();
-    return nom.includes(q.toLowerCase()) || dni.includes(q);
-  });
-  renderPacientes(filtered);
+  clearTimeout(_filterTimer);
+  if (!q.trim()) {
+    // Sin búsqueda: recargar recientes desde servidor
+    _filterTimer = setTimeout(() => loadPacientes(), 300);
+  } else if (q.trim().length >= 2) {
+    // Con búsqueda: buscar en servidor (todos los pacientes)
+    _filterTimer = setTimeout(() => loadPacientes(), 400);
+  }
 }
 
 function renderPacientes(list) {
   const tbody = document.getElementById('pacientes-tbody');
-  document.getElementById('stat-total').textContent = list.length;
-  document.getElementById('pacientes-subtitle').textContent =
-    `${list.length} paciente${list.length !== 1 ? 's' : ''} encontrado${list.length !== 1 ? 's' : ''}`;
+  document.getElementById('stat-total').textContent = App.pacientesTotal || list.length;
+  const modo = App.pacientesMode || 'recent';
+  const total = App.pacientesTotal || list.length;
+  const subtitleText = modo === 'search'
+    ? `${list.length} resultado${list.length !== 1 ? 's' : ''} encontrado${list.length !== 1 ? 's' : ''} de ${total} pacientes`
+    : `Últimos 15 días · ${list.length} paciente${list.length !== 1 ? 's' : ''} · ${total} en total — usá el buscador para ver todos`;
+  document.getElementById('pacientes-subtitle').textContent = subtitleText;
 
   if (!list.length) {
     tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
