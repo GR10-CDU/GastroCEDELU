@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-12 14:00 ARG -->
+<!-- GastroCDELU index.html · 2026-03-12 15:00 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -661,6 +661,10 @@ button { cursor: pointer; border: none; }
   font-weight: 500;
 }
 .tab-content { display: none; }
+@keyframes _skAnim {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 .tab-content.active { display: block; }
 
 /* ─── HC VIEWER ─────────────────────────────────────────────── */
@@ -2423,35 +2427,69 @@ async function submitPaciente() {
 }
 
 // ─── DETALLE PACIENTE ────────────────────────────────────────
+// Helper: muestra skeleton en un contenedor mientras carga
+function _skeletonHtml(lines) {
+  lines = lines || 3;
+  let h = '<div style="padding:12px 0">';
+  for (let i = 0; i < lines; i++) {
+    const w = [85,60,75,50][i % 4];
+    h += `<div style="height:14px;width:${w}%;background:linear-gradient(90deg,var(--border1) 25%,var(--bg2) 50%,var(--border1) 75%);background-size:200% 100%;border-radius:6px;margin-bottom:12px;animation:_skAnim 1.4s infinite"></div>`;
+  }
+  h += '</div>';
+  return h;
+}
+
 async function abrirPaciente(id) {
-  showLoading('Cargando paciente...');
+  // ── PASO 1: mostrar pantalla inmediatamente con datos locales ────────────
+  // Buscar en caché local (lista ya cargada)
+  let pacLocal = (App.pacientes || []).find(p => p.id && p.id.toString() === id.toString()) || null;
+
+  if (pacLocal) {
+    // Tenemos datos locales: mostrar pantalla al instante, sin spinner global
+    App.pacienteActual = pacLocal;
+    App.hcActual = null;
+    renderDetalleHeader(pacLocal);
+
+    // Poner skeletons en las 3 tabs mientras carga el resto
+    document.getElementById('hc-viewer').innerHTML = _skeletonHtml(5);
+    document.getElementById('consultas-list').innerHTML = _skeletonHtml(4);
+    document.getElementById('endoscopias-list').innerHTML = _skeletonHtml(3);
+
+    showPage('detalle');
+    showTab('hc');
+  } else {
+    // No está en caché local (acceso directo): spinner clásico
+    showLoading('Cargando paciente...');
+  }
+
+  // ── PASO 2: llamada al servidor en background ────────────────────────────
   try {
-    // Paciente primero (crítico): si falla, no hay nada que mostrar
-    const resPac = await serverCall('getPaciente', id);
-    if (!resPac.ok) {
-      toast('Paciente no encontrado: ' + (resPac.error || ''), 'error');
+    const res = await serverCall('getPacienteCompleto', id);
+    if (!res.ok) {
+      toast('Paciente no encontrado: ' + (res.error || ''), 'error');
+      if (!pacLocal) showPage('pacientes');
       return;
     }
-    App.pacienteActual = resPac.data;
-    renderDetalleHeader(resPac.data);
 
-    // Resto: independientes — si una falla no rompe las demás
-    const [resHC, resCons, resEndo] = await Promise.allSettled([
-      serverCall('getHC', id),
-      serverCall('getConsultas', id),
-      serverCall('getEndoscopias', id)
-    ]);
-    const hc    = resHC.status==='fulfilled'   && resHC.value.ok    ? resHC.value.data    : null;
-    const cons  = resCons.status==='fulfilled' && resCons.value.ok  ? resCons.value.data  : [];
-    const endos = resEndo.status==='fulfilled' && resEndo.value.ok  ? resEndo.value.data  : [];
+    const pac   = res.paciente;
+    const hc    = res.hc          || null;
+    const cons  = res.consultas   || [];
+    const endos = res.endoscopias || [];
+
+    App.pacienteActual = pac;
     App.hcActual = hc;
+
+    // Re-render del header con datos completos del servidor
+    renderDetalleHeader(pac);
 
     try { renderHC(hc); }             catch(ex) { console.error('renderHC:', ex); }
     try { renderConsultas(cons); }    catch(ex) { console.error('renderConsultas:', ex); }
     try { renderEndoscopias(endos); } catch(ex) { console.error('renderEndoscopias:', ex); }
 
-    showPage('detalle');
-    showTab('hc');
+    if (!pacLocal) {
+      showPage('detalle');
+      showTab('hc');
+    }
   } catch (e) {
     console.error('abrirPaciente:', e);
     toast('Error al cargar el paciente: ' + e.message, 'error');
