@@ -1749,6 +1749,11 @@ color:#555;
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
               Imprimir
             </button>
+            <!-- recordatorios WSP -->
+            <button onclick="wspAbrirManual()"
+              style="display:inline-flex;align-items:center;gap:6px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#1b5e20;cursor:pointer">
+              📤 Recordatorios
+            </button>
             <!-- admin mensajes -->
             <button onclick="toggleCitasAdmin()"
               style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border1);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--text2);cursor:pointer">
@@ -6006,238 +6011,227 @@ function _statsChartNuevos(todas, citasAnio, anio) {
 // Ejemplos: "nombre: Rodriguez German" / "hora: nueve y media" / "veda"
 // ═══════════════════════════════════════════════════════════════
 
-var _speechRec    = null;
-var _speechActive = false;
-var _speechBtn_el = null; // referencia al botón activo
+// ═══════════════════════════════════════════════════════════════
+// SPEECH-TO-TEXT — micrófono único para formulario cita
+// Lógica: secuencia fija de campos, el usuario habla uno por uno.
+// Cada reconocimiento llena el campo activo y avanza al siguiente.
+// ═══════════════════════════════════════════════════════════════
 
-var _SPEECH_HORA_MAP = {
-  'ocho':         '08:00', 'ocho y media': '08:30', 'ocho y cuarto': '08:15',
-  'nueve':        '09:00', 'nueve y media': '09:30', 'nueve y cuarto': '09:15',
-  'diez':         '10:00', 'diez y media': '10:30', 'diez y cuarto': '10:15',
-  'once':         '11:00', 'once y media': '11:30', 'once y cuarto': '11:15',
-  'doce':         '12:00', 'doce y media': '12:30',
-  'una':          '13:00', 'una y media': '13:30',
-  'dos':          '14:00', 'dos y media': '14:30',
-  'tres':         '15:00', 'tres y media': '15:30',
-  'cuatro':       '16:00', 'cuatro y media': '16:30',
-  'cinco':        '17:00', 'cinco y media': '17:30',
-  'seis':         '18:00', 'seis y media': '18:30',
-  'siete':        '19:00', 'siete y media': '19:30'
+var _sRec      = null;
+var _sActivo   = false;
+var _sCampoIdx = 0;
+var _sBtnEl    = null;
+
+// Orden de campos y cómo extraer/transformar el valor dictado
+var _sCampos = [
+  { id: 'nc-nombre',  label: 'Nombre paciente',  tipo: 'texto',   hint: 'Ej: "Rodriguez German"' },
+  { id: 'nc-hora',    label: 'Hora',              tipo: 'hora',    hint: 'Ej: "nueve y media" o "10:30"' },
+  { id: 'nc-estudio', label: 'Estudio',           tipo: 'estudio', hint: 'Ej: "VEDA", "VCC", "los dos"' },
+  { id: 'nc-os',      label: 'Obra social',       tipo: 'texto',   hint: 'Ej: "Sancor" o "OSPER"' },
+  { id: 'nc-tel',     label: 'Teléfono',          tipo: 'tel',     hint: 'Ej: "3442 123456"' },
+  { id: 'nc-nota',    label: 'Notas',             tipo: 'nota',    hint: 'Ej: "paciente hipertenso" o "saltar"' }
+];
+
+var _sHoraMap = {
+  'ocho': '08:00', 'ocho y cuarto': '08:15', 'ocho y media': '08:30', 'ocho y tres cuartos': '08:45',
+  'nueve': '09:00', 'nueve y cuarto': '09:15', 'nueve y media': '09:30', 'nueve y tres cuartos': '09:45',
+  'diez': '10:00', 'diez y cuarto': '10:15', 'diez y media': '10:30', 'diez y tres cuartos': '10:45',
+  'once': '11:00', 'once y cuarto': '11:15', 'once y media': '11:30',
+  'doce': '12:00', 'doce y media': '12:30',
+  'una': '13:00', 'una y media': '13:30',
+  'dos': '14:00', 'dos y media': '14:30',
+  'tres': '15:00', 'tres y media': '15:30',
+  'cuatro': '16:00', 'cuatro y media': '16:30',
+  'cinco': '17:00', 'cinco y media': '17:30',
+  'seis': '18:00', 'seis y media': '18:30',
+  'siete': '19:00', 'siete y media': '19:30'
 };
 
-var _SPEECH_ESTUDIO_MAP = {
-  'veda': 'VEDA', 'vcc': 'VCC', 'colonoscopia': 'VCC', 'colonoscopía': 'VCC',
-  'endoscopia': 'VEDA', 'endoscopía': 'VEDA', 'gastroscopia': 'VEDA',
-  'veda y vcc': 'VEDA+VCC', 'veda mas vcc': 'VEDA+VCC', 'veda más vcc': 'VEDA+VCC',
-  'ambos': 'VEDA+VCC', 'los dos': 'VEDA+VCC', 'otro': 'Otro'
+var _sEstudioMap = {
+  'veda': 'VEDA', 'endoscopia': 'VEDA', 'endoscopía': 'VEDA', 'gastroscopia': 'VEDA',
+  'vcc': 'VCC', 'colonoscopia': 'VCC', 'colonoscopía': 'VCC',
+  'veda y vcc': 'VEDA/VCC', 'veda más vcc': 'VEDA/VCC', 'veda mas vcc': 'VEDA/VCC',
+  'ambos': 'VEDA/VCC', 'los dos': 'VEDA/VCC', 'ambas': 'VEDA/VCC',
+  'otro': 'Otro', 'otros': 'Otro'
 };
 
 function _speechSupported() {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 }
 
-// Llamado desde el botón único del formulario
+// Botón del formulario llama esto
 function _speechCitaToggle(btnEl) {
-  if (!_speechSupported()) { toast('Tu navegador no soporta dictado por voz', 'error'); return; }
-  if (_speechActive) { _speechCitaStop(); return; }
-  _speechCitaStart(btnEl);
+  if (!_speechSupported()) { toast('Tu navegador no soporta voz', 'error'); return; }
+  if (_sActivo) { _sParar(); return; }
+  _sBtnEl    = btnEl;
+  _sCampoIdx = 0;
+  _sEscucharCampo();
 }
 
-function _speechCitaStart(btnEl) {
+function _sEscucharCampo() {
+  // Saltar campos que no existen en el DOM (form no abierto)
+  while (_sCampoIdx < _sCampos.length && !document.getElementById(_sCampos[_sCampoIdx].id)) {
+    _sCampoIdx++;
+  }
+  if (_sCampoIdx >= _sCampos.length) { _sParar(); toast('✓ Cita completada por voz', 'ok'); return; }
+
+  var campo = _sCampos[_sCampoIdx];
+  _sActualizarUI(campo);
+
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  _speechRec    = new SR();
-  _speechActive = true;
-  _speechBtn_el = btnEl;
+  _sRec    = new SR();
+  _sActivo = true;
+  _sRec.lang           = 'es-AR';
+  _sRec.continuous     = false;
+  _sRec.interimResults = false;
 
-  _speechRec.lang            = 'es-AR';
-  _speechRec.continuous      = true;   // sesión continua hasta que el usuario para
-  _speechRec.interimResults  = false;
-  _speechRec.maxAlternatives = 1;
-
-  _speechRec.onresult = function(e) {
-    // Procesar último resultado
-    var raw = e.results[e.results.length - 1][0].transcript.trim();
-    _speechProcesar(raw);
+  _sRec.onresult = function(e) {
+    var raw = e.results[0][0].transcript.trim();
+    _sAplicarCampo(campo, raw);
   };
-  _speechRec.onerror = function(e) {
-    if (e.error !== 'no-speech') _speechCitaStop();
-  };
-  _speechRec.onend = function() {
-    // Si sigue activo (no fue stop manual), reiniciar para mantener sesión
-    if (_speechActive) {
-      try { _speechRec.start(); } catch(e) { _speechCitaStop(); }
-    }
-  };
-
-  _speechRec.start();
-  if (btnEl) {
-    btnEl.style.background = '#c62828';
-    btnEl.style.animation  = 'speechPulse 1s infinite';
-    btnEl.title = 'Escuchando... tocá para parar';
-    btnEl.textContent = '⏹';
-  }
-  _speechMostrarAyuda(true);
-  toast('🎤 Escuchando... dictá los datos de la cita', 'ok');
-}
-
-function _speechCitaStop() {
-  _speechActive = false;
-  if (_speechRec) { try { _speechRec.stop(); } catch(e){} _speechRec = null; }
-  if (_speechBtn_el) {
-    _speechBtn_el.style.background = 'rgba(255,255,255,.1)';
-    _speechBtn_el.style.animation  = '';
-    _speechBtn_el.title = 'Dictar cita por voz';
-    _speechBtn_el.textContent = '🎤';
-    _speechBtn_el = null;
-  }
-  _speechMostrarAyuda(false);
-}
-
-function _speechMostrarAyuda(mostrar) {
-  var el = document.getElementById('speech-ayuda');
-  if (!el) return;
-  el.style.display = mostrar ? 'block' : 'none';
-}
-
-// Parsear el dictado y rellenar el campo correspondiente
-function _speechProcesar(raw) {
-  var texto = raw.toLowerCase().trim();
-  // Remover puntuación final
-  texto = texto.replace(/[.,;!?]+$/, '').trim();
-
-  // Detectar si es "campo: valor" o solo "valor"
-  var campo = null, valor = texto;
-  var colonIdx = texto.indexOf(':');
-  if (colonIdx > 0) {
-    campo = texto.slice(0, colonIdx).trim();
-    valor = texto.slice(colonIdx + 1).trim();
-  }
-
-  // Si no hay campo explícito, inferir por el contenido
-  if (!campo) {
-    if (_SPEECH_ESTUDIO_MAP[valor]) {
-      campo = 'estudio';
-    } else if (_speechParseHora(valor)) {
-      campo = 'hora';
-    } else if (/^\d{6,}$/.test(valor.replace(/\s/g,''))) {
-      campo = 'telefono';
+  _sRec.onerror = function(ev) {
+    if (ev.error === 'no-speech') {
+      // Reintentar el mismo campo
+      _sEscucharCampo();
     } else {
-      // Por defecto: nombre si está vacío, sino notas
-      var elNombre = document.getElementById('nc-nombre');
-      campo = (elNombre && !elNombre.value.trim()) ? 'nombre' : 'nota';
+      _sParar();
     }
-  }
-
-  // Normalizar alias de campo
-  var aliasMap = {
-    'nombre': 'nombre', 'paciente': 'nombre', 'apellido': 'nombre',
-    'hora': 'hora', 'horario': 'hora', 'turno': 'hora',
-    'estudio': 'estudio', 'procedimiento': 'estudio', 'tipo': 'estudio',
-    'obra social': 'obraSocial', 'os': 'obraSocial', 'prepaga': 'obraSocial', 'cobertura': 'obraSocial',
-    'telefono': 'telefono', 'teléfono': 'telefono', 'celular': 'telefono', 'número': 'telefono',
-    'nota': 'nota', 'notas': 'nota', 'observación': 'nota', 'observaciones': 'nota', 'comentario': 'nota'
   };
-  var campoNorm = aliasMap[campo] || aliasMap[campo.toLowerCase()] || campo;
-
-  // Aplicar al campo
-  _speechAplicar(campoNorm, valor, raw);
+  _sRec.onend = function() {
+    // Si sigue activo y no fue parado manualmente, se manejó en onresult
+    // (onresult llama a _sEscucharCampo o _sParar)
+  };
+  try { _sRec.start(); } catch(e) { _sParar(); }
 }
 
-function _speechParseHora(s) {
-  // Primero intentar literal HH:MM
-  var m = s.match(/^(\d{1,2})[:\s](\d{2})$/);
-  if (m) return (parseInt(m[1]) < 10 ? '0' : '') + parseInt(m[1]) + ':' + m[2];
-  // Buscar en mapa de palabras
-  var mapped = _SPEECH_HORA_MAP[s.toLowerCase().trim()];
-  return mapped || null;
-}
+function _sAplicarCampo(campo, raw) {
+  var texto = raw.toLowerCase().trim().replace(/[.,!?]+$/, '');
+  var saltar = texto === 'saltar' || texto === 'siguiente' || texto === 'omitir' || texto === 'no sé';
+  var elRaw = document.getElementById(campo.id);
+  if (!elRaw) { _sCampoIdx++; _sEscucharCampo(); return; }
 
-function _speechAplicar(campo, valor, raw) {
-  var feedbacks = { nombre: 'Nombre', hora: 'Hora', estudio: 'Estudio', obraSocial: 'Obra Social', telefono: 'Teléfono', nota: 'Notas' };
-  var label = feedbacks[campo] || campo;
+  if (!saltar) {
+    if (campo.tipo === 'texto' || campo.tipo === 'nota') {
+      // Capitalizar primera letra de cada palabra para nombre
+      var val = campo.tipo === 'nota' ? raw : raw.replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+      if (campo.tipo === 'nota') {
+        elRaw.value = (elRaw.value ? elRaw.value + ' ' : '') + val;
+      } else {
+        elRaw.value = val;
+      }
+      toast('✓ ' + campo.label + ': ' + val, 'ok');
 
-  switch (campo) {
-    case 'nombre':
-      var el = document.getElementById('nc-nombre');
-      if (el) {
-        // Capitalizar primer letra de cada palabra
-        el.value = valor.replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-        toast('✓ ' + label + ': ' + el.value, 'ok');
-      } break;
-
-    case 'hora':
-      var horaVal = _speechParseHora(valor);
+    } else if (campo.tipo === 'hora') {
+      // Primero buscar en el mapa de palabras
+      var horaVal = _sHoraMap[texto] || _sHoraMap[texto.replace(/\s+/g, ' ')];
+      if (!horaVal) {
+        // Intentar subcadena del mapa
+        var keys = Object.keys(_sHoraMap);
+        for (var k = 0; k < keys.length; k++) {
+          if (texto.indexOf(keys[k]) !== -1) { horaVal = _sHoraMap[keys[k]]; break; }
+        }
+      }
+      if (!horaVal) {
+        // Intentar formato HH:MM o H:MM dictado como dígitos
+        var mH = texto.replace(/\s/g,'').match(/^(\d{1,2})[:\s](\d{2})$/);
+        if (mH) horaVal = (parseInt(mH[1]) < 10 ? '0' : '') + parseInt(mH[1]) + ':' + mH[2];
+      }
       if (horaVal) {
-        var el = document.getElementById('nc-hora');
-        if (el) { el.value = horaVal; toast('✓ Hora: ' + horaVal, 'ok'); }
+        elRaw.value = horaVal;
+        toast('✓ Hora: ' + horaVal, 'ok');
       } else {
-        // Intentar interpretar "ocho y media" etc en texto compuesto
-        var encontrada = null;
-        Object.keys(_SPEECH_HORA_MAP).forEach(function(k) {
-          if (valor.indexOf(k) !== -1) encontrada = _SPEECH_HORA_MAP[k];
-        });
-        if (encontrada) {
-          var el = document.getElementById('nc-hora');
-          if (el) { el.value = encontrada; toast('✓ Hora: ' + encontrada, 'ok'); }
-        } else {
-          toast('No entendí la hora: "' + raw + '"', 'error');
-        }
-      } break;
+        toast('No entendí la hora "' + raw + '" — reintentando', 'error');
+        _sEscucharCampo(); // retry mismo campo
+        return;
+      }
 
-    case 'estudio':
-      var estVal = _SPEECH_ESTUDIO_MAP[valor] || _SPEECH_ESTUDIO_MAP[valor.toLowerCase()];
-      if (estVal) {
-        var sel = document.getElementById('nc-estudio');
-        if (sel) {
-          // Buscar option que matchee
-          for (var i = 0; i < sel.options.length; i++) {
-            if (sel.options[i].value === estVal || sel.options[i].text.toUpperCase() === estVal.toUpperCase()) {
-              sel.selectedIndex = i; break;
-            }
-          }
-          toast('✓ Estudio: ' + estVal, 'ok');
+    } else if (campo.tipo === 'estudio') {
+      var est = _sEstudioMap[texto] || _sEstudioMap[texto.replace(/\s+/g, ' ')];
+      if (!est) {
+        var keys2 = Object.keys(_sEstudioMap);
+        for (var k2 = 0; k2 < keys2.length; k2++) {
+          if (texto.indexOf(keys2[k2]) !== -1) { est = _sEstudioMap[keys2[k2]]; break; }
         }
+      }
+      if (est) {
+        var sel = elRaw;
+        for (var o = 0; o < sel.options.length; o++) {
+          if (sel.options[o].value === est) { sel.selectedIndex = o; break; }
+        }
+        toast('✓ Estudio: ' + est, 'ok');
       } else {
-        toast('No reconocí el estudio: "' + raw + '"', 'error');
-      } break;
+        toast('No reconocí "' + raw + '" — reintentando', 'error');
+        _sEscucharCampo();
+        return;
+      }
 
-    case 'obraSocial':
-      var el = document.getElementById('nc-os');
-      if (el) {
-        el.value = valor.toUpperCase();
-        toast('✓ Obra Social: ' + el.value, 'ok');
-      } break;
+    } else if (campo.tipo === 'tel') {
+      var tel = raw.replace(/\s/g, '');
+      elRaw.value = tel;
+      toast('✓ Teléfono: ' + tel, 'ok');
+    }
+  } else {
+    toast('↷ ' + campo.label + ' omitido', 'ok');
+  }
 
-    case 'telefono':
-      var tel = valor.replace(/\s/g,'');
-      var el  = document.getElementById('nc-tel');
-      if (el) { el.value = tel; toast('✓ Teléfono: ' + tel, 'ok'); }
-      break;
+  // Avanzar al siguiente campo
+  _sCampoIdx++;
+  setTimeout(_sEscucharCampo, 400); // pequeña pausa antes del siguiente
+}
 
-    case 'nota':
-      var el = document.getElementById('nc-nota');
-      if (el) {
-        el.value = (el.value ? el.value + ' ' : '') + valor;
-        toast('✓ Nota: ' + valor, 'ok');
-      } break;
-
-    default:
-      toast('No entendí: "' + raw + '"', 'error');
+function _sActualizarUI(campo) {
+  if (_sBtnEl) {
+    _sBtnEl.style.background = '#c62828';
+    _sBtnEl.textContent = '⏹ ' + campo.label + '...';
+    _sBtnEl.title = 'Hablá: ' + campo.hint + ' — tocá para parar';
+  }
+  // Resaltar el campo activo
+  _sCampos.forEach(function(c) {
+    var el = document.getElementById(c.id);
+    if (el) el.style.borderColor = 'rgba(255,255,255,.12)';
+  });
+  var elAct = document.getElementById(campo.id);
+  if (elAct) {
+    elAct.style.borderColor = '#c62828';
+    elAct.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  var ayuda = document.getElementById('speech-ayuda');
+  if (ayuda) {
+    ayuda.style.display = 'block';
+    ayuda.innerHTML = '<strong style="color:#6ddc8c">🎤 Campo: ' + campo.label + '</strong>'
+      + ' <span style="opacity:.7">— ' + campo.hint + '</span>'
+      + ' <span style="opacity:.5;font-size:10px"> &nbsp;|&nbsp; decí "saltar" para omitir</span>';
   }
 }
 
+function _sParar() {
+  _sActivo = false;
+  if (_sRec) { try { _sRec.stop(); } catch(e){} _sRec = null; }
+  if (_sBtnEl) {
+    _sBtnEl.style.background = 'rgba(255,255,255,.1)';
+    _sBtnEl.textContent = '🎤 Dictar';
+    _sBtnEl.title = 'Dictar cita por voz';
+  }
+  // Limpiar resaltados
+  _sCampos.forEach(function(c) {
+    var el = document.getElementById(c.id);
+    if (el) el.style.borderColor = 'rgba(255,255,255,.12)';
+  });
+  var ayuda = document.getElementById('speech-ayuda');
+  if (ayuda) ayuda.style.display = 'none';
+  _sBtnEl = null;
+}
 
-
-var _wspRecordKeyPrefix = 'gastro_wsp_enviado_';
 
 // ─── WSP helpers ──────────────────────────────────────────────────────
 function _wspTexto(msg, c, fechaLabel) {
-  return (msg.texto || '')
-    .replace(/\{nombre\}/g,     c.nombre     || '')
-    .replace(/\{fecha\}/g,      fechaLabel)
-    .replace(/\{hora\}/g,       c.hora       || '')
-    .replace(/\{obraSocial\}/g, c.obraSocial || '')
-    .replace(/\{estudio\}/g,    c.estudio    || 'Sin especificar');
+  var t = msg.texto || '';
+  t = t.split('{nombre}').join(c.nombre || '');
+  t = t.split('{fecha}').join(fechaLabel);
+  t = t.split('{hora}').join(c.hora || '');
+  t = t.split('{obraSocial}').join(c.obraSocial || '');
+  t = t.split('{estudio}').join(c.estudio || 'Sin especificar');
+  return t;
 }
 
 // Automático a las 19hs al entrar a Mis Citas
