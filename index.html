@@ -2248,6 +2248,10 @@ color:#555;
       <span id="cons-modal-paciente" style="font-size:24px;font-weight:700;color:var(--text)"></span>
       <span style="font-size:14px;font-weight:400;color:var(--muted2);margin-left:10px">Nueva Consulta / Evolución</span>
     </h2>
+    <div id="cons-modal-os-row" style="display:none;margin:-8px 0 16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--muted2)">🏥 <strong style="color:var(--text)" id="cons-modal-os"></strong></span>
+      <span id="cons-modal-afiliado-wrap" style="font-size:13px;color:var(--muted2);display:none">Afiliado: <strong style="color:var(--text)" id="cons-modal-afiliado"></strong></span>
+    </div>
     <input type="hidden" id="cons-id" value="">
     <div class="section-divider"><span>Datos de la Consulta</span></div>
     <div class="field-row cols-2">
@@ -3691,6 +3695,24 @@ function prepModalConsulta() {
   // Nombre del paciente en el header del modal
   const pacNom = document.getElementById('cons-modal-paciente');
   if (pacNom) pacNom.textContent = App.pacienteActual ? App.pacienteActual.apellidoNombre : '';
+  // Obra social y afiliado
+  var osRow      = document.getElementById('cons-modal-os-row');
+  var osEl       = document.getElementById('cons-modal-os');
+  var afilEl     = document.getElementById('cons-modal-afiliado');
+  var afilWrap   = document.getElementById('cons-modal-afiliado-wrap');
+  var pac        = App.pacienteActual || {};
+  if (osRow && pac.obraSocial) {
+    osRow.style.display    = 'flex';
+    if (osEl)   osEl.textContent   = pac.obraSocial;
+    if (afilEl && pac.nroAfiliado) {
+      afilEl.textContent   = pac.nroAfiliado;
+      if (afilWrap) afilWrap.style.display = 'inline';
+    } else {
+      if (afilWrap) afilWrap.style.display = 'none';
+    }
+  } else if (osRow) {
+    osRow.style.display = 'none';
+  }
   // Resetear modo edición
   const hidId = document.getElementById('cons-id'); if (hidId) hidId.value = '';
   // Restaurar draft si hay contenido del mismo paciente
