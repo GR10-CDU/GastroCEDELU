@@ -6049,10 +6049,24 @@ var _sHoraMap = {
 };
 
 var _sEstudioMap = {
-  'veda': 'VEDA', 'endoscopia': 'VEDA', 'endoscopía': 'VEDA', 'gastroscopia': 'VEDA',
-  'vcc': 'VCC', 'colonoscopia': 'VCC', 'colonoscopía': 'VCC',
-  'veda y vcc': 'VEDA/VCC', 'veda más vcc': 'VEDA/VCC', 'veda mas vcc': 'VEDA/VCC',
+  // VEDA
+  'veda': 'VEDA', 'endoscopia': 'VEDA', 'endoscopía': 'VEDA',
+  'gastroscopia': 'VEDA', 'gastroscopía': 'VEDA',
+  // VCC — variantes fonéticas que genera el motor de voz en español
+  'vcc': 'VCC',
+  'v c c': 'VCC', 'vc c': 'VCC', 'v cc': 'VCC',
+  'bese ce ce': 'VCC', 'be ce ce': 'VCC', 'be se se': 'VCC',
+  'vece': 'VCC', 'vese': 'VCC', 'vece ce': 'VCC',
+  'colonoscopia': 'VCC', 'colonoscopía': 'VCC', 'colon': 'VCC',
+  // VEDA/VCC — combinaciones
+  'veda vcc': 'VEDA/VCC', 'veda y vcc': 'VEDA/VCC',
+  'veda más vcc': 'VEDA/VCC', 'veda mas vcc': 'VEDA/VCC',
+  'veda v c c': 'VEDA/VCC', 'veda vc c': 'VEDA/VCC',
+  'veda bese ce ce': 'VEDA/VCC', 'veda be ce ce': 'VEDA/VCC',
+  'veda vece': 'VEDA/VCC', 'veda vese': 'VEDA/VCC',
+  'veda y colonoscopia': 'VEDA/VCC', 'veda colonoscopia': 'VEDA/VCC',
   'ambos': 'VEDA/VCC', 'los dos': 'VEDA/VCC', 'ambas': 'VEDA/VCC',
+  // Otro
   'otro': 'Otro', 'otros': 'Otro'
 };
 
@@ -6156,11 +6170,19 @@ function _sAplicarCampo(campo, raw) {
       }
 
     } else if (campo.tipo === 'estudio') {
-      var est = _sEstudioMap[texto] || _sEstudioMap[texto.replace(/\s+/g, ' ')];
+      // Normalizar: "v c c" → "vcc", "v e d a" → "veda"
+      var textoNorm = texto.replace(/\b([a-z])\s([a-z])\s([a-z])\b/g, '$1$2$3')
+                           .replace(/\b([a-z])\s([a-z])\b/g, '$1$2');
+      var est = _sEstudioMap[texto] || _sEstudioMap[textoNorm]
+             || _sEstudioMap[texto.replace(/\s+/g, ' ')] || _sEstudioMap[textoNorm.replace(/\s+/g, ' ')];
       if (!est) {
         var keys2 = Object.keys(_sEstudioMap);
+        // Buscar primero claves más largas (más específicas) para evitar falsos positivos
+        keys2.sort(function(a,b){ return b.length - a.length; });
         for (var k2 = 0; k2 < keys2.length; k2++) {
-          if (texto.indexOf(keys2[k2]) !== -1) { est = _sEstudioMap[keys2[k2]]; break; }
+          if (texto.indexOf(keys2[k2]) !== -1 || textoNorm.indexOf(keys2[k2]) !== -1) {
+            est = _sEstudioMap[keys2[k2]]; break;
+          }
         }
       }
       if (est) {
