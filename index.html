@@ -1250,6 +1250,11 @@ color:#555;
 }
 
 
+
+@keyframes speechPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(198,40,40,.5); }
+  50%      { box-shadow: 0 0 0 8px rgba(198,40,40,0); }
+}
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -5533,7 +5538,6 @@ function _buildISOFromSelects(idBase) {
 }
 
 function _bodyFormCita(c) {
-  // c puede ser objeto existente (editar) o null (nueva)
   var nombre  = c ? c.nombre     : '';
   var fecha   = c ? c.fecha      : _isoFecha(new Date());
   var hora    = c ? c.hora       : '09:00';
@@ -5547,15 +5551,30 @@ function _bodyFormCita(c) {
   var focusIn  = "this.style.borderColor='rgba(100,220,140,.5)'";
   var focusOut = "this.style.borderColor='rgba(255,255,255,.12)'";
 
+  var speechBtnHTML = _speechSupported()
+    ? '<button type="button" onclick="_speechCitaToggle(this)" title="Dictar cita por voz"'
+      + ' style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:16px;color:#fff;white-space:nowrap;display:flex;align-items:center;gap:6px">'
+      + '🎤 <span style="font-size:11px;font-weight:700;opacity:.8">Dictar</span></button>'
+    : '';
+
+  var ayudaHTML = '<div id="speech-ayuda" style="display:none;background:rgba(255,255,255,.06);border:1px solid rgba(100,220,140,.2);border-radius:8px;padding:10px 12px;font-size:11px;color:rgba(255,255,255,.65);line-height:1.6">'
+    + '<strong style="color:#6ddc8c">🎤 Escuchando</strong> — decí los datos así:<br>'
+    + '<em>"Rodriguez German"</em> → nombre &nbsp;|&nbsp; <em>"nueve y media"</em> → hora<br>'
+    + '<em>"VEDA"</em> / <em>"VCC"</em> → estudio &nbsp;|&nbsp; <em>"Sancor"</em> → obra social<br>'
+    + '<em>"telefono: 3442123456"</em> → campo explícito'
+    + '</div>';
+
   return '<div style="display:flex;flex-direction:column;gap:16px">'
 
-    + '<div><label style="' + LBL + '">NOMBRE PACIENTE *</label>'
-    + '<div style="display:flex;gap:8px;align-items:center">'
+    + '<div style="display:flex;gap:8px;align-items:flex-end">'
+    + '<div style="flex:1"><label style="' + LBL + '">NOMBRE PACIENTE *</label>'
     + '<input id="nc-nombre" type="text" placeholder="Apellido, Nombre" value="' + nombre.replace(/"/g,'&quot;') + '"'
-    + ' style="' + INP + 'padding:11px 14px;font-size:15px;font-weight:600;flex:1"'
-    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '">'
-    + _speechBtn('nc-nombre')
-    + '</div></div>'
+    + ' style="' + INP + 'padding:11px 14px;font-size:15px;font-weight:600"'
+    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '"></div>'
+    + speechBtnHTML
+    + '</div>'
+
+    + ayudaHTML
 
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
     +   '<div><label style="' + LBL + '">FECHA *</label>'
@@ -5590,12 +5609,9 @@ function _bodyFormCita(c) {
     + '</div>'
 
     + '<div><label style="' + LBL + '">NOTAS</label>'
-    + '<div style="display:flex;gap:8px;align-items:flex-start">'
     + '<textarea id="nc-nota" rows="2" placeholder="Observaciones..."'
-    + ' style="' + INP + 'padding:11px 14px;resize:none;font-family:inherit;flex:1"'
-    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '">' + (nota||'').replace(/</g,'&lt;') + '</textarea>'
-    + _speechBtn('nc-nota')
-    + '</div></div>'
+    + ' style="' + INP + 'padding:11px 14px;resize:none;font-family:inherit"'
+    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '">' + (nota||'').replace(/</g,'&lt;') + '</textarea></div>'
 
     + '</div>';
 }
@@ -5984,130 +6000,385 @@ function _statsChartNuevos(todas, citasAnio, anio) {
 // SPEECH TO TEXT (solo módulo Citas)
 // ═══════════════════════════════════════════════════════════════
 
-var _speechRecognition = null;
-var _speechTarget = null;
+// ═══════════════════════════════════════════════════════════════
+// SPEECH-TO-TEXT — micrófono único inteligente para formulario cita
+// Protocolo: "campo: valor" o solo "valor" para el campo activo
+// Ejemplos: "nombre: Rodriguez German" / "hora: nueve y media" / "veda"
+// ═══════════════════════════════════════════════════════════════
+
+var _speechRec    = null;
 var _speechActive = false;
+var _speechBtn_el = null; // referencia al botón activo
+
+var _SPEECH_HORA_MAP = {
+  'ocho':         '08:00', 'ocho y media': '08:30', 'ocho y cuarto': '08:15',
+  'nueve':        '09:00', 'nueve y media': '09:30', 'nueve y cuarto': '09:15',
+  'diez':         '10:00', 'diez y media': '10:30', 'diez y cuarto': '10:15',
+  'once':         '11:00', 'once y media': '11:30', 'once y cuarto': '11:15',
+  'doce':         '12:00', 'doce y media': '12:30',
+  'una':          '13:00', 'una y media': '13:30',
+  'dos':          '14:00', 'dos y media': '14:30',
+  'tres':         '15:00', 'tres y media': '15:30',
+  'cuatro':       '16:00', 'cuatro y media': '16:30',
+  'cinco':        '17:00', 'cinco y media': '17:30',
+  'seis':         '18:00', 'seis y media': '18:30',
+  'siete':        '19:00', 'siete y media': '19:30'
+};
+
+var _SPEECH_ESTUDIO_MAP = {
+  'veda': 'VEDA', 'vcc': 'VCC', 'colonoscopia': 'VCC', 'colonoscopía': 'VCC',
+  'endoscopia': 'VEDA', 'endoscopía': 'VEDA', 'gastroscopia': 'VEDA',
+  'veda y vcc': 'VEDA+VCC', 'veda mas vcc': 'VEDA+VCC', 'veda más vcc': 'VEDA+VCC',
+  'ambos': 'VEDA+VCC', 'los dos': 'VEDA+VCC', 'otro': 'Otro'
+};
 
 function _speechSupported() {
   return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 }
 
-function _speechStart(targetId, btnEl) {
+// Llamado desde el botón único del formulario
+function _speechCitaToggle(btnEl) {
   if (!_speechSupported()) { toast('Tu navegador no soporta dictado por voz', 'error'); return; }
-  if (_speechActive) { _speechStop(); return; }
+  if (_speechActive) { _speechCitaStop(); return; }
+  _speechCitaStart(btnEl);
+}
 
+function _speechCitaStart(btnEl) {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  _speechRecognition = new SR();
-  _speechRecognition.lang = 'es-AR';
-  _speechRecognition.continuous = false;
-  _speechRecognition.interimResults = false;
-
-  _speechTarget = targetId;
+  _speechRec    = new SR();
   _speechActive = true;
-  if (btnEl) { btnEl.style.background = '#c62828'; btnEl.title = 'Detener dictado'; }
+  _speechBtn_el = btnEl;
 
-  _speechRecognition.onresult = function(e) {
-    var texto = e.results[0][0].transcript;
-    var el = document.getElementById(targetId);
-    if (el) el.value = (el.value ? el.value + ' ' : '') + texto;
-    _speechStop(btnEl);
+  _speechRec.lang            = 'es-AR';
+  _speechRec.continuous      = true;   // sesión continua hasta que el usuario para
+  _speechRec.interimResults  = false;
+  _speechRec.maxAlternatives = 1;
+
+  _speechRec.onresult = function(e) {
+    // Procesar último resultado
+    var raw = e.results[e.results.length - 1][0].transcript.trim();
+    _speechProcesar(raw);
   };
-  _speechRecognition.onerror = function() { _speechStop(btnEl); };
-  _speechRecognition.onend   = function() { _speechStop(btnEl); };
-  _speechRecognition.start();
-  toast('Escuchando... hablá ahora', 'ok');
+  _speechRec.onerror = function(e) {
+    if (e.error !== 'no-speech') _speechCitaStop();
+  };
+  _speechRec.onend = function() {
+    // Si sigue activo (no fue stop manual), reiniciar para mantener sesión
+    if (_speechActive) {
+      try { _speechRec.start(); } catch(e) { _speechCitaStop(); }
+    }
+  };
+
+  _speechRec.start();
+  if (btnEl) {
+    btnEl.style.background = '#c62828';
+    btnEl.style.animation  = 'speechPulse 1s infinite';
+    btnEl.title = 'Escuchando... tocá para parar';
+    btnEl.textContent = '⏹';
+  }
+  _speechMostrarAyuda(true);
+  toast('🎤 Escuchando... dictá los datos de la cita', 'ok');
 }
 
-function _speechStop(btnEl) {
+function _speechCitaStop() {
   _speechActive = false;
-  if (_speechRecognition) { try{ _speechRecognition.stop(); }catch(e){} _speechRecognition = null; }
-  var b = btnEl || document.querySelector('.speech-btn-active');
-  if (b) { b.style.background = 'rgba(255,255,255,.1)'; b.title = 'Dictar por voz'; }
+  if (_speechRec) { try { _speechRec.stop(); } catch(e){} _speechRec = null; }
+  if (_speechBtn_el) {
+    _speechBtn_el.style.background = 'rgba(255,255,255,.1)';
+    _speechBtn_el.style.animation  = '';
+    _speechBtn_el.title = 'Dictar cita por voz';
+    _speechBtn_el.textContent = '🎤';
+    _speechBtn_el = null;
+  }
+  _speechMostrarAyuda(false);
 }
 
-function _speechBtn(targetId) {
-  if (!_speechSupported()) return '';
-  return '<button type="button" onclick="_speechStart(\''+targetId+'\',this)" title="Dictar por voz"'
-    + ' style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;color:#fff;flex-shrink:0" class="speech-btn">🎤</button>';
+function _speechMostrarAyuda(mostrar) {
+  var el = document.getElementById('speech-ayuda');
+  if (!el) return;
+  el.style.display = mostrar ? 'block' : 'none';
 }
 
-// ═══════════════════════════════════════════════════════════════
-// WHATSAPP AUTOMÁTICO — recordatorio día anterior a las 19hs
-// ═══════════════════════════════════════════════════════════════
-// Implementado 100% en el cliente: al abrir la app verifica si hay
-// citas mañana y si ya se enviaron los recordatorios del día.
-// El estado se guarda en localStorage para no repetir.
+// Parsear el dictado y rellenar el campo correspondiente
+function _speechProcesar(raw) {
+  var texto = raw.toLowerCase().trim();
+  // Remover puntuación final
+  texto = texto.replace(/[.,;!?]+$/, '').trim();
+
+  // Detectar si es "campo: valor" o solo "valor"
+  var campo = null, valor = texto;
+  var colonIdx = texto.indexOf(':');
+  if (colonIdx > 0) {
+    campo = texto.slice(0, colonIdx).trim();
+    valor = texto.slice(colonIdx + 1).trim();
+  }
+
+  // Si no hay campo explícito, inferir por el contenido
+  if (!campo) {
+    if (_SPEECH_ESTUDIO_MAP[valor]) {
+      campo = 'estudio';
+    } else if (_speechParseHora(valor)) {
+      campo = 'hora';
+    } else if (/^\d{6,}$/.test(valor.replace(/\s/g,''))) {
+      campo = 'telefono';
+    } else {
+      // Por defecto: nombre si está vacío, sino notas
+      var elNombre = document.getElementById('nc-nombre');
+      campo = (elNombre && !elNombre.value.trim()) ? 'nombre' : 'nota';
+    }
+  }
+
+  // Normalizar alias de campo
+  var aliasMap = {
+    'nombre': 'nombre', 'paciente': 'nombre', 'apellido': 'nombre',
+    'hora': 'hora', 'horario': 'hora', 'turno': 'hora',
+    'estudio': 'estudio', 'procedimiento': 'estudio', 'tipo': 'estudio',
+    'obra social': 'obraSocial', 'os': 'obraSocial', 'prepaga': 'obraSocial', 'cobertura': 'obraSocial',
+    'telefono': 'telefono', 'teléfono': 'telefono', 'celular': 'telefono', 'número': 'telefono',
+    'nota': 'nota', 'notas': 'nota', 'observación': 'nota', 'observaciones': 'nota', 'comentario': 'nota'
+  };
+  var campoNorm = aliasMap[campo] || aliasMap[campo.toLowerCase()] || campo;
+
+  // Aplicar al campo
+  _speechAplicar(campoNorm, valor, raw);
+}
+
+function _speechParseHora(s) {
+  // Primero intentar literal HH:MM
+  var m = s.match(/^(\d{1,2})[:\s](\d{2})$/);
+  if (m) return (parseInt(m[1]) < 10 ? '0' : '') + parseInt(m[1]) + ':' + m[2];
+  // Buscar en mapa de palabras
+  var mapped = _SPEECH_HORA_MAP[s.toLowerCase().trim()];
+  return mapped || null;
+}
+
+function _speechAplicar(campo, valor, raw) {
+  var feedbacks = { nombre: 'Nombre', hora: 'Hora', estudio: 'Estudio', obraSocial: 'Obra Social', telefono: 'Teléfono', nota: 'Notas' };
+  var label = feedbacks[campo] || campo;
+
+  switch (campo) {
+    case 'nombre':
+      var el = document.getElementById('nc-nombre');
+      if (el) {
+        // Capitalizar primer letra de cada palabra
+        el.value = valor.replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+        toast('✓ ' + label + ': ' + el.value, 'ok');
+      } break;
+
+    case 'hora':
+      var horaVal = _speechParseHora(valor);
+      if (horaVal) {
+        var el = document.getElementById('nc-hora');
+        if (el) { el.value = horaVal; toast('✓ Hora: ' + horaVal, 'ok'); }
+      } else {
+        // Intentar interpretar "ocho y media" etc en texto compuesto
+        var encontrada = null;
+        Object.keys(_SPEECH_HORA_MAP).forEach(function(k) {
+          if (valor.indexOf(k) !== -1) encontrada = _SPEECH_HORA_MAP[k];
+        });
+        if (encontrada) {
+          var el = document.getElementById('nc-hora');
+          if (el) { el.value = encontrada; toast('✓ Hora: ' + encontrada, 'ok'); }
+        } else {
+          toast('No entendí la hora: "' + raw + '"', 'error');
+        }
+      } break;
+
+    case 'estudio':
+      var estVal = _SPEECH_ESTUDIO_MAP[valor] || _SPEECH_ESTUDIO_MAP[valor.toLowerCase()];
+      if (estVal) {
+        var sel = document.getElementById('nc-estudio');
+        if (sel) {
+          // Buscar option que matchee
+          for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === estVal || sel.options[i].text.toUpperCase() === estVal.toUpperCase()) {
+              sel.selectedIndex = i; break;
+            }
+          }
+          toast('✓ Estudio: ' + estVal, 'ok');
+        }
+      } else {
+        toast('No reconocí el estudio: "' + raw + '"', 'error');
+      } break;
+
+    case 'obraSocial':
+      var el = document.getElementById('nc-os');
+      if (el) {
+        el.value = valor.toUpperCase();
+        toast('✓ Obra Social: ' + el.value, 'ok');
+      } break;
+
+    case 'telefono':
+      var tel = valor.replace(/\s/g,'');
+      var el  = document.getElementById('nc-tel');
+      if (el) { el.value = tel; toast('✓ Teléfono: ' + tel, 'ok'); }
+      break;
+
+    case 'nota':
+      var el = document.getElementById('nc-nota');
+      if (el) {
+        el.value = (el.value ? el.value + ' ' : '') + valor;
+        toast('✓ Nota: ' + valor, 'ok');
+      } break;
+
+    default:
+      toast('No entendí: "' + raw + '"', 'error');
+  }
+}
+
+
 
 var _wspRecordKeyPrefix = 'gastro_wsp_enviado_';
 
-function _wspRecordatorioAuto() {
-  var ahora = new Date();
-  // Solo activar entre 19:00 y 23:59 hora local
-  if (ahora.getHours() < 19) return;
-
-  var manana = _isoFecha(_addDias(ahora, 1));
-  var citas  = _citasCargar();
-  var citasManana = citas.filter(function(c){ return c.fecha === manana && c.telefono; });
-  if (!citasManana.length) return;
-
-  var msgs   = _msgCargar();
-  var msgRec = msgs.find(function(m){ return m.id === 'recordatorio'; }) || msgs[0];
-  if (!msgRec) return;
-
-  // Verificar si ya se procesó hoy
-  var hoy  = _isoFecha(ahora);
-  var key  = _wspRecordKeyPrefix + hoy;
-  var yaEnviados = JSON.parse(localStorage.getItem(key) || '[]');
-
-  var pendientes = citasManana.filter(function(c){ return yaEnviados.indexOf(c.id) === -1; });
-  if (!pendientes.length) return;
-
-  // Mostrar panel de recordatorios pendientes
-  _wspMostrarPanel(pendientes, msgRec, key, yaEnviados, manana);
+// ─── WSP helpers ──────────────────────────────────────────────────────
+function _wspTexto(msg, c, fechaLabel) {
+  return (msg.texto || '')
+    .replace(/\{nombre\}/g,     c.nombre     || '')
+    .replace(/\{fecha\}/g,      fechaLabel)
+    .replace(/\{hora\}/g,       c.hora       || '')
+    .replace(/\{obraSocial\}/g, c.obraSocial || '')
+    .replace(/\{estudio\}/g,    c.estudio    || 'Sin especificar');
 }
 
-function _wspMostrarPanel(citas, msg, storageKey, yaEnviados, fechaISO) {
-  // Si ya hay un panel abierto, no duplicar
-  if (document.getElementById('panel-wsp-auto')) return;
+// Automático a las 19hs al entrar a Mis Citas
+function _wspRecordatorioAuto() {
+  var ahora = new Date();
+  if (ahora.getHours() < 19) return;
+  _wspAbrirPanelFecha(_isoFecha(_addDias(ahora, 1)), true);
+}
 
-  var d = _parseFechaISO(fechaISO);
+// Manual - botón en header de Citas
+function wspAbrirManual() {
+  _wspAbrirPanelFecha(_isoFecha(_addDias(new Date(), 1)), false);
+}
+
+var _WSP_PANEL_ID = 'panel-wsp-auto';
+
+function _wspCerrarPanel() {
+  var p = document.getElementById(_WSP_PANEL_ID);
+  if (p) p.remove();
+}
+
+function _wspAbrirPanelFecha(fechaISO, soloPendientes) {
+  if (document.getElementById(_WSP_PANEL_ID)) {
+    _wspCerrarPanel();
+    if (soloPendientes) return;
+  }
+
+  var citas  = _citasCargar();
+  var msgs   = _msgCargar();
+  var msgRec = msgs.find(function(m) { return m.id === 'recordatorio'; }) || msgs[0];
+  if (!msgRec) return;
+
+  var citasFecha = citas.filter(function(c) {
+    return c.fecha === fechaISO && (c.telefono || '').replace(/\D/g, '').length >= 6;
+  });
+  if (!citasFecha.length) {
+    if (!soloPendientes) toast('Sin citas con teléfono para mañana', 'error');
+    return;
+  }
+
+  var hoy        = _isoFecha(new Date());
+  var storageKey = 'gastro_wsp_enviado_' + hoy;
+  var yaEnviados = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+  var lista = soloPendientes
+    ? citasFecha.filter(function(c) { return yaEnviados.indexOf(c.id) === -1; })
+    : citasFecha;
+
+  if (soloPendientes && !lista.length) return;
+
+  var d          = _parseFechaISO(fechaISO);
   var fechaLabel = d ? _fmtFechaLarga(d) : fechaISO;
 
-  var panel = document.createElement('div');
-  panel.id = 'panel-wsp-auto';
-  panel.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:2000;background:#1a2e1a;border:1px solid rgba(100,220,140,.3);border-radius:16px;padding:20px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.5);color:#fff';
+  // Armar panel
+  var panel      = document.createElement('div');
+  panel.id       = _WSP_PANEL_ID;
+  panel.style.position   = 'fixed';
+  panel.style.bottom     = '20px';
+  panel.style.right      = '20px';
+  panel.style.zIndex     = '2000';
+  panel.style.background = '#1a2e1a';
+  panel.style.border     = '1px solid rgba(100,220,140,.3)';
+  panel.style.borderRadius = '16px';
+  panel.style.padding    = '20px';
+  panel.style.width      = '360px';
+  panel.style.maxHeight  = '80vh';
+  panel.style.overflowY  = 'auto';
+  panel.style.boxShadow  = '0 8px 32px rgba(0,0,0,.6)';
+  panel.style.color      = '#fff';
+  panel.style.fontFamily = 'inherit';
 
-  var lista = citas.map(function(c){
-    var tel  = (c.telefono||'').replace(/\D/g,'');
-    var txt  = (msg.texto||'')
-      .replace(/\{nombre\}/g,    c.nombre||'')
-      .replace(/\{fecha\}/g,     fechaLabel)
-      .replace(/\{hora\}/g,      c.hora||'')
-      .replace(/\{obraSocial\}/g,c.obraSocial||'')
-      .replace(/\{estudio\}/g,   c.estudio||'');
-    var url  = 'https://wa.me/549'+tel+'?text='+encodeURIComponent(txt);
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08)">'
-      + '<div style="flex:1;min-width:0">'
-      +   '<div style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.nombre+'</div>'
-      +   '<div style="font-size:11px;opacity:.6">'+( c.hora||'')+(c.estudio?' · '+c.estudio:'')+'</div>'
-      + '</div>'
-      + '<a href="'+url+'" target="_blank" onclick="_wspMarcarEnviado(\''+c.id+'\',\''+storageKey+'\')"'
-      +   ' style="background:#25d366;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;margin-left:8px">WhatsApp</a>'
-      + '</div>';
-  }).join('');
+  // Header
+  var hdr  = document.createElement('div');
+  hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:14px';
+  var hdrTxt = document.createElement('div');
+  hdrTxt.innerHTML = '<div style="font-size:14px;font-weight:800;color:#6ddc8c">Recordatorios — mañana</div>'
+    + '<div style="font-size:11px;opacity:.6;margin-top:2px">' + fechaLabel + ' &bull; ' + lista.length + ' paciente' + (lista.length !== 1 ? 's' : '') + '</div>';
+  var btnX = document.createElement('button');
+  btnX.textContent = '✕';
+  btnX.style.cssText = 'background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:20px;line-height:1';
+  btnX.onclick = _wspCerrarPanel;
+  hdr.appendChild(hdrTxt);
+  hdr.appendChild(btnX);
+  panel.appendChild(hdr);
 
-  panel.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
-    + '<div>'
-    +   '<div style="font-size:14px;font-weight:800;color:#6ddc8c">Recordatorios de mañana</div>'
-    +   '<div style="font-size:11px;opacity:.6;margin-top:2px">'+fechaLabel+' · '+citas.length+' paciente'+(citas.length!==1?'s':'')+' con teléfono</div>'
-    + '</div>'
-    + '<button onclick="document.getElementById(\'panel-wsp-auto\').remove()" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:18px">✕</button>'
-    + '</div>'
-    + lista
-    + '<div style="margin-top:12px;display:flex;gap:8px">'
-    + '<button onclick="_wspEnviarTodos()" style="flex:1;background:#25d366;color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer">📤 Enviar todos</button>'
-    + '<button onclick="document.getElementById(\'panel-wsp-auto\').remove()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:9px 14px;font-size:13px;color:rgba(255,255,255,.6);cursor:pointer">Ahora no</button>'
-    + '</div>';
+  // Filas de pacientes
+  var urlsList = [];
+  lista.forEach(function(c) {
+    var tel     = (c.telefono || '').replace(/\D/g, '');
+    var txt     = _wspTexto(msgRec, c, fechaLabel);
+    var url     = 'https://wa.me/549' + tel + '?text=' + encodeURIComponent(txt);
+    var enviado = yaEnviados.indexOf(c.id) !== -1;
+    urlsList.push({ id: c.id, url: url });
+
+    var fila = document.createElement('div');
+    fila.id = 'wsp-fila-' + c.id;
+    fila.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)';
+
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+    info.innerHTML = '<div style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.nombre + '</div>'
+      + '<div style="font-size:11px;opacity:.6;margin-top:1px">' + (c.hora || '') + (c.estudio ? ' · ' + c.estudio : '') + '</div>';
+
+    var btn = document.createElement('button');
+    btn.id = 'wsp-btn-' + c.id;
+    btn.textContent = enviado ? '✓ Enviado' : 'Enviar';
+    btn.style.cssText = 'background:' + (enviado ? '#388e3c' : '#25d366') + ';color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0';
+    (function(cit, u, sk) {
+      btn.onclick = function() {
+        window.open(u, '_blank');
+        _wspMarcarEnviado(cit.id, sk);
+        btn.textContent = '✓ Enviado';
+        btn.style.background = '#388e3c';
+      };
+    })(c, url, storageKey);
+
+    fila.appendChild(info);
+    fila.appendChild(btn);
+    panel.appendChild(fila);
+  });
+
+  // Footer con "Enviar todos" y "Cerrar"
+  panel.dataset.urls   = JSON.stringify(urlsList);
+  panel.dataset.stoKey = storageKey;
+
+  var footer = document.createElement('div');
+  footer.style.cssText = 'display:flex;gap:8px;margin-top:14px';
+
+  var btnTodos = document.createElement('button');
+  btnTodos.textContent = '📤 Enviar todos';
+  btnTodos.style.cssText = 'flex:1;background:#25d366;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer';
+  btnTodos.onclick = _wspEnviarTodos;
+
+  var btnCerrar = document.createElement('button');
+  btnCerrar.textContent = 'Cerrar';
+  btnCerrar.style.cssText = 'background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,.6);cursor:pointer';
+  btnCerrar.onclick = _wspCerrarPanel;
+
+  footer.appendChild(btnTodos);
+  footer.appendChild(btnCerrar);
+  panel.appendChild(footer);
 
   document.body.appendChild(panel);
 }
@@ -6119,12 +6390,21 @@ function _wspMarcarEnviado(citaId, storageKey) {
 }
 
 function _wspEnviarTodos() {
-  var panel = document.getElementById('panel-wsp-auto');
+  var panel = document.getElementById(_WSP_PANEL_ID);
   if (!panel) return;
-  var links = panel.querySelectorAll('a[href*="wa.me"]');
-  links.forEach(function(a){ window.open(a.href, '_blank'); a.click(); });
-  panel.remove();
-  toast('Recordatorios enviados', 'ok');
+  var urls   = JSON.parse(panel.dataset.urls   || '[]');
+  var stoKey = panel.dataset.stoKey;
+  urls.forEach(function(item, i) {
+    setTimeout(function() {
+      window.open(item.url, '_blank');
+      _wspMarcarEnviado(item.id, stoKey);
+      var btn = document.getElementById('wsp-btn-' + item.id);
+      if (btn) { btn.textContent = '✓ Enviado'; btn.style.background = '#388e3c'; }
+    }, i * 700);
+  });
+  setTimeout(function() {
+    toast(urls.length + ' recordatorio' + (urls.length !== 1 ? 's' : '') + ' enviado' + (urls.length !== 1 ? 's' : ''), 'ok');
+  }, urls.length * 700 + 200);
 }
 
 
