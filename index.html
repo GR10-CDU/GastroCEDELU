@@ -5142,7 +5142,7 @@ function renderPanelProximas() {
   } else {
     listHoy.innerHTML = deHoy.map(function(c) {
       return '<div onclick="verCita(\'' + c.id + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.06)">'
-        + '<span style="background:#1b5e20;color:#fff;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:800;white-space:nowrap">' + (c.hora||'—') + '</span>'
+        + '<span style="background:#0277bd;color:#fff;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:800;white-space:nowrap">' + (c.hora||'—') + '</span>'
         + '<div style="flex:1;min-width:0">'
         +   '<div style="font-weight:700;font-size:13px;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.nombre||'—') + '</div>'
         +   (c.obraSocial ? '<div style="font-size:11px;color:#4a7c59;font-weight:600">' + c.obraSocial + '</div>' : '')
@@ -5197,12 +5197,12 @@ function renderCalSemana(el) {
 
   var C = {
     colBg:'#ffffff', colBorder:'#e8e8e8',
-    hoyBg:'#1b5e20', hoyBorder:'#1b5e20',
+    hoyBg:'#01579b', hoyBorder:'#01579b',
     findBg:'#f7f7f7', findBorder:'#e0e0e0',
     txtLabel:'#999', txtDia:'#111',
-    hoyLabel:'#a5d6a7', hoyDia:'#fff',
+    hoyLabel:'#b3e5fc', hoyDia:'#fff',
     chipBg:'#1b5e20', chipTxt:'#fff',
-    chipHoyBg:'#fff', chipHoyTxt:'#1b5e20',
+    chipHoyBg:'#e1f5fe', chipHoyTxt:'#01579b',
   };
 
   // Todas las columnas tienen el mismo flex y min-width — el alto varía solo
@@ -5235,7 +5235,7 @@ function renderCalSemana(el) {
             + (esSel ? ';outline:2px solid ' + (esHoy?'rgba(255,255,255,.8)':'#1b5e20') : ';opacity:' + (_modoSeleccion?'0.65':'1')) + '">'
             + '<div class="chip-check" style="display:' + (esSel?'flex':'none') + ';position:absolute;top:4px;right:4px;background:' + (esHoy?'rgba(27,94,32,.9)':'rgba(255,255,255,.9)') + ';color:' + (esHoy?'#fff':'#1b5e20') + ';border-radius:50%;width:15px;height:15px;align-items:center;justify-content:center;font-size:10px;font-weight:800">✓</div>'
             + '<div style="font-size:10px;font-weight:700;opacity:.7;margin-bottom:2px">' + (c.hora||'') + '</div>'
-            + '<div style="font-weight:800;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.nombre||'').split(' ')[0] + '</div>'
+            + '<div style="font-weight:800;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.nombre||'') + '</div>'
             + (c.obraSocial ? '<div style="font-size:10px;opacity:.65;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.obraSocial + '</div>' : '')
             + '</div>';
         }).join('')
