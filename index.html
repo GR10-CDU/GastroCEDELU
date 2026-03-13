@@ -1306,6 +1306,9 @@ color:#555;
         <div class="nav-item" onclick="showPage('citas')" id="nav-citas">
           <span class="icon">📅</span> Mis Citas
         </div>
+        <div class="nav-item" onclick="showPage('estadisticas')" id="nav-estadisticas">
+          <span class="icon">📊</span> Estadísticas
+        </div>
 
         <div class="nav-section nav-section-config" id="nav-config-section">Configuración</div>
         <div class="nav-item nav-item-config" id="nav-admin" onclick="showPage('admin')" style="display:none">
@@ -1801,6 +1804,65 @@ color:#555;
         <!-- ── CALENDARIO ── -->
         <div id="citas-calendario" style="margin-top:18px;margin-bottom:32px"></div>
 
+      </div>
+
+
+      <!-- ── PAGE ESTADÍSTICAS ── -->
+      <div class="page" id="page-estadisticas">
+        <div style="max-width:1100px;margin:0 auto;padding:0 4px 40px">
+
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+            <div>
+              <h1 style="margin:0;font-size:24px;font-weight:900;color:var(--text1)">Estadísticas</h1>
+              <div id="stats-subtitle" style="font-size:13px;color:var(--text2);margin-top:2px">Cargando...</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="stats-anio" onchange="initEstadisticas()" style="border:1px solid var(--border1);border-radius:8px;padding:7px 12px;font-size:13px;background:var(--bg1);color:var(--text1);cursor:pointer"></select>
+              <button onclick="initEstadisticas()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">↺ Actualizar</button>
+            </div>
+          </div>
+
+          <!-- KPI cards -->
+          <div id="stats-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px"></div>
+
+          <!-- Fila 1: estudios por mes + OS -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:14px;padding:20px">
+              <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:14px">Estudios por mes</div>
+              <div id="stats-chart-mes" style="overflow-x:auto"></div>
+            </div>
+            <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:14px;padding:20px">
+              <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:14px">Obras Sociales más frecuentes</div>
+              <div id="stats-chart-os"></div>
+            </div>
+          </div>
+
+          <!-- Fila 2: tipo de estudio + horarios pico -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:14px;padding:20px">
+              <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:14px">Tipo de estudio</div>
+              <div id="stats-chart-tipo"></div>
+            </div>
+            <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:14px;padding:20px">
+              <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:14px">Horarios pico</div>
+              <div id="stats-chart-hora"></div>
+            </div>
+          </div>
+
+          <!-- Fila 3: día de semana + pacientes nuevos vs recurrentes -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:14px;padding:20px">
+              <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:14px">Citas por día de semana</div>
+              <div id="stats-chart-diasem"></div>
+            </div>
+            <div style="background:var(--bg1);border:1px solid var(--border1);border-radius:14px;padding:20px">
+              <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:14px">Pacientes nuevos vs recurrentes</div>
+              <div id="stats-chart-nuevos"></div>
+            </div>
+          </div>
+
+        </div>
       </div>
 
       <!-- ── MODAL NUEVA CITA / DETALLE CITA ── -->
@@ -2468,6 +2530,7 @@ function showPage(page) {
   if (page === 'admin') loadUsuarios();
   if (page === 'mis-endoscopias') { _misEndoFiltro = null; _misEndoAllData = []; loadMisEndoscopias(); }
   if (page === 'citas') { initCitas(); }
+  if (page === 'estadisticas') { initEstadisticas(); }
 }
 
 function showTab(tab) {
@@ -5066,13 +5129,15 @@ function _msgCargar() {
     if (d) return d;
   } catch(e){}
   return [
-    { id: 'preparacion', nombre: 'Enviar Preparación', texto: 'Hola {nombre}, le recordamos que tiene turno con la Dra. Notari el {fecha} a las {hora}. Por favor, llegue en ayunas de 8 horas.' },
-    { id: 'informe',     nombre: 'Enviar Informe',     texto: 'Hola {nombre}, le enviamos el informe de su estudio realizado el {fecha}. Ante cualquier consulta, no dude en comunicarse.' }
+    { id: 'preparacion',  nombre: 'Enviar Preparación', texto: 'Hola {nombre}, le recordamos que tiene turno con la Dra. Notari el {fecha} a las {hora}. Por favor, llegue en ayunas de 8 horas.' },
+    { id: 'informe',      nombre: 'Enviar Informe',     texto: 'Hola {nombre}, le enviamos el informe de su estudio realizado el {fecha}. Ante cualquier consulta, no dude en comunicarse.' },
+    { id: 'recordatorio', nombre: 'Recordatorio turno', texto: 'Hola {nombre}, le recordamos que mañana {fecha} a las {hora} tiene turno para {estudio}. Ante cualquier consulta comuníquese al consultorio.' }
   ];
 }
 
 // ── Init ─────────────────────────────────────────────────────────
 function initCitas() {
+  setTimeout(_wspRecordatorioAuto, 2000); // recordatorio automático WSP
   _citasSemana = _lunesDeHoy();
   _citasMesRef = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   renderPanelProximas();
@@ -5485,9 +5550,12 @@ function _bodyFormCita(c) {
   return '<div style="display:flex;flex-direction:column;gap:16px">'
 
     + '<div><label style="' + LBL + '">NOMBRE PACIENTE *</label>'
+    + '<div style="display:flex;gap:8px;align-items:center">'
     + '<input id="nc-nombre" type="text" placeholder="Apellido, Nombre" value="' + nombre.replace(/"/g,'&quot;') + '"'
-    + ' style="' + INP + 'padding:11px 14px;font-size:15px;font-weight:600"'
-    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '"></div>'
+    + ' style="' + INP + 'padding:11px 14px;font-size:15px;font-weight:600;flex:1"'
+    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '">'
+    + _speechBtn('nc-nombre')
+    + '</div></div>'
 
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
     +   '<div><label style="' + LBL + '">FECHA *</label>'
@@ -5522,9 +5590,12 @@ function _bodyFormCita(c) {
     + '</div>'
 
     + '<div><label style="' + LBL + '">NOTAS</label>'
+    + '<div style="display:flex;gap:8px;align-items:flex-start">'
     + '<textarea id="nc-nota" rows="2" placeholder="Observaciones..."'
-    + ' style="' + INP + 'padding:11px 14px;resize:none;font-family:inherit"'
-    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '">' + (nota||'').replace(/</g,'&lt;') + '</textarea></div>'
+    + ' style="' + INP + 'padding:11px 14px;resize:none;font-family:inherit;flex:1"'
+    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '">' + (nota||'').replace(/</g,'&lt;') + '</textarea>'
+    + _speechBtn('nc-nota')
+    + '</div></div>'
 
     + '</div>';
 }
@@ -5687,6 +5758,375 @@ function eliminarCita(id) {
   renderPanelProximas();
   renderCalendario();
 }
+
+// ═══════════════════════════════════════════════════════════════
+// ESTADÍSTICAS
+// ═══════════════════════════════════════════════════════════════
+
+function initEstadisticas() {
+  var citas = _citasCargar();
+  var anioSel = _statsGetAnio(citas);
+
+  // Filtrar por año seleccionado
+  var citasAnio = citas.filter(function(c){ return c.fecha && c.fecha.startsWith(anioSel); });
+
+  // KPIs
+  _statsKPIs(citas, citasAnio, anioSel);
+
+  // Charts
+  _statsChartMes(citasAnio, anioSel);
+  _statsChartOS(citasAnio);
+  _statsChartTipo(citasAnio);
+  _statsChartHora(citasAnio);
+  _statsChartDiaSem(citasAnio);
+  _statsChartNuevos(citas, citasAnio, anioSel);
+
+  var total = citas.length;
+  document.getElementById('stats-subtitle').textContent =
+    total + ' cita' + (total!==1?'s':'') + ' registrada' + (total!==1?'s':'') + ' · Mostrando ' + anioSel;
+}
+
+function _statsGetAnio(citas) {
+  // Poblar select de años
+  var sel = document.getElementById('stats-anio');
+  var anios = {};
+  citas.forEach(function(c){ if(c.fecha) anios[c.fecha.slice(0,4)] = 1; });
+  var lista = Object.keys(anios).sort().reverse();
+  var hoyY = String(new Date().getFullYear());
+  if (!lista.length) lista = [hoyY];
+  if (lista.indexOf(hoyY) === -1) lista.unshift(hoyY);
+  var cur = sel.value || hoyY;
+  sel.innerHTML = lista.map(function(y){
+    return '<option value="'+y+'"'+(y===cur?' selected':'')+'>'+y+'</option>';
+  }).join('');
+  return sel.value || hoyY;
+}
+
+// ── KPI Cards ──────────────────────────────────────────────────
+function _statsKPIs(todas, citasAnio, anio) {
+  var hoy = _isoFecha(new Date());
+  var mesActual = hoy.slice(0,7);
+  var citasMes  = citasAnio.filter(function(c){ return c.fecha && c.fecha.startsWith(mesActual); });
+  var futuras   = todas.filter(function(c){ return c.fecha && c.fecha >= hoy; });
+  var pasadas   = citasAnio.filter(function(c){ return c.fecha && c.fecha < hoy; });
+
+  // promedio mensual
+  var meses = {};
+  citasAnio.forEach(function(c){ var m=c.fecha.slice(0,7); meses[m]=(meses[m]||0)+1; });
+  var nMeses = Object.keys(meses).length || 1;
+  var prom = Math.round(citasAnio.length / nMeses);
+
+  var kpis = [
+    { label:'Total ' + anio,       val: citasAnio.length,  color:'#1b5e20', icon:'📋' },
+    { label:'Este mes',             val: citasMes.length,   color:'#0277bd', icon:'📅' },
+    { label:'Próximas',             val: futuras.length,    color:'#e65100', icon:'⏰' },
+    { label:'Realizadas ' + anio,   val: pasadas.length,    color:'#4a148c', icon:'✓'  },
+    { label:'Promedio mensual',     val: prom,              color:'#2e7d32', icon:'~'  },
+  ];
+
+  document.getElementById('stats-kpis').innerHTML = kpis.map(function(k){
+    return '<div style="background:'+k.color+';border-radius:14px;padding:18px 16px;color:#fff">'
+      + '<div style="font-size:22px;margin-bottom:6px">'+k.icon+'</div>'
+      + '<div style="font-size:28px;font-weight:900;line-height:1">'+k.val+'</div>'
+      + '<div style="font-size:12px;opacity:.8;margin-top:4px;font-weight:600">'+k.label+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+// ── Helper barra horizontal ────────────────────────────────────
+function _statsBarras(datos, colorFn, opts) {
+  opts = opts || {};
+  if (!datos.length) return '<div style="color:#aaa;font-size:13px">Sin datos</div>';
+  var max = Math.max.apply(null, datos.map(function(d){ return d.v; })) || 1;
+  return datos.map(function(d, i){
+    var pct = Math.round(d.v / max * 100);
+    var color = typeof colorFn === 'function' ? colorFn(i, d) : colorFn;
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+      + '<div style="font-size:12px;font-weight:600;color:var(--text1);min-width:'+(opts.labelW||90)+'px;text-align:right;flex-shrink:0">'+d.k+'</div>'
+      + '<div style="flex:1;background:#f0f0f0;border-radius:4px;height:20px;overflow:hidden">'
+      +   '<div style="width:'+pct+'%;height:100%;background:'+color+';border-radius:4px;transition:width .4s;display:flex;align-items:center;justify-content:flex-end;padding-right:6px">'
+      +     (pct>15?'<span style="font-size:11px;font-weight:700;color:#fff">'+d.v+'</span>':'')
+      +   '</div>'
+      + '</div>'
+      + (pct<=15?'<span style="font-size:11px;font-weight:700;color:var(--text2)">'+d.v+'</span>':'')
+      + '</div>';
+  }).join('');
+}
+
+// ── Estudios por mes ───────────────────────────────────────────
+function _statsChartMes(citas, anio) {
+  var meses = {};
+  var MNOM = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  for (var i=1;i<=12;i++) meses[anio+'-'+(i<10?'0'+i:i)] = 0;
+  citas.forEach(function(c){ if(c.fecha){ var m=c.fecha.slice(0,7); if(meses[m]!==undefined) meses[m]++; } });
+  var datos = Object.keys(meses).sort().map(function(k){
+    return { k: MNOM[parseInt(k.slice(5))-1], v: meses[k] };
+  });
+  var COLORS = ['#1b5e20','#2e7d32','#388e3c','#43a047','#4caf50','#66bb6a','#0277bd','#0288d1','#039be5','#4fc3f7','#29b6f6','#81d4fa'];
+  document.getElementById('stats-chart-mes').innerHTML =
+    _statsBarras(datos, function(i){ return COLORS[i % COLORS.length]; }, {labelW:30});
+}
+
+// ── Obras Sociales ─────────────────────────────────────────────
+function _statsChartOS(citas) {
+  var cnts = {};
+  citas.forEach(function(c){
+    var os = (c.obraSocial||'').trim() || 'Sin OS';
+    cnts[os] = (cnts[os]||0) + 1;
+  });
+  var datos = Object.keys(cnts).map(function(k){ return {k:k,v:cnts[k]}; })
+    .sort(function(a,b){ return b.v-a.v; }).slice(0,10);
+  var PAL = ['#1b5e20','#2e7d32','#388e3c','#43a047','#4caf50','#66bb6a','#81c784','#a5d6a7','#c8e6c9','#e8f5e9'];
+  document.getElementById('stats-chart-os').innerHTML =
+    _statsBarras(datos, function(i){ return PAL[Math.min(i,PAL.length-1)]; }, {labelW:100});
+}
+
+// ── Tipo de estudio ────────────────────────────────────────────
+function _statsChartTipo(citas) {
+  var cnts = {};
+  citas.forEach(function(c){
+    var t = (c.estudio||'').trim() || 'Sin especificar';
+    cnts[t] = (cnts[t]||0) + 1;
+  });
+  var datos = Object.keys(cnts).map(function(k){ return {k:k,v:cnts[k]}; })
+    .sort(function(a,b){ return b.v-a.v; });
+  var PAL = ['#0277bd','#0288d1','#039be5','#03a9f4','#29b6f6','#4fc3f7','#81d4fa'];
+  document.getElementById('stats-chart-tipo').innerHTML =
+    _statsBarras(datos, function(i){ return PAL[Math.min(i,PAL.length-1)]; }, {labelW:110});
+}
+
+// ── Horarios pico ──────────────────────────────────────────────
+function _statsChartHora(citas) {
+  var cnts = {};
+  citas.forEach(function(c){
+    if (c.hora) {
+      var h = c.hora.slice(0,2) + ':00';
+      cnts[h] = (cnts[h]||0) + 1;
+    }
+  });
+  var datos = Object.keys(cnts).sort().map(function(k){ return {k:k,v:cnts[k]}; });
+  if (!datos.length) { document.getElementById('stats-chart-hora').innerHTML='<div style="color:#aaa;font-size:13px">Sin datos</div>'; return; }
+  var max = Math.max.apply(null, datos.map(function(d){return d.v;}));
+  document.getElementById('stats-chart-hora').innerHTML =
+    _statsBarras(datos, function(i,d){
+      var pct = d.v/max;
+      if (pct > .8) return '#1b5e20';
+      if (pct > .5) return '#2e7d32';
+      if (pct > .3) return '#43a047';
+      return '#81c784';
+    }, {labelW:45});
+}
+
+// ── Día de semana ──────────────────────────────────────────────
+function _statsChartDiaSem(citas) {
+  var DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  var cnts = [0,0,0,0,0,0,0];
+  citas.forEach(function(c){
+    if (!c.fecha) return;
+    var d = _parseFechaISO(c.fecha);
+    if (!d) return;
+    var dow = d.getDay(); // 0=dom
+    var idx = dow === 0 ? 6 : dow-1;
+    cnts[idx]++;
+  });
+  var datos = DIAS.map(function(k,i){ return {k:k,v:cnts[i]}; });
+  var PAL = ['#0277bd','#0288d1','#039be5','#03a9f4','#29b6f6','#81d4fa','#b3e5fc'];
+  document.getElementById('stats-chart-diasem').innerHTML =
+    _statsBarras(datos, function(i){ return PAL[i]; }, {labelW:75});
+}
+
+// ── Pacientes nuevos vs recurrentes ───────────────────────────
+function _statsChartNuevos(todas, citasAnio, anio) {
+  // Un paciente es "nuevo" en el año si no tiene citas en años anteriores
+  var anteriorAnio = {};
+  todas.forEach(function(c){
+    if (c.fecha && c.fecha.slice(0,4) < anio) {
+      var norm = (c.nombre||'').toLowerCase().trim();
+      anteriorAnio[norm] = 1;
+    }
+  });
+  var nuevos = 0, recurrentes = 0;
+  var vistos = {};
+  citasAnio.forEach(function(c){
+    var norm = (c.nombre||'').toLowerCase().trim();
+    if (vistos[norm]) return; // ya contado este año
+    vistos[norm] = 1;
+    if (anteriorAnio[norm]) recurrentes++;
+    else nuevos++;
+  });
+  var total = nuevos + recurrentes || 1;
+  var pctN = Math.round(nuevos/total*100);
+  var pctR = Math.round(recurrentes/total*100);
+  document.getElementById('stats-chart-nuevos').innerHTML =
+    '<div style="display:flex;gap:16px;margin-bottom:16px">'
+    + '<div style="flex:1;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:14px;text-align:center">'
+    +   '<div style="font-size:28px;font-weight:900;color:#1b5e20">'+nuevos+'</div>'
+    +   '<div style="font-size:12px;color:#2e7d32;font-weight:600;margin-top:2px">Nuevos</div>'
+    +   '<div style="font-size:11px;color:#4a7c59">'+pctN+'% del total</div>'
+    + '</div>'
+    + '<div style="flex:1;background:#e3f2fd;border:1px solid #90caf9;border-radius:10px;padding:14px;text-align:center">'
+    +   '<div style="font-size:28px;font-weight:900;color:#0277bd">'+recurrentes+'</div>'
+    +   '<div style="font-size:12px;color:#0288d1;font-weight:600;margin-top:2px">Recurrentes</div>'
+    +   '<div style="font-size:11px;color:#0277bd">'+pctR+'% del total</div>'
+    + '</div>'
+    + '</div>'
+    + '<div style="background:#f5f5f5;border-radius:8px;height:24px;overflow:hidden;display:flex">'
+    +   '<div style="width:'+pctN+'%;background:#1b5e20;transition:width .4s"></div>'
+    +   '<div style="width:'+pctR+'%;background:#0277bd"></div>'
+    + '</div>'
+    + '<div style="display:flex;justify-content:space-between;margin-top:6px">'
+    +   '<span style="font-size:11px;color:#1b5e20;font-weight:600">■ Nuevos '+pctN+'%</span>'
+    +   '<span style="font-size:11px;color:#0277bd;font-weight:600">■ Recurrentes '+pctR+'%</span>'
+    + '</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SPEECH TO TEXT (solo módulo Citas)
+// ═══════════════════════════════════════════════════════════════
+
+var _speechRecognition = null;
+var _speechTarget = null;
+var _speechActive = false;
+
+function _speechSupported() {
+  return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+function _speechStart(targetId, btnEl) {
+  if (!_speechSupported()) { toast('Tu navegador no soporta dictado por voz', 'error'); return; }
+  if (_speechActive) { _speechStop(); return; }
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  _speechRecognition = new SR();
+  _speechRecognition.lang = 'es-AR';
+  _speechRecognition.continuous = false;
+  _speechRecognition.interimResults = false;
+
+  _speechTarget = targetId;
+  _speechActive = true;
+  if (btnEl) { btnEl.style.background = '#c62828'; btnEl.title = 'Detener dictado'; }
+
+  _speechRecognition.onresult = function(e) {
+    var texto = e.results[0][0].transcript;
+    var el = document.getElementById(targetId);
+    if (el) el.value = (el.value ? el.value + ' ' : '') + texto;
+    _speechStop(btnEl);
+  };
+  _speechRecognition.onerror = function() { _speechStop(btnEl); };
+  _speechRecognition.onend   = function() { _speechStop(btnEl); };
+  _speechRecognition.start();
+  toast('Escuchando... hablá ahora', 'ok');
+}
+
+function _speechStop(btnEl) {
+  _speechActive = false;
+  if (_speechRecognition) { try{ _speechRecognition.stop(); }catch(e){} _speechRecognition = null; }
+  var b = btnEl || document.querySelector('.speech-btn-active');
+  if (b) { b.style.background = 'rgba(255,255,255,.1)'; b.title = 'Dictar por voz'; }
+}
+
+function _speechBtn(targetId) {
+  if (!_speechSupported()) return '';
+  return '<button type="button" onclick="_speechStart(\''+targetId+'\',this)" title="Dictar por voz"'
+    + ' style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:14px;color:#fff;flex-shrink:0" class="speech-btn">🎤</button>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WHATSAPP AUTOMÁTICO — recordatorio día anterior a las 19hs
+// ═══════════════════════════════════════════════════════════════
+// Implementado 100% en el cliente: al abrir la app verifica si hay
+// citas mañana y si ya se enviaron los recordatorios del día.
+// El estado se guarda en localStorage para no repetir.
+
+var _wspRecordKeyPrefix = 'gastro_wsp_enviado_';
+
+function _wspRecordatorioAuto() {
+  var ahora = new Date();
+  // Solo activar entre 19:00 y 23:59 hora local
+  if (ahora.getHours() < 19) return;
+
+  var manana = _isoFecha(_addDias(ahora, 1));
+  var citas  = _citasCargar();
+  var citasManana = citas.filter(function(c){ return c.fecha === manana && c.telefono; });
+  if (!citasManana.length) return;
+
+  var msgs   = _msgCargar();
+  var msgRec = msgs.find(function(m){ return m.id === 'recordatorio'; }) || msgs[0];
+  if (!msgRec) return;
+
+  // Verificar si ya se procesó hoy
+  var hoy  = _isoFecha(ahora);
+  var key  = _wspRecordKeyPrefix + hoy;
+  var yaEnviados = JSON.parse(localStorage.getItem(key) || '[]');
+
+  var pendientes = citasManana.filter(function(c){ return yaEnviados.indexOf(c.id) === -1; });
+  if (!pendientes.length) return;
+
+  // Mostrar panel de recordatorios pendientes
+  _wspMostrarPanel(pendientes, msgRec, key, yaEnviados, manana);
+}
+
+function _wspMostrarPanel(citas, msg, storageKey, yaEnviados, fechaISO) {
+  // Si ya hay un panel abierto, no duplicar
+  if (document.getElementById('panel-wsp-auto')) return;
+
+  var d = _parseFechaISO(fechaISO);
+  var fechaLabel = d ? _fmtFechaLarga(d) : fechaISO;
+
+  var panel = document.createElement('div');
+  panel.id = 'panel-wsp-auto';
+  panel.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:2000;background:#1a2e1a;border:1px solid rgba(100,220,140,.3);border-radius:16px;padding:20px;width:340px;box-shadow:0 8px 32px rgba(0,0,0,.5);color:#fff';
+
+  var lista = citas.map(function(c){
+    var tel  = (c.telefono||'').replace(/\D/g,'');
+    var txt  = (msg.texto||'')
+      .replace(/\{nombre\}/g,    c.nombre||'')
+      .replace(/\{fecha\}/g,     fechaLabel)
+      .replace(/\{hora\}/g,      c.hora||'')
+      .replace(/\{obraSocial\}/g,c.obraSocial||'')
+      .replace(/\{estudio\}/g,   c.estudio||'');
+    var url  = 'https://wa.me/549'+tel+'?text='+encodeURIComponent(txt);
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08)">'
+      + '<div style="flex:1;min-width:0">'
+      +   '<div style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.nombre+'</div>'
+      +   '<div style="font-size:11px;opacity:.6">'+( c.hora||'')+(c.estudio?' · '+c.estudio:'')+'</div>'
+      + '</div>'
+      + '<a href="'+url+'" target="_blank" onclick="_wspMarcarEnviado(\''+c.id+'\',\''+storageKey+'\')"'
+      +   ' style="background:#25d366;color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;margin-left:8px">WhatsApp</a>'
+      + '</div>';
+  }).join('');
+
+  panel.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+    + '<div>'
+    +   '<div style="font-size:14px;font-weight:800;color:#6ddc8c">Recordatorios de mañana</div>'
+    +   '<div style="font-size:11px;opacity:.6;margin-top:2px">'+fechaLabel+' · '+citas.length+' paciente'+(citas.length!==1?'s':'')+' con teléfono</div>'
+    + '</div>'
+    + '<button onclick="document.getElementById(\'panel-wsp-auto\').remove()" style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:18px">✕</button>'
+    + '</div>'
+    + lista
+    + '<div style="margin-top:12px;display:flex;gap:8px">'
+    + '<button onclick="_wspEnviarTodos()" style="flex:1;background:#25d366;color:#fff;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer">📤 Enviar todos</button>'
+    + '<button onclick="document.getElementById(\'panel-wsp-auto\').remove()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:9px 14px;font-size:13px;color:rgba(255,255,255,.6);cursor:pointer">Ahora no</button>'
+    + '</div>';
+
+  document.body.appendChild(panel);
+}
+
+function _wspMarcarEnviado(citaId, storageKey) {
+  var lista = JSON.parse(localStorage.getItem(storageKey) || '[]');
+  if (lista.indexOf(citaId) === -1) lista.push(citaId);
+  localStorage.setItem(storageKey, JSON.stringify(lista));
+}
+
+function _wspEnviarTodos() {
+  var panel = document.getElementById('panel-wsp-auto');
+  if (!panel) return;
+  var links = panel.querySelectorAll('a[href*="wa.me"]');
+  links.forEach(function(a){ window.open(a.href, '_blank'); a.click(); });
+  panel.remove();
+  toast('Recordatorios enviados', 'ok');
+}
+
 
 // ── Admin mensajes WhatsApp ────────────────────────────────────────
 function toggleCitasAdmin() {
