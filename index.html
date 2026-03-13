@@ -5136,41 +5136,43 @@ function renderPanelProximas() {
   var listHoy = document.getElementById('citas-hoy-lista');
   var listPrx = document.getElementById('citas-proximas-lista');
 
-  // ── Panel HOY ──
+  // ── HOY ──
   if (!deHoy.length) {
-    listHoy.innerHTML = '<span style="color:#6a9b6a;font-size:13px">Sin citas hoy</span>';
+    listHoy.innerHTML = '<span style="font-size:13px;color:#6a9b6a">Sin citas hoy</span>';
   } else {
     listHoy.innerHTML = deHoy.map(function(c) {
-      return '<div onclick="verCita(\'' + c.id + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)">'
-        + '<span style="background:#1b5e20;color:#fff;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:800;white-space:nowrap;min-width:44px;text-align:center">' + (c.hora||'—') + '</span>'
+      return '<div onclick="verCita(\'' + c.id + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.06)">'
+        + '<span style="background:#1b5e20;color:#fff;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:800;white-space:nowrap">' + (c.hora||'—') + '</span>'
         + '<div style="flex:1;min-width:0">'
-        +   '<div style="font-weight:700;font-size:13px;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (c.nombre||'—') + '</div>'
-        +   (c.obraSocial ? '<div style="font-size:11px;color:#4a7c59;font-weight:600;margin-top:1px">' + c.obraSocial + '</div>' : '')
+        +   '<div style="font-weight:700;font-size:13px;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.nombre||'—') + '</div>'
+        +   (c.obraSocial ? '<div style="font-size:11px;color:#4a7c59;font-weight:600">' + c.obraSocial + '</div>' : '')
         + '</div>'
         + '</div>';
     }).join('');
   }
 
-  // ── Panel PRÓXIMOS 7 DÍAS ──
+  // ── PRÓXIMOS 7 DÍAS ──
+  // formato: fecha encabezado, luego cada paciente debajo verticalmente
   if (!proximas.length) {
-    listPrx.innerHTML = '<span style="color:#6a9b6a;font-size:13px">Sin citas en los próximos 7 días</span>';
+    listPrx.innerHTML = '<span style="font-size:13px;color:#6a9b6a">Sin citas en los próximos 7 días</span>';
   } else {
     var grupos = {};
     proximas.forEach(function(c){ if(!grupos[c.fecha]) grupos[c.fecha]=[]; grupos[c.fecha].push(c); });
     listPrx.innerHTML = Object.keys(grupos).sort().map(function(f) {
       var d = _parseFechaISO(f);
-      var label = _fmtFechaCorta(d).toUpperCase();
-      return '<div style="margin-bottom:10px">'
-        + '<div style="display:inline-block;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:2px 10px;font-size:10px;font-weight:800;color:#2e7d32;letter-spacing:.06em;margin-bottom:6px">' + label + '</div>'
-        + grupos[f].map(function(c) {
-            return '<div onclick="verCita(\'' + c.id + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05)">'
-              + '<span style="background:#c8e6c9;color:#1b5e20;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:800;white-space:nowrap;min-width:44px;text-align:center">' + (c.hora||'—') + '</span>'
-              + '<div style="flex:1;min-width:0">'
-              +   '<div style="font-weight:700;font-size:13px;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (c.nombre||'—') + '</div>'
-              +   (c.obraSocial ? '<div style="font-size:11px;color:#4a7c59;font-weight:600;margin-top:1px">' + c.obraSocial + '</div>' : '')
-              + '</div>'
-              + '</div>';
-          }).join('')
+      var fechaLabel = _fmtFechaCorta(d).toUpperCase();
+      var filas = grupos[f].map(function(c) {
+        return '<div onclick="verCita(\'' + c.id + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05)">'
+          + '<span style="background:#c8e6c9;color:#1b5e20;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:800;white-space:nowrap">' + (c.hora||'—') + '</span>'
+          + '<div style="flex:1;min-width:0">'
+          +   '<div style="font-weight:700;font-size:13px;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.nombre||'—') + '</div>'
+          +   (c.obraSocial ? '<div style="font-size:11px;color:#4a7c59;font-weight:600">' + c.obraSocial + '</div>' : '')
+          + '</div>'
+          + '</div>';
+      }).join('');
+      return '<div style="margin-bottom:12px">'
+        + '<div style="font-size:11px;font-weight:700;color:#4a7c59;letter-spacing:.05em;margin-bottom:4px">' + fechaLabel + '</div>'
+        + filas
         + '</div>';
     }).join('');
   }
@@ -5178,7 +5180,6 @@ function renderPanelProximas() {
   var total = citas.length;
   document.getElementById('citas-subtitle').textContent = total + ' cita' + (total!==1?'s':'') + ' registrada' + (total!==1?'s':'');
 }
-
 // ── Calendario ───────────────────────────────────────────────────
 function renderCalendario() {
   const el = document.getElementById('citas-calendario');
@@ -5193,7 +5194,6 @@ function renderCalSemana(el) {
   for (var i=0; i<7; i++) dias.push(_addDias(_citasSemana, i));
   var labelSemana = _fmtFechaCorta(dias[0]) + ' — ' + _fmtFechaCorta(dias[6]);
 
-  // Paleta fija, sin variables CSS
   var C = {
     colBg:'#ffffff', colBorder:'#e8e8e8',
     hoyBg:'#1b5e20', hoyBorder:'#1b5e20',
@@ -5204,6 +5204,7 @@ function renderCalSemana(el) {
     chipHoyBg:'#fff', chipHoyTxt:'#1b5e20',
   };
 
+  // Todas las columnas tienen el mismo flex y min-width — el alto varía solo
   var cols = dias.map(function(d) {
     var iso    = _isoFecha(d);
     var esHoy  = iso === hoy;
@@ -5213,7 +5214,7 @@ function renderCalSemana(el) {
     var diaNum = d.getDay();
     var esFind = diaNum === 0 || diaNum === 6;
 
-    var colBg     = esHoy ? C.hoyBg  : esFind ? C.findBg  : C.colBg;
+    var colBg     = esHoy ? C.hoyBg    : esFind ? C.findBg   : C.colBg;
     var colBorder = esHoy ? C.hoyBorder : (esFind ? C.findBorder : C.colBorder);
     var lblColor  = esHoy ? C.hoyLabel  : C.txtLabel;
     var diaColor  = esHoy ? C.hoyDia    : C.txtDia;
@@ -5221,11 +5222,6 @@ function renderCalSemana(el) {
     var chipTxt   = esHoy ? C.chipHoyTxt : C.chipTxt;
     var btnColor  = esHoy ? 'rgba(255,255,255,.45)' : '#bbb';
     var btnBorder = esHoy ? 'rgba(255,255,255,.2)'  : '#ddd';
-
-    // Días sin citas: columna compacta (solo header + botón)
-    // Días con citas: columna expandida
-    var minW = tieneCitas ? '140px' : '80px';
-    var flex  = tieneCitas ? '2' : '1';
 
     var chips = tieneCitas
       ? dcitas.map(function(c) {
@@ -5235,40 +5231,42 @@ function renderCalSemana(el) {
             : 'verCita(\'' + c.id + '\')';
           return '<div id="chip-cita-' + c.id + '" onclick="' + clickFn + '"'
             + ' style="cursor:pointer;background:' + chipBg + ';color:' + chipTxt + ';border-radius:8px;padding:7px 9px;margin-bottom:5px;box-shadow:0 1px 4px rgba(0,0,0,.12);position:relative;user-select:none'
-            + (esSel ? ';outline:2px solid ' + (esHoy?'rgba(255,255,255,.8)':'#1b5e20') + ';opacity:1' : ';opacity:' + (_modoSeleccion?'0.7':'1')) + '">'
+            + (esSel ? ';outline:2px solid ' + (esHoy?'rgba(255,255,255,.8)':'#1b5e20') : ';opacity:' + (_modoSeleccion?'0.65':'1')) + '">'
             + '<div class="chip-check" style="display:' + (esSel?'flex':'none') + ';position:absolute;top:4px;right:4px;background:' + (esHoy?'rgba(27,94,32,.9)':'rgba(255,255,255,.9)') + ';color:' + (esHoy?'#fff':'#1b5e20') + ';border-radius:50%;width:15px;height:15px;align-items:center;justify-content:center;font-size:10px;font-weight:800">✓</div>'
             + '<div style="font-size:10px;font-weight:700;opacity:.7;margin-bottom:2px">' + (c.hora||'') + '</div>'
-            + '<div style="font-weight:800;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (c.nombre||'').split(' ')[0] + '</div>'
-            + (c.obraSocial ? '<div style="font-size:10px;opacity:.65;margin-top:2px">' + c.obraSocial + '</div>' : '')
+            + '<div style="font-weight:800;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.nombre||'').split(' ')[0] + '</div>'
+            + (c.obraSocial ? '<div style="font-size:10px;opacity:.65;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.obraSocial + '</div>' : '')
             + '</div>';
         }).join('')
-      : '<div style="font-size:11px;color:' + lblColor + ';text-align:center;padding:6px 0;opacity:.4">—</div>';
+      : '<div style="font-size:11px;color:' + lblColor + ';text-align:center;padding:6px 0;opacity:.35">—</div>';
 
-    return '<div style="flex:' + flex + ';min-width:' + minW + ';background:' + colBg + ';border-radius:12px;border:1px solid ' + colBorder + ';padding:10px 8px;transition:flex .2s">'
-      + '<div style="text-align:center;margin-bottom:' + (tieneCitas?'10':'6') + 'px">'
+    // Todas las columnas igual ancho (flex:1, min-width:80px)
+    // El alto crece solo si hay citas (chips apilados verticalmente)
+    return '<div style="flex:1;min-width:80px;background:' + colBg + ';border-radius:12px;border:1px solid ' + colBorder + ';padding:10px 8px;display:flex;flex-direction:column">'
+      + '<div style="text-align:center;margin-bottom:8px">'
       +   '<div style="font-size:9px;font-weight:800;color:' + lblColor + ';letter-spacing:.1em">' + _DIAS_CORTO[diaNum].toUpperCase() + '</div>'
-      +   '<div style="font-size:' + (tieneCitas?'22':'18') + 'px;font-weight:900;color:' + diaColor + ';line-height:1.1;margin:2px 0">' + d.getDate() + '</div>'
+      +   '<div style="font-size:18px;font-weight:900;color:' + diaColor + ';line-height:1.1;margin:2px 0">' + d.getDate() + '</div>'
       +   '<div style="font-size:9px;color:' + lblColor + '">' + _MESES[d.getMonth()].slice(0,3) + '</div>'
       + '</div>'
       + chips
-      + '<div style="margin-top:6px">'
+      + '<div style="margin-top:auto;padding-top:6px">'
       +   '<button onclick="abrirModalNuevaCita(\'' + iso + '\')" style="background:none;border:1px dashed ' + btnBorder + ';border-radius:5px;width:100%;padding:3px;font-size:10px;color:' + btnColor + ';cursor:pointer">+ cita</button>'
       + '</div>'
       + '</div>';
   }).join('');
 
-  // Flechas navegación grandes y llamativas
-  var navBtn = 'display:inline-flex;align-items:center;justify-content:center;background:#1b5e20;color:#fff;border:none;border-radius:10px;width:38px;height:38px;cursor:pointer;font-size:20px;font-weight:900;box-shadow:0 2px 8px rgba(27,94,32,.35);transition:transform .1s;line-height:1';
+  // Nav: badges pequeños con tono verde suave
+  var navBadge = 'display:inline-flex;align-items:center;justify-content:center;background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:16px;font-weight:900;line-height:1;padding:0';
 
   el.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
-    + '<div style="display:flex;align-items:center;gap:12px">'
-    +   '<button onclick="navCitas(-1)" style="' + navBtn + '">‹</button>'
-    +   '<span style="font-size:15px;font-weight:700;color:#222">' + labelSemana + '</span>'
-    +   '<button onclick="navCitas(1)" style="' + navBtn + '">›</button>'
+    + '<div style="display:flex;align-items:center;gap:10px">'
+    +   '<button onclick="navCitas(-1)" style="' + navBadge + '">‹</button>'
+    +   '<span style="font-size:14px;font-weight:700;color:#222">' + labelSemana + '</span>'
+    +   '<button onclick="navCitas(1)" style="' + navBadge + '">›</button>'
     + '</div>'
-    + '<button onclick="irHoyCitas()" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;color:#1b5e20">Hoy</button>'
+    + '<button onclick="irHoyCitas()" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;color:#1b5e20">Hoy</button>'
     + '</div>'
-    + '<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;align-items:stretch">' + cols + '</div>';
+    + '<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;align-items:flex-start">' + cols + '</div>';
 }
 
 function renderCalMes(el) {
