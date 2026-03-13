@@ -5250,7 +5250,10 @@ function renderCalSemana(el) {
             + ' style="cursor:pointer;background:' + chipBg + ';color:' + chipTxt + ';border-radius:8px;padding:7px 9px;margin-bottom:5px;box-shadow:0 2px 5px rgba(0,0,0,.15);position:relative;user-select:none'
             + (esSel ? ';outline:2px solid ' + (esHoy?'rgba(255,255,255,.8)':'#1b5e20') : ';opacity:' + (_modoSeleccion?'0.65':'1')) + '">'
             + '<div class="chip-check" style="display:' + (esSel?'flex':'none') + ';position:absolute;top:4px;right:4px;background:rgba(255,255,255,.9);color:#1b5e20;border-radius:50%;width:15px;height:15px;align-items:center;justify-content:center;font-size:10px;font-weight:800">✓</div>'
-            + '<div style="font-size:10px;font-weight:700;opacity:.75;margin-bottom:2px">' + (c.hora||'') + '</div>'
+            + '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">'
+            +   '<span style="font-size:10px;font-weight:700;opacity:.75">' + (c.hora||'') + '</span>'
+            +   (c.estudio ? '<span style="font-size:9px;font-weight:800;background:rgba(255,255,255,.2);border-radius:4px;padding:1px 5px;letter-spacing:.03em">' + c.estudio + '</span>' : '')
+            + '</div>'
             + (mostrarNombre
                 ? '<div style="font-weight:800;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.nombre||'') + '</div>'
                   + (c.obraSocial ? '<div style="font-size:10px;opacity:.65;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.obraSocial + '</div>' : '')
@@ -5426,14 +5429,53 @@ function eliminarSeleccionadas() {
 }
 
 // ── Formulario compartido nueva/editar ────────────────────────────
+// ── Selector de fecha DD/MM/YYYY (evita formato americano del browser) ──
+function _selectorFechaISO(idBase, isoVal) {
+  var parts = (isoVal || _isoFecha(new Date())).split('-');
+  var anio  = parseInt(parts[0], 10);
+  var mes   = parseInt(parts[1], 10);
+  var dia   = parseInt(parts[2], 10);
+
+  var SEL = 'background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px 8px;font-size:14px;outline:none;cursor:pointer;';
+
+  var dias = '<option value="">DD</option>';
+  for (var d=1; d<=31; d++) dias += '<option value="' + d + '"' + (d===dia?' selected':'') + '>' + (d<10?'0'+d:d) + '</option>';
+
+  var meses = '<option value="">MM</option>';
+  var nomMes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  for (var m=1; m<=12; m++) meses += '<option value="' + m + '"' + (m===mes?' selected':'') + '>' + (m<10?'0'+m:m) + ' ' + nomMes[m-1] + '</option>';
+
+  var anios = '<option value="">AAAA</option>';
+  var hoyY  = new Date().getFullYear();
+  for (var y=hoyY; y<=hoyY+3; y++) anios += '<option value="' + y + '"' + (y===anio?' selected':'') + '>' + y + '</option>';
+
+  var onchange = 'document.getElementById(\'' + idBase + '\').value = _buildISOFromSelects(\'' + idBase + '\')';
+
+  return '<div style="display:flex;gap:4px;align-items:center" id="' + idBase + '-wrap">'
+    + '<select id="' + idBase + '-d" style="' + SEL + 'flex:1" onchange="' + onchange + '">' + dias + '</select>'
+    + '<select id="' + idBase + '-m" style="' + SEL + 'flex:1.4" onchange="' + onchange + '">' + meses + '</select>'
+    + '<select id="' + idBase + '-y" style="' + SEL + 'flex:1.6" onchange="' + onchange + '">' + anios + '</select>'
+    + '<input type="hidden" id="' + idBase + '" value="' + (isoVal||'') + '">'
+    + '</div>';
+}
+
+function _buildISOFromSelects(idBase) {
+  var d = document.getElementById(idBase + '-d').value;
+  var m = document.getElementById(idBase + '-m').value;
+  var y = document.getElementById(idBase + '-y').value;
+  if (!d || !m || !y) return '';
+  return y + '-' + (m<10?'0'+m:m) + '-' + (d<10?'0'+d:d);
+}
+
 function _bodyFormCita(c) {
   // c puede ser objeto existente (editar) o null (nueva)
-  var nombre = c ? c.nombre  : '';
-  var fecha  = c ? c.fecha   : _isoFecha(new Date());
-  var hora   = c ? c.hora    : '09:00';
-  var os     = c ? c.obraSocial : '';
-  var tel    = c ? c.telefono   : '';
-  var nota   = c ? c.nota       : '';
+  var nombre  = c ? c.nombre     : '';
+  var fecha   = c ? c.fecha      : _isoFecha(new Date());
+  var hora    = c ? c.hora       : '09:00';
+  var os      = c ? c.obraSocial : '';
+  var tel     = c ? c.telefono   : '';
+  var nota    = c ? c.nota       : '';
+  var estudio = c ? (c.estudio||'') : '';
 
   var INP = 'width:100%;border:1px solid rgba(255,255,255,.12);border-radius:10px;font-size:14px;background:rgba(255,255,255,.07);color:#fff;outline:none;box-sizing:border-box;';
   var LBL = 'font-size:10px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.1em;display:block;margin-bottom:6px';
@@ -5449,14 +5491,25 @@ function _bodyFormCita(c) {
 
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
     +   '<div><label style="' + LBL + '">FECHA *</label>'
-    +   '<input id="nc-fecha" type="date" value="' + fecha + '"'
-    +   ' style="' + INP + 'padding:11px 12px;color-scheme:dark"'
-    +   ' onfocus="' + focusIn + '" onblur="' + focusOut + '"></div>'
+    +   _selectorFechaISO('nc-fecha', fecha)
+    +   '</div>'
     +   '<div><label style="' + LBL + '">HORA</label>'
     +   '<input id="nc-hora" type="time" value="' + hora + '"'
     +   ' style="' + INP + 'padding:11px 12px;color-scheme:dark"'
     +   ' onfocus="' + focusIn + '" onblur="' + focusOut + '"></div>'
     + '</div>'
+
+    + '<div><label style="' + LBL + '">ESTUDIO</label>'
+    + '<select id="nc-estudio" style="' + INP + 'padding:11px 14px;cursor:pointer">'
+    + '<option value="" style="background:#1a2e1a"' + (estudio===''?' selected':'') + '>— Sin especificar —</option>'
+    + '<option value="VEDA" style="background:#1a2e1a"' + (estudio==='VEDA'?' selected':'') + '>🔭 VEDA</option>'
+    + '<option value="VCC" style="background:#1a2e1a"' + (estudio==='VCC'?' selected':'') + '>🔬 VCC</option>'
+    + '<option value="VEDA/VCC" style="background:#1a2e1a"' + (estudio==='VEDA/VCC'?' selected':'') + '>🔭🔬 VEDA / VCC</option>'
+    + '<option value="Colangio" style="background:#1a2e1a"' + (estudio==='Colangio'?' selected':'') + '>📋 Colangioscopia</option>'
+    + '<option value="Manometría" style="background:#1a2e1a"' + (estudio==='Manometría'?' selected':'') + '>📊 Manometría</option>'
+    + '<option value="pH-metría" style="background:#1a2e1a"' + (estudio==='pH-metría'?' selected':'') + '>🧪 pH-metría</option>'
+    + '<option value="Consulta" style="background:#1a2e1a"' + (estudio==='Consulta'?' selected':'') + '>🩺 Consulta</option>'
+    + '</select></div>'
 
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
     +   '<div><label style="' + LBL + '">OBRA SOCIAL</label>'
@@ -5514,6 +5567,7 @@ function guardarNuevaCita() {
     nombre:     nombre,
     fecha:      fecha,
     hora:       document.getElementById('nc-hora').value || '',
+    estudio:    document.getElementById('nc-estudio').value || '',
     obraSocial: document.getElementById('nc-os').value.trim(),
     telefono:   document.getElementById('nc-tel').value.trim(),
     nota:       document.getElementById('nc-nota').value.trim(),
@@ -5561,6 +5615,7 @@ function guardarEdicionCita() {
   citas[idx].nombre     = nombre;
   citas[idx].fecha      = fecha;
   citas[idx].hora       = document.getElementById('nc-hora').value || '';
+  citas[idx].estudio    = document.getElementById('nc-estudio').value || '';
   citas[idx].obraSocial = document.getElementById('nc-os').value.trim();
   citas[idx].telefono   = document.getElementById('nc-tel').value.trim();
   citas[idx].nota       = document.getElementById('nc-nota').value.trim();
@@ -5607,6 +5662,7 @@ function verCita(id) {
     + '<div style="display:flex;gap:8px;flex-wrap:wrap">'
     + '<span style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;color:#ffffff">📅 ' + fechaLabel + '</span>'
     + (c.hora      ? '<span style="background:rgba(110,230,150,.2);border:1px solid rgba(110,230,150,.4);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:700;color:#7effa0">⏰ ' + c.hora + '</span>' : '')
+  + (c.estudio   ? '<span style="background:rgba(100,180,255,.18);border:1px solid rgba(100,180,255,.4);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:700;color:#90caf9">🔬 ' + c.estudio + '</span>' : '')
     + (c.obraSocial ? '<span style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;color:#e0ffe8">🏥 ' + c.obraSocial + '</span>' : '')
     + (c.telefono  ? '<span style="background:rgba(37,211,102,.18);border:1px solid rgba(37,211,102,.35);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:700;color:#25d366">📱 ' + c.telefono + '</span>' : '')
     + '</div>'
