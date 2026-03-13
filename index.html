@@ -5123,53 +5123,60 @@ function setCitasVista(v) {
 
 // ── Panel próximas ───────────────────────────────────────────────
 function renderPanelProximas() {
-  const citas  = _citasCargar();
-  const hoy    = new Date(); hoy.setHours(0,0,0,0);
-  const en7    = _addDias(hoy, 7);
+  var citas  = _citasCargar();
+  var hoy    = new Date(); hoy.setHours(0,0,0,0);
+  var en7    = _addDias(hoy, 7);
+  var isoHoy = _isoFecha(hoy);
 
-  const deHoy     = citas.filter(c => { const d = _parseFechaISO(c.fecha); return d && _isoFecha(d) === _isoFecha(hoy); })
-                         .sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
-  const proximas  = citas.filter(c => { const d = _parseFechaISO(c.fecha); return d && d > hoy && d <= en7; })
-                         .sort((a,b) => c_cmp(a,b));
+  var deHoy    = citas.filter(function(c){ var d=_parseFechaISO(c.fecha); return d && _isoFecha(d)===isoHoy; })
+                      .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
+  var proximas = citas.filter(function(c){ var d=_parseFechaISO(c.fecha); return d && d>hoy && d<=en7; })
+                      .sort(function(a,b){ return (a.fecha+a.hora).localeCompare(b.fecha+b.hora); });
 
-  function c_cmp(a,b){ return (a.fecha+a.hora).localeCompare(b.fecha+b.hora); }
+  var listHoy = document.getElementById('citas-hoy-lista');
+  var listPrx = document.getElementById('citas-proximas-lista');
 
-  const listHoy = document.getElementById('citas-hoy-lista');
-  const listPrx = document.getElementById('citas-proximas-lista');
-
+  // ── Panel HOY ──
   if (!deHoy.length) {
-    listHoy.innerHTML = '<span style="color:var(--text2);font-size:13px">Sin citas hoy</span>';
+    listHoy.innerHTML = '<span style="color:#6a9b6a;font-size:13px">Sin citas hoy</span>';
   } else {
-    listHoy.innerHTML = deHoy.map(c => `
-      <div onclick="verCita('${c.id}')" style="cursor:pointer;padding:6px 0;border-bottom:1px solid var(--border1);display:flex;align-items:center;gap:8px">
-        <span style="background:var(--primary);color:#fff;border-radius:5px;padding:2px 7px;font-size:12px;font-weight:700;white-space:nowrap">${c.hora||'—'}</span>
-        <span style="font-weight:600;font-size:13px">${c.nombre||'—'}</span>
-        <span style="color:var(--text2);font-size:12px">${c.obraSocial||''}</span>
-      </div>`).join('');
-  }
-
-  if (!proximas.length) {
-    listPrx.innerHTML = '<span style="color:var(--text2);font-size:13px">Sin citas en los próximos 7 días</span>';
-  } else {
-    // agrupar por fecha
-    const grupos = {};
-    proximas.forEach(c => { if(!grupos[c.fecha]) grupos[c.fecha]=[]; grupos[c.fecha].push(c); });
-    listPrx.innerHTML = Object.keys(grupos).sort().map(f => {
-      const d = _parseFechaISO(f);
-      return `<div style="margin-bottom:8px">
-        <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.04em;margin-bottom:4px">${_fmtFechaCorta(d).toUpperCase()}</div>
-        ${grupos[f].map(c=>`<div onclick="verCita('${c.id}')" style="cursor:pointer;display:flex;align-items:center;gap:8px;padding:4px 0">
-          <span style="font-size:12px;color:var(--primary);font-weight:600;min-width:38px">${c.hora||'—'}</span>
-          <span style="font-size:13px;font-weight:500">${c.nombre||'—'}</span>
-          <span style="font-size:12px;color:var(--text2)">${c.obraSocial||''}</span>
-        </div>`).join('')}
-      </div>`;
+    listHoy.innerHTML = deHoy.map(function(c) {
+      return '<div onclick="verCita(\'' + c.id + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)">'
+        + '<span style="background:#1b5e20;color:#fff;border-radius:7px;padding:4px 10px;font-size:12px;font-weight:800;white-space:nowrap;min-width:44px;text-align:center">' + (c.hora||'—') + '</span>'
+        + '<div style="flex:1;min-width:0">'
+        +   '<div style="font-weight:700;font-size:13px;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (c.nombre||'—') + '</div>'
+        +   (c.obraSocial ? '<div style="font-size:11px;color:#4a7c59;font-weight:600;margin-top:1px">' + c.obraSocial + '</div>' : '')
+        + '</div>'
+        + '</div>';
     }).join('');
   }
 
-  // subtitle
-  const total = citas.length;
-  document.getElementById('citas-subtitle').textContent = `${total} cita${total!==1?'s':''} registrada${total!==1?'s':''}`;
+  // ── Panel PRÓXIMOS 7 DÍAS ──
+  if (!proximas.length) {
+    listPrx.innerHTML = '<span style="color:#6a9b6a;font-size:13px">Sin citas en los próximos 7 días</span>';
+  } else {
+    var grupos = {};
+    proximas.forEach(function(c){ if(!grupos[c.fecha]) grupos[c.fecha]=[]; grupos[c.fecha].push(c); });
+    listPrx.innerHTML = Object.keys(grupos).sort().map(function(f) {
+      var d = _parseFechaISO(f);
+      var label = _fmtFechaCorta(d).toUpperCase();
+      return '<div style="margin-bottom:10px">'
+        + '<div style="display:inline-block;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:2px 10px;font-size:10px;font-weight:800;color:#2e7d32;letter-spacing:.06em;margin-bottom:6px">' + label + '</div>'
+        + grupos[f].map(function(c) {
+            return '<div onclick="verCita(\'' + c.id + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.05)">'
+              + '<span style="background:#c8e6c9;color:#1b5e20;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:800;white-space:nowrap;min-width:44px;text-align:center">' + (c.hora||'—') + '</span>'
+              + '<div style="flex:1;min-width:0">'
+              +   '<div style="font-weight:700;font-size:13px;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (c.nombre||'—') + '</div>'
+              +   (c.obraSocial ? '<div style="font-size:11px;color:#4a7c59;font-weight:600;margin-top:1px">' + c.obraSocial + '</div>' : '')
+              + '</div>'
+              + '</div>';
+          }).join('')
+        + '</div>';
+    }).join('');
+  }
+
+  var total = citas.length;
+  document.getElementById('citas-subtitle').textContent = total + ' cita' + (total!==1?'s':'') + ' registrada' + (total!==1?'s':'');
 }
 
 // ── Calendario ───────────────────────────────────────────────────
@@ -5180,94 +5187,88 @@ function renderCalendario() {
 }
 
 function renderCalSemana(el) {
-  const citas = _citasCargar();
-  const hoy   = _isoFecha(new Date());
-  const dias  = [];
-  for (let i=0; i<7; i++) dias.push(_addDias(_citasSemana, i));
+  var citas = _citasCargar();
+  var hoy   = _isoFecha(new Date());
+  var dias  = [];
+  for (var i=0; i<7; i++) dias.push(_addDias(_citasSemana, i));
+  var labelSemana = _fmtFechaCorta(dias[0]) + ' — ' + _fmtFechaCorta(dias[6]);
 
-  const labelSemana = _fmtFechaCorta(dias[0]) + ' — ' + _fmtFechaCorta(dias[6]);
-
-  // Colores fijos sin variables CSS para garantizar contraste
-  const C = {
-    // columna normal
-    colBg:      '#ffffff',
-    colBorder:  '#e0e0e0',
-    // columna hoy
-    hoyBg:      '#1b5e20',
-    hoyBorder:  '#1b5e20',
-    // columna fin de semana
-    findBg:     '#f5f5f5',
-    findBorder: '#e0e0e0',
-    // texto normal
-    txtLabel:   '#888888',
-    txtDia:     '#111111',
-    // texto hoy
-    hoyLabel:   '#a5d6a7',
-    hoyDia:     '#ffffff',
-    // chip de cita normal
-    chipBg:     '#1b5e20',
-    chipColor:  '#ffffff',
-    // chip de cita en hoy (invertido para que contraste sobre verde oscuro)
-    chipHoyBg:  '#ffffff',
-    chipHoyColor: '#1b5e20',
+  // Paleta fija, sin variables CSS
+  var C = {
+    colBg:'#ffffff', colBorder:'#e8e8e8',
+    hoyBg:'#1b5e20', hoyBorder:'#1b5e20',
+    findBg:'#f7f7f7', findBorder:'#e0e0e0',
+    txtLabel:'#999', txtDia:'#111',
+    hoyLabel:'#a5d6a7', hoyDia:'#fff',
+    chipBg:'#1b5e20', chipTxt:'#fff',
+    chipHoyBg:'#fff', chipHoyTxt:'#1b5e20',
   };
 
-  let cols = dias.map(function(d) {
-    const iso    = _isoFecha(d);
-    const esHoy  = iso === hoy;
-    const dcitas = citas.filter(c => c.fecha === iso).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
-    const diaNum = d.getDay();
-    const esFind = diaNum === 0 || diaNum === 6;
+  var cols = dias.map(function(d) {
+    var iso    = _isoFecha(d);
+    var esHoy  = iso === hoy;
+    var dcitas = citas.filter(function(c){ return c.fecha === iso; })
+                      .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
+    var tieneCitas = dcitas.length > 0;
+    var diaNum = d.getDay();
+    var esFind = diaNum === 0 || diaNum === 6;
 
-    const colBg     = esHoy ? C.hoyBg     : esFind ? C.findBg  : C.colBg;
-    const colBorder = esHoy ? C.hoyBorder : C.colBorder;
-    const lblColor  = esHoy ? C.hoyLabel  : C.txtLabel;
-    const diaColor  = esHoy ? C.hoyDia    : C.txtDia;
-    const chipBg    = esHoy ? C.chipHoyBg    : C.chipBg;
-    const chipColor = esHoy ? C.chipHoyColor : C.chipColor;
-    const btnColor  = esHoy ? 'rgba(255,255,255,.5)' : '#aaaaaa';
-    const btnBorder = esHoy ? 'rgba(255,255,255,.25)' : '#dddddd';
+    var colBg     = esHoy ? C.hoyBg  : esFind ? C.findBg  : C.colBg;
+    var colBorder = esHoy ? C.hoyBorder : (esFind ? C.findBorder : C.colBorder);
+    var lblColor  = esHoy ? C.hoyLabel  : C.txtLabel;
+    var diaColor  = esHoy ? C.hoyDia    : C.txtDia;
+    var chipBg    = esHoy ? C.chipHoyBg  : C.chipBg;
+    var chipTxt   = esHoy ? C.chipHoyTxt : C.chipTxt;
+    var btnColor  = esHoy ? 'rgba(255,255,255,.45)' : '#bbb';
+    var btnBorder = esHoy ? 'rgba(255,255,255,.2)'  : '#ddd';
 
-    const chips = dcitas.length === 0
-      ? '<div style="font-size:11px;color:' + lblColor + ';text-align:center;padding:8px 0;opacity:.5">—</div>'
-      : dcitas.map(function(c) {
+    // Días sin citas: columna compacta (solo header + botón)
+    // Días con citas: columna expandida
+    var minW = tieneCitas ? '140px' : '80px';
+    var flex  = tieneCitas ? '2' : '1';
+
+    var chips = tieneCitas
+      ? dcitas.map(function(c) {
           var esSel = _citasSeleccionadas.has(c.id);
           var clickFn = _modoSeleccion
             ? 'toggleSeleccionCita(\'' + c.id + '\', event)'
             : 'verCita(\'' + c.id + '\')';
-          var outline = esSel ? '2px solid #fff' : 'none';
-          var opac    = _modoSeleccion && !esSel ? '0.7' : '1';
-          return '<div id="chip-cita-' + c.id + '" onclick="' + clickFn + '" style="cursor:pointer;background:' + chipBg + ';color:' + chipColor + ';border-radius:7px;padding:6px 8px;margin-bottom:5px;font-size:11px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.15);outline:' + outline + ';opacity:' + opac + ';position:relative;user-select:none">'
-            + '<div class="chip-check" style="display:' + (esSel ? 'flex' : 'none') + ';position:absolute;top:4px;right:4px;background:rgba(255,255,255,.9);border-radius:50%;width:14px;height:14px;align-items:center;justify-content:center;font-size:9px">✓</div>'
-            + '<div style="font-size:11px;opacity:.8">' + (c.hora||'') + '</div>'
-            + '<div style="font-weight:800;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px">' + (c.nombre||'').split(',')[0] + '</div>'
-            + (c.obraSocial ? '<div style="opacity:.7;font-size:10px;margin-top:1px">' + c.obraSocial + '</div>' : '')
+          return '<div id="chip-cita-' + c.id + '" onclick="' + clickFn + '"'
+            + ' style="cursor:pointer;background:' + chipBg + ';color:' + chipTxt + ';border-radius:8px;padding:7px 9px;margin-bottom:5px;box-shadow:0 1px 4px rgba(0,0,0,.12);position:relative;user-select:none'
+            + (esSel ? ';outline:2px solid ' + (esHoy?'rgba(255,255,255,.8)':'#1b5e20') + ';opacity:1' : ';opacity:' + (_modoSeleccion?'0.7':'1')) + '">'
+            + '<div class="chip-check" style="display:' + (esSel?'flex':'none') + ';position:absolute;top:4px;right:4px;background:' + (esHoy?'rgba(27,94,32,.9)':'rgba(255,255,255,.9)') + ';color:' + (esHoy?'#fff':'#1b5e20') + ';border-radius:50%;width:15px;height:15px;align-items:center;justify-content:center;font-size:10px;font-weight:800">✓</div>'
+            + '<div style="font-size:10px;font-weight:700;opacity:.7;margin-bottom:2px">' + (c.hora||'') + '</div>'
+            + '<div style="font-weight:800;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (c.nombre||'').split(' ')[0] + '</div>'
+            + (c.obraSocial ? '<div style="font-size:10px;opacity:.65;margin-top:2px">' + c.obraSocial + '</div>' : '')
             + '</div>';
-        }).join('');
+        }).join('')
+      : '<div style="font-size:11px;color:' + lblColor + ';text-align:center;padding:6px 0;opacity:.4">—</div>';
 
-    return '<div style="flex:1;min-width:110px;background:' + colBg + ';border-radius:10px;border:1px solid ' + colBorder + ';padding:10px 8px">'
-      + '<div style="text-align:center;margin-bottom:10px">'
-      +   '<div style="font-size:10px;font-weight:800;color:' + lblColor + ';letter-spacing:.08em">' + _DIAS_CORTO[diaNum].toUpperCase() + '</div>'
-      +   '<div style="font-size:22px;font-weight:900;color:' + diaColor + ';line-height:1.1;margin:2px 0">' + d.getDate() + '</div>'
-      +   '<div style="font-size:10px;color:' + lblColor + '">' + _MESES[d.getMonth()].slice(0,3) + '</div>'
+    return '<div style="flex:' + flex + ';min-width:' + minW + ';background:' + colBg + ';border-radius:12px;border:1px solid ' + colBorder + ';padding:10px 8px;transition:flex .2s">'
+      + '<div style="text-align:center;margin-bottom:' + (tieneCitas?'10':'6') + 'px">'
+      +   '<div style="font-size:9px;font-weight:800;color:' + lblColor + ';letter-spacing:.1em">' + _DIAS_CORTO[diaNum].toUpperCase() + '</div>'
+      +   '<div style="font-size:' + (tieneCitas?'22':'18') + 'px;font-weight:900;color:' + diaColor + ';line-height:1.1;margin:2px 0">' + d.getDate() + '</div>'
+      +   '<div style="font-size:9px;color:' + lblColor + '">' + _MESES[d.getMonth()].slice(0,3) + '</div>'
       + '</div>'
       + chips
-      + '<div style="text-align:center;margin-top:6px">'
-      +   '<button onclick="abrirModalNuevaCita(\'' + iso + '\')" style="background:none;border:1px dashed ' + btnBorder + ';border-radius:5px;width:100%;padding:4px;font-size:11px;color:' + btnColor + ';cursor:pointer">+ cita</button>'
+      + '<div style="margin-top:6px">'
+      +   '<button onclick="abrirModalNuevaCita(\'' + iso + '\')" style="background:none;border:1px dashed ' + btnBorder + ';border-radius:5px;width:100%;padding:3px;font-size:10px;color:' + btnColor + ';cursor:pointer">+ cita</button>'
       + '</div>'
       + '</div>';
   }).join('');
 
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-      <div style="display:flex;align-items:center;gap:10px">
-        <button onclick="navCitas(-1)" style="background:var(--bg2);border:1px solid var(--border1);border-radius:7px;padding:5px 12px;cursor:pointer;font-size:14px">‹</button>
-        <span style="font-size:14px;font-weight:600;color:var(--text1)">${labelSemana}</span>
-        <button onclick="navCitas(1)" style="background:var(--bg2);border:1px solid var(--border1);border-radius:7px;padding:5px 12px;cursor:pointer;font-size:14px">›</button>
-      </div>
-      <button onclick="irHoyCitas()" style="background:none;border:1px solid var(--border1);border-radius:7px;padding:5px 14px;font-size:12px;cursor:pointer;color:var(--text2)">Hoy</button>
-    </div>
-    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px">${cols}</div>`;
+  // Flechas navegación grandes y llamativas
+  var navBtn = 'display:inline-flex;align-items:center;justify-content:center;background:#1b5e20;color:#fff;border:none;border-radius:10px;width:38px;height:38px;cursor:pointer;font-size:20px;font-weight:900;box-shadow:0 2px 8px rgba(27,94,32,.35);transition:transform .1s;line-height:1';
+
+  el.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'
+    + '<div style="display:flex;align-items:center;gap:12px">'
+    +   '<button onclick="navCitas(-1)" style="' + navBtn + '">‹</button>'
+    +   '<span style="font-size:15px;font-weight:700;color:#222">' + labelSemana + '</span>'
+    +   '<button onclick="navCitas(1)" style="' + navBtn + '">›</button>'
+    + '</div>'
+    + '<button onclick="irHoyCitas()" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;color:#1b5e20">Hoy</button>'
+    + '</div>'
+    + '<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;align-items:stretch">' + cols + '</div>';
 }
 
 function renderCalMes(el) {
@@ -5474,10 +5475,24 @@ function abrirModalNuevaCita(fechaISO) {
   setTimeout(function(){ var el=document.getElementById('nc-nombre'); if(el) el.focus(); }, 80);
 }
 
+
+// ── Validar superposición de turnos ──────────────────────────────
+function _haySuperpuesto(fecha, hora, excludeId) {
+  if (!hora) return false; // sin hora no hay superposición
+  var citas = _citasCargar();
+  return citas.some(function(c) {
+    if (c.id === excludeId) return false;
+    return c.fecha === fecha && c.hora === hora;
+  });
+}
 function guardarNuevaCita() {
   var nombre = document.getElementById('nc-nombre').value.trim();
   var fecha  = document.getElementById('nc-fecha').value;
+  var hora   = document.getElementById('nc-hora').value || '';
   if (!nombre || !fecha) { toast('Completá nombre y fecha', 'error'); return; }
+  if (_haySuperpuesto(fecha, hora, null)) {
+    toast('Ya existe un turno a las ' + hora + ' ese día', 'error'); return;
+  }
   var cita = {
     id:         'cita_' + Date.now(),
     nombre:     nombre,
@@ -5519,7 +5534,11 @@ function abrirEditarCita(id) {
 function guardarEdicionCita() {
   var nombre = document.getElementById('nc-nombre').value.trim();
   var fecha  = document.getElementById('nc-fecha').value;
+  var horaEd = document.getElementById('nc-hora').value || '';
   if (!nombre || !fecha) { toast('Completá nombre y fecha', 'error'); return; }
+  if (_haySuperpuesto(fecha, horaEd, _editandoCitaId)) {
+    toast('Ya existe un turno a las ' + horaEd + ' ese día', 'error'); return;
+  }
   var citas = _citasCargar();
   var idx = citas.findIndex(function(c){ return c.id === _editandoCitaId; });
   if (idx === -1) { toast('Cita no encontrada', 'error'); return; }
