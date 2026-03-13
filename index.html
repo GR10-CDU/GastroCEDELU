@@ -1729,6 +1729,12 @@ color:#555;
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Nueva Cita
             </button>
+            <!-- imprimir -->
+            <button onclick="abrirModalImprimirCitas()"
+              style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border1);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--text2);cursor:pointer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir
+            </button>
             <!-- admin mensajes -->
             <button onclick="toggleCitasAdmin()"
               style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border1);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--text2);cursor:pointer">
@@ -1799,6 +1805,47 @@ color:#555;
           <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
             <button onclick="cerrarPreviewPDF()" style="background:none;border:1px solid var(--border1);border-radius:7px;padding:8px 18px;font-size:13px;cursor:pointer;color:var(--text2)">Cancelar</button>
             <button onclick="confirmarImportPDF()" style="background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;border-radius:7px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">Confirmar importación</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MODAL IMPRIMIR CITAS ── -->
+      <div id="modal-imprimir-citas" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1002;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <div style="background:#1a2e1a;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:0;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.6);margin:16px;overflow:hidden">
+          <div style="padding:24px 28px 0;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="background:rgba(100,220,140,.15);border:1px solid rgba(100,220,140,.3);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6ddc8c" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              </div>
+              <h2 style="margin:0;font-size:17px;font-weight:800;color:#fff">Imprimir Citas</h2>
+            </div>
+            <button onclick="cerrarModalImprimirCitas()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;width:32px;height:32px;font-size:16px;cursor:pointer;color:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center">✕</button>
+          </div>
+          <div style="padding:20px 28px 28px;display:flex;flex-direction:column;gap:16px">
+            <p style="color:rgba(255,255,255,.55);font-size:13px;margin:0">Seleccioná el rango de fechas a imprimir</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div>
+                <label style="font-size:10px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.1em;display:block;margin-bottom:6px">DESDE</label>
+                <input type="date" id="imp-desde" style="width:100%;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;font-size:14px;background:rgba(255,255,255,.07);color:#fff;outline:none;box-sizing:border-box;color-scheme:dark">
+              </div>
+              <div>
+                <label style="font-size:10px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.1em;display:block;margin-bottom:6px">HASTA</label>
+                <input type="date" id="imp-hasta" style="width:100%;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;font-size:14px;background:rgba(255,255,255,.07);color:#fff;outline:none;box-sizing:border-box;color-scheme:dark">
+              </div>
+            </div>
+            <!-- accesos rápidos -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button onclick="setImpRango('hoy')" style="background:rgba(100,220,140,.12);border:1px solid rgba(100,220,140,.25);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#6ddc8c;cursor:pointer">Hoy</button>
+              <button onclick="setImpRango('semana')" style="background:rgba(100,220,140,.12);border:1px solid rgba(100,220,140,.25);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#6ddc8c;cursor:pointer">Esta semana</button>
+              <button onclick="setImpRango('mes')" style="background:rgba(100,220,140,.12);border:1px solid rgba(100,220,140,.25);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#6ddc8c;cursor:pointer">Este mes</button>
+            </div>
+            <div id="imp-preview-count" style="font-size:13px;color:rgba(255,255,255,.5);min-height:18px"></div>
+            <div style="display:flex;gap:10px">
+              <button onclick="cerrarModalImprimirCitas()" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px;font-size:13px;cursor:pointer;color:rgba(255,255,255,.6);font-weight:600">Cancelar</button>
+              <button onclick="ejecutarImpresionCitas()" style="flex:2;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(46,125,50,.4)">
+                🖨 Imprimir
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -5335,44 +5382,51 @@ function verCita(id) {
   const fecha = _parseFechaISO(c.fecha);
   const fechaLabel = fecha ? _fmtFechaLarga(fecha) : c.fecha;
 
-  const botonesWsp = msgs.map(m => {
-    const tel = (c.telefono||'').replace(/\D/g,'');
-    const texto = (m.texto||'')
-      .replace(/\{nombre\}/g, c.nombre||'')
-      .replace(/\{fecha\}/g,  fechaLabel)
-      .replace(/\{hora\}/g,   c.hora||'')
-      .replace(/\{obraSocial\}/g, c.obraSocial||'');
-    const link = tel ? ('https://wa.me/549' + tel + '?text=' + encodeURIComponent(texto)) : null;
-        const aHref = link ? (' href="' + link + '" target="_blank"') : ' href="#" onclick="noTelCita()"';
-    return '<a' + aHref + ' style="display:inline-flex;align-items:center;gap:7px;background:#25d366;color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer">'
-      + '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>'
-      + ' ' + m.nombre + '</a>';
+  const botonesWsp = msgs.map(function(m) {
+    const tel   = (c.telefono || '').replace(/\D/g, '');
+    const texto = (m.texto || '')
+      .replace(/\{nombre\}/g,    c.nombre || '')
+      .replace(/\{fecha\}/g,     fechaLabel)
+      .replace(/\{hora\}/g,      c.hora || '')
+      .replace(/\{obraSocial\}/g, c.obraSocial || '');
+    const url = tel
+      ? 'https://wa.me/549' + tel + '?text=' + encodeURIComponent(texto)
+      : null;
+    const attrs = url
+      ? 'href="' + url + '" target="_blank"'
+      : 'href="#" onclick="noTelCita();return false;"';
+    const svgWsp = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+    return '<a ' + attrs + ' style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;flex:1;justify-content:center">' + svgWsp + ' ' + m.nombre + '</a>';
   }).join('');
 
+  // ── Card paciente ──
+  var card = '<div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:20px">';
+  card += '<div style="font-size:21px;font-weight:900;color:#ffffff;letter-spacing:.01em;margin-bottom:12px;text-shadow:0 1px 3px rgba(0,0,0,.4)">' + (c.nombre || '—') + '</div>';
+  card += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  card += '<span style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;color:#ffffff">📅 ' + fechaLabel + '</span>';
+  if (c.hora)      card += '<span style="background:rgba(110,230,150,.2);border:1px solid rgba(110,230,150,.4);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:700;color:#7effa0">⏰ ' + c.hora + '</span>';
+  if (c.obraSocial) card += '<span style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;color:#e0ffe8">🏥 ' + c.obraSocial + '</span>';
+  if (c.telefono)  card += '<span style="background:rgba(37,211,102,.18);border:1px solid rgba(37,211,102,.35);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:700;color:#25d366">📱 ' + c.telefono + '</span>';
+  card += '</div>';
+  if (c.nota) card += '<div style="margin-top:14px;font-size:13px;color:rgba(255,255,255,.7);border-top:1px solid rgba(255,255,255,.1);padding-top:12px;line-height:1.6">📝 ' + c.nota + '</div>';
+  card += '</div>';
+
+  // ── Botones WSP ──
+  var wspRow = botonesWsp ? '<div style="display:flex;gap:8px;flex-wrap:wrap">' + botonesWsp + '</div>' : '';
+
+  // ── Acciones ──
+  var acciones = '<div style="display:flex;gap:8px;padding-top:2px">'
+    + '<button onclick="eliminarCita(\'' + c.id + '\')" style="background:rgba(220,50,50,.12);border:1px solid rgba(220,50,50,.3);border-radius:9px;padding:9px 16px;font-size:12px;cursor:pointer;color:#ff8a80;font-weight:600">🗑 Eliminar</button>'
+    + '<button onclick="cerrarModalCita()" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:9px;font-size:13px;cursor:pointer;color:rgba(255,255,255,.55);font-weight:600">Cerrar</button>'
+    + '</div>';
+
   document.getElementById('modal-cita-titulo').textContent = 'Detalle de Cita';
-  document.getElementById('modal-cita-body').innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div style="background:var(--bg2);border-radius:10px;padding:14px 16px">
-        <div style="font-size:18px;font-weight:800;color:var(--text1);margin-bottom:4px">${c.nombre||'—'}</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--text2)">
-          <span>📅 ${fechaLabel}</span>
-          ${c.hora?`<span>⏰ ${c.hora}</span>`:''}
-          ${c.obraSocial?`<span>🏥 ${c.obraSocial}</span>`:''}
-          ${c.telefono?`<span>📱 ${c.telefono}</span>`:''}
-        </div>
-        ${c.nota?`<div style="margin-top:8px;font-size:13px;color:var(--text1);border-top:1px solid var(--border1);padding-top:8px">${c.nota}</div>`:''}
-      </div>
-      ${botonesWsp ? `<div style="display:flex;gap:8px;flex-wrap:wrap">${botonesWsp}</div>` : ''}
-      <div style="display:flex;gap:8px;justify-content:space-between;margin-top:4px;flex-wrap:wrap">
-        <button onclick="eliminarCita('${c.id}')" style="background:none;border:1px solid #ffcdd2;border-radius:7px;padding:7px 14px;font-size:12px;cursor:pointer;color:#c62828">Eliminar cita</button>
-        <button onclick="cerrarModalCita()" style="background:none;border:1px solid var(--border1);border-radius:7px;padding:7px 18px;font-size:13px;cursor:pointer;color:var(--text2)">Cerrar</button>
-      </div>
-    </div>`;
+  document.getElementById('modal-cita-body').innerHTML = '<div style="display:flex;flex-direction:column;gap:14px">' + card + wspRow + acciones + '</div>';
   document.getElementById('modal-cita').style.display = 'flex';
 }
 
 function eliminarCita(id) {
-  const citas = _citasCargar().filter(c => c.id !== id);
+  var citas = _citasCargar().filter(function(c){ return c.id !== id; });
   _citasGuardar(citas);
   cerrarModalCita();
   toast('Cita eliminada', 'ok');
@@ -5380,71 +5434,65 @@ function eliminarCita(id) {
   renderCalendario();
 }
 
-// ── Admin mensajes WhatsApp ───────────────────────────────────────
+// ── Admin mensajes WhatsApp ────────────────────────────────────────
 function toggleCitasAdmin() {
-  const p = document.getElementById('citas-admin-panel');
-  if (p.style.display === 'none') {
-    p.style.display = 'block';
-    renderMensajesAdmin();
-  } else {
-    p.style.display = 'none';
-  }
+  var p = document.getElementById('citas-admin-panel');
+  if (p.style.display === 'none') { p.style.display = 'block'; renderMensajesAdmin(); }
+  else p.style.display = 'none';
 }
 
 function renderMensajesAdmin() {
-  const msgs = _msgCargar();
-  const lista = document.getElementById('citas-mensajes-lista');
-  lista.innerHTML = msgs.map((m,i) => `
-    <div style="background:white;border:1px solid #ffe082;border-radius:9px;padding:14px 16px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-        <input type="text" value="${m.nombre}" oninput="actualizarMsg(${i},'nombre',this.value)"
-          style="border:none;background:transparent;font-size:14px;font-weight:700;color:#e65100;outline:none;flex:1;min-width:120px">
-        <button onclick="eliminarMsg(${i})" style="background:none;border:none;color:#c62828;cursor:pointer;font-size:16px;padding:0">✕</button>
-      </div>
-      <textarea rows="3" oninput="actualizarMsg(${i},'texto',this.value)"
-        style="width:100%;border:1px solid #ffe082;border-radius:6px;padding:8px 10px;font-size:13px;color:#333;outline:none;resize:vertical;box-sizing:border-box;background:#fffde7">${m.texto}</textarea>
-    </div>`).join('');
+  var msgs = _msgCargar();
+  var lista = document.getElementById('citas-mensajes-lista');
+  lista.innerHTML = msgs.map(function(m, i) {
+    return '<div style="background:rgba(255,255,255,.05);border:1px solid #ffe082;border-radius:9px;padding:14px 16px">'
+      + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      + '<input type="text" value="' + m.nombre.replace(/"/g,'&quot;') + '" oninput="actualizarMsg(' + i + ',\'nombre\',this.value)" style="border:none;background:transparent;font-size:14px;font-weight:700;color:#e65100;outline:none;flex:1">'
+      + '<button onclick="eliminarMsg(' + i + ')" style="background:none;border:none;color:#c62828;cursor:pointer;font-size:16px">✕</button>'
+      + '</div>'
+      + '<textarea rows="3" oninput="actualizarMsg(' + i + ',\'texto\',this.value)" style="width:100%;border:1px solid #ffe082;border-radius:6px;padding:8px 10px;font-size:13px;outline:none;resize:vertical;box-sizing:border-box;background:#fffde7">' + m.texto + '</textarea>'
+      + '</div>';
+  }).join('');
 }
 
 function actualizarMsg(i, campo, val) {
-  const msgs = _msgCargar();
+  var msgs = _msgCargar();
   if (!msgs[i]) return;
   msgs[i][campo] = val;
   _msgGuardar(msgs);
 }
 
 function agregarMensajeWsp() {
-  const msgs = _msgCargar();
-  msgs.push({ id: 'msg_'+Date.now(), nombre: 'Nuevo mensaje', texto: 'Hola {nombre},' });
+  var msgs = _msgCargar();
+  msgs.push({ id: 'msg_' + Date.now(), nombre: 'Nuevo mensaje', texto: 'Hola {nombre},' });
   _msgGuardar(msgs);
   renderMensajesAdmin();
 }
 
 function eliminarMsg(i) {
-  const msgs = _msgCargar();
+  var msgs = _msgCargar();
   msgs.splice(i, 1);
   _msgGuardar(msgs);
   renderMensajesAdmin();
 }
 
-// ── Importar PDF ─────────────────────────────────────────────────
+// ── Importar PDF ──────────────────────────────────────────────────
 async function importarAgendaPDF(input) {
-  const file = input.files[0];
+  var file = input.files[0];
   if (!file) return;
   input.value = '';
   toast('Procesando PDF…', 'ok');
   try {
-    const arrayBuffer = await file.arrayBuffer();
-    // Usar PDF.js para extraer texto
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    var arrayBuffer = await file.arrayBuffer();
+    var pdfjsLib = window['pdfjs-dist/build/pdf'];
     if (!pdfjsLib) { toast('PDF.js no disponible', 'error'); return; }
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    const pdf  = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let texto  = '';
-    for (let i=1; i<=pdf.numPages; i++) {
-      const page    = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      texto += content.items.map(it => it.str).join(' ') + '\n';
+    var pdf  = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    var texto = '';
+    for (var i = 1; i <= pdf.numPages; i++) {
+      var page    = await pdf.getPage(i);
+      var cont    = await page.getTextContent();
+      texto += cont.items.map(function(it){ return it.str; }).join(' ') + '\n';
     }
     _pdfCitasTemp = parsearTextoPDF(texto);
     mostrarPreviewPDF(_pdfCitasTemp);
@@ -5454,95 +5502,48 @@ async function importarAgendaPDF(input) {
 }
 
 function parsearTextoPDF(texto) {
-  const citas = [];
-  // Buscar fecha del documento (ej: "viernes 27 de marzo de 2026")
-  let fechaDocISO = null;
-  const mesesMap = {enero:'01',febrero:'02',marzo:'03',abril:'04',mayo:'05',junio:'06',
-                    julio:'07',agosto:'08',septiembre:'09',octubre:'10',noviembre:'11',diciembre:'12'};
-  const mFecha = texto.match(/(?:lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\s+(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})/i);
+  var citas = [];
+  var mesesMap = {enero:'01',febrero:'02',marzo:'03',abril:'04',mayo:'05',junio:'06',
+                  julio:'07',agosto:'08',septiembre:'09',octubre:'10',noviembre:'11',diciembre:'12'};
+  var mFecha = texto.match(/(?:lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\s+(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})/i);
+  var fechaDocISO = null;
   if (mFecha) {
-    const mesN = mesesMap[(mFecha[2]||'').toLowerCase()] || '01';
-    fechaDocISO = `${mFecha[3]}-${mesN}-${mFecha[1].padStart(2,'0')}`;
+    var mesN = mesesMap[(mFecha[2]||'').toLowerCase()] || '01';
+    fechaDocISO = mFecha[3] + '-' + mesN + '-' + mFecha[1].padStart(2,'0');
   }
-
-  // Buscar filas de pacientes: número + hora + datos
-  // Patrón: número de turno, hora (HH:MM), nombre en mayúsculas, teléfono
-  const lineas = texto.split(/\n/);
-  const reHora = /\b(\d{1,2}):(\d{2})\b/;
-  const reTel  = /\b(\d{10,11})\b/g;
-  const reNombre = /([A-ZÁÉÍÓÚÑ]{2,}(?:[,\s]+[A-ZÁÉÍÓÚÑ]{2,}){1,4})/g;
-
-  // Buscar bloques con número de orden + hora + nombre
-  const reLinea = /(\d{1,2})\s+(\d{1,2}:\d{2})\s+[\d\/]+\s+[\d\-]+\s+([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑa-záéíóúñ,\s]+?)\s+(Edad)/i;
-  const matches = [...texto.matchAll(/(\d{1,2})\s+(\d{2}:\d{2}).*?([A-ZÁÉÍÓÚÑ]{2,}[A-ZÁÉÍÓÚÑa-záéíóúñ,\s]+?)\(Edad/g)];
-
-  matches.forEach((m, idx) => {
-    const hora   = m[2];
-    const nombre = m[3].trim().replace(/\s+/g,' ');
-    // buscar teléfono celular cerca de esta posición en el texto
-    const segmento = texto.slice(m.index, m.index + 200);
-    const tels = [...segmento.matchAll(/\b(11\d{8}|15\d{8}|\d{10})\b/g)].map(t=>t[1]);
-    const tel  = tels[0] || '';
-    // buscar obra social
-    const mOS  = segmento.match(/\b(\d{4,})\/\d{2}\b/);
+  var reSimple = /(\d{1,2}:\d{2})\s+([A-ZÁÉÍÓÚÑ]{2,}(?:[,\s][A-ZÁÉÍÓÚÑ]{2,})+)/g;
+  var ms, idx = 0;
+  while ((ms = reSimple.exec(texto)) !== null) {
     citas.push({
-      id:         'cita_' + Date.now() + '_' + idx,
-      nombre,
+      id:         'cita_' + Date.now() + '_' + idx++,
+      nombre:     ms[2].trim(),
       fecha:      fechaDocISO || _isoFecha(new Date()),
-      hora,
+      hora:       ms[1],
       obraSocial: '',
-      telefono:   tel,
+      telefono:   '',
       nota:       '',
       origen:     'pdf'
     });
-  });
-
-  // Si no encontró con el patrón estricto, intentar más flexible
-  if (citas.length === 0) {
-    const reSimple = /(\d{1,2}:\d{2})\s+([A-ZÁÉÍÓÚÑ]{2,}(?:[,\s][A-ZÁÉÍÓÚÑ]{2,})+)/g;
-    let ms;
-    let idx = 0;
-    while ((ms = reSimple.exec(texto)) !== null) {
-      citas.push({
-        id:         'cita_' + Date.now() + '_s' + idx++,
-        nombre:     ms[2].trim(),
-        fecha:      fechaDocISO || _isoFecha(new Date()),
-        hora:       ms[1],
-        obraSocial: '',
-        telefono:   '',
-        nota:       '',
-        origen:     'pdf'
-      });
-    }
   }
   return citas;
 }
 
 function mostrarPreviewPDF(citas) {
-  const body = document.getElementById('pdf-preview-body');
+  var body = document.getElementById('pdf-preview-body');
   if (!citas.length) {
-    body.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text2)">
-      No se pudieron detectar citas automáticamente.<br>
-      <small>Podés cargarlas manualmente con el botón "Nueva Cita".</small>
-    </div>`;
+    body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text2)">No se detectaron citas automáticamente.<br><small>Podés cargarlas manualmente.</small></div>';
   } else {
-    body.innerHTML = `
-      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Se detectaron <strong>${citas.length} citas</strong>. Revisá y editá antes de importar:</p>
-      <div style="display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto">
-        ${citas.map((c,i) => `
-          <div style="display:grid;grid-template-columns:1fr 80px 90px 1fr 1fr;gap:6px;align-items:center;background:var(--bg2);border-radius:8px;padding:8px 10px;font-size:13px">
-            <input value="${c.nombre}" oninput="_pdfCitasTemp[${i}].nombre=this.value"
-              style="border:1px solid var(--border1);border-radius:5px;padding:4px 7px;font-size:13px;font-weight:600;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">
-            <input type="date" value="${c.fecha}" oninput="_pdfCitasTemp[${i}].fecha=this.value"
-              style="border:1px solid var(--border1);border-radius:5px;padding:4px 6px;font-size:12px;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">
-            <input type="time" value="${c.hora}" oninput="_pdfCitasTemp[${i}].hora=this.value"
-              style="border:1px solid var(--border1);border-radius:5px;padding:4px 6px;font-size:12px;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">
-            <input value="${c.obraSocial}" placeholder="Obra social" oninput="_pdfCitasTemp[${i}].obraSocial=this.value"
-              style="border:1px solid var(--border1);border-radius:5px;padding:4px 7px;font-size:12px;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">
-            <input value="${c.telefono}" placeholder="Teléfono" oninput="_pdfCitasTemp[${i}].telefono=this.value"
-              style="border:1px solid var(--border1);border-radius:5px;padding:4px 7px;font-size:12px;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">
-          </div>`).join('')}
-      </div>`;
+    var filas = citas.map(function(c, i) {
+      return '<div style="display:grid;grid-template-columns:1fr 100px 80px 1fr 1fr;gap:6px;align-items:center;background:var(--bg2);border-radius:8px;padding:8px 10px">'
+        + '<input value="' + (c.nombre||'').replace(/"/g,'&quot;') + '" oninput="_pdfCitasTemp[' + i + '].nombre=this.value" style="border:1px solid var(--border1);border-radius:5px;padding:5px 8px;font-size:13px;font-weight:600;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">'
+        + '<input type="date" value="' + c.fecha + '" oninput="_pdfCitasTemp[' + i + '].fecha=this.value" style="border:1px solid var(--border1);border-radius:5px;padding:5px;font-size:12px;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">'
+        + '<input type="time" value="' + c.hora + '" oninput="_pdfCitasTemp[' + i + '].hora=this.value" style="border:1px solid var(--border1);border-radius:5px;padding:5px;font-size:12px;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">'
+        + '<input value="' + (c.obraSocial||'') + '" placeholder="Obra social" oninput="_pdfCitasTemp[' + i + '].obraSocial=this.value" style="border:1px solid var(--border1);border-radius:5px;padding:5px 8px;font-size:12px;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">'
+        + '<input value="' + (c.telefono||'') + '" placeholder="Teléfono" oninput="_pdfCitasTemp[' + i + '].telefono=this.value" style="border:1px solid var(--border1);border-radius:5px;padding:5px 8px;font-size:12px;background:var(--bg1);color:var(--text1);outline:none;width:100%;box-sizing:border-box">'
+        + '</div>';
+    }).join('');
+    body.innerHTML = '<p style="font-size:13px;color:var(--text2);margin-bottom:12px">Se detectaron <strong>' + citas.length + ' citas</strong>. Revisá y editá antes de confirmar:</p>'
+      + '<div style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto">' + filas + '</div>';
   }
   document.getElementById('modal-pdf-preview').style.display = 'flex';
 }
@@ -5554,16 +5555,166 @@ function cerrarPreviewPDF() {
 
 function confirmarImportPDF() {
   if (!_pdfCitasTemp.length) { cerrarPreviewPDF(); return; }
-  const citas = _citasCargar();
-  _pdfCitasTemp.forEach(c => { if(c.nombre && c.fecha) citas.push(c); });
+  var citas = _citasCargar();
+  _pdfCitasTemp.forEach(function(c){ if (c.nombre && c.fecha) citas.push(c); });
   _citasGuardar(citas);
   cerrarPreviewPDF();
-  toast(`${_pdfCitasTemp.length} citas importadas`, 'ok');
+  toast(_pdfCitasTemp.length + ' citas importadas', 'ok');
   _pdfCitasTemp = [];
   renderPanelProximas();
   renderCalendario();
 }
 
+// ── IMPRESIÓN DE CITAS ────────────────────────────────────────────
+
+function abrirModalImprimirCitas() {
+  setImpRango('semana');
+  document.getElementById('modal-imprimir-citas').style.display = 'flex';
+}
+
+function cerrarModalImprimirCitas() {
+  document.getElementById('modal-imprimir-citas').style.display = 'none';
+}
+
+function setImpRango(tipo) {
+  var hoy = new Date(); hoy.setHours(0,0,0,0);
+  var desde, hasta;
+  if (tipo === 'hoy') {
+    desde = hasta = _isoFecha(hoy);
+  } else if (tipo === 'semana') {
+    var lun = _lunesDeHoy();
+    desde = _isoFecha(lun);
+    hasta = _isoFecha(_addDias(lun, 6));
+  } else if (tipo === 'mes') {
+    desde = _isoFecha(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+    hasta = _isoFecha(new Date(hoy.getFullYear(), hoy.getMonth()+1, 0));
+  }
+  document.getElementById('imp-desde').value = desde;
+  document.getElementById('imp-hasta').value = hasta;
+  actualizarContadorImp();
+}
+
+function actualizarContadorImp() {
+  var desde = document.getElementById('imp-desde').value;
+  var hasta  = document.getElementById('imp-hasta').value;
+  var n = _citasCargar().filter(function(c){
+    if (desde && c.fecha < desde) return false;
+    if (hasta && c.fecha > hasta) return false;
+    return true;
+  }).length;
+  var el = document.getElementById('imp-preview-count');
+  if (el) el.textContent = n ? n + ' cita' + (n!==1?'s':'') + ' en el rango' : 'Sin citas en ese rango';
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'imp-desde' || e.target.id === 'imp-hasta') actualizarContadorImp();
+});
+
+function ejecutarImpresionCitas() {
+  var desde = document.getElementById('imp-desde').value;
+  var hasta  = document.getElementById('imp-hasta').value;
+  var citas  = _citasCargar().filter(function(c){
+    if (desde && c.fecha < desde) return false;
+    if (hasta && c.fecha > hasta) return false;
+    return true;
+  }).sort(function(a,b){ return (a.fecha+a.hora).localeCompare(b.fecha+b.hora); });
+
+  if (!citas.length) { toast('Sin citas en ese rango', 'error'); return; }
+
+  var grupos = {};
+  citas.forEach(function(c){ if (!grupos[c.fecha]) grupos[c.fecha]=[]; grupos[c.fecha].push(c); });
+
+  var labelRango = '';
+  if (desde === hasta) {
+    labelRango = desde.split('-').reverse().join('/');
+  } else if (desde && hasta) {
+    labelRango = desde.split('-').reverse().join('/') + ' al ' + hasta.split('-').reverse().join('/');
+  }
+
+  var svgCal = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+
+  var bloques = Object.keys(grupos).sort().map(function(f) {
+    var d = _parseFechaISO(f);
+    var tituloFecha = d ? d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : f;
+    var dcitas = grupos[f];
+    var filas = dcitas.map(function(c) {
+      return '<tr>'
+        + '<td class="td-hora">' + (c.hora||'—') + '</td>'
+        + '<td class="td-nombre">' + (c.nombre||'—') + '</td>'
+        + '<td class="td-os">' + (c.obraSocial||'—') + '</td>'
+        + '<td class="td-tel">' + (c.telefono||'—') + '</td>'
+        + '<td class="td-nota">' + (c.nota||'') + '</td>'
+        + '</tr>';
+    }).join('');
+    return '<div class="dia-bloque">'
+      + '<div class="dia-header">'
+      +   '<span class="dia-titulo">' + tituloFecha + '</span>'
+      +   '<span class="dia-badge">' + dcitas.length + ' cita' + (dcitas.length!==1?'s':'') + '</span>'
+      + '</div>'
+      + '<table><thead><tr>'
+      +   '<th>Hora</th><th>Paciente</th><th>Obra Social</th><th>Teléfono</th><th>Notas</th>'
+      + '</tr></thead><tbody>' + filas + '</tbody></table>'
+      + '</div>';
+  }).join('');
+
+  var fechaImpresion = new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+
+  var html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
+    + '<title>Agenda ' + labelRango + '</title>'
+    + '<style>'
+    + '* { box-sizing:border-box; margin:0; padding:0; }'
+    + 'body { font-family: -apple-system, Arial, sans-serif; background:#f4f8f4; color:#0d1f0d; padding:32px; }'
+    + 'h1 { font-size:24px; font-weight:900; color:#1b5e20; }'
+    + '.header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:32px; padding-bottom:20px; border-bottom:3px solid #c8e6c9; }'
+    + '.logo-wrap { display:flex; align-items:center; gap:14px; }'
+    + '.logo-box { background:linear-gradient(135deg,#1b5e20,#2e7d32); border-radius:12px; width:48px; height:48px; display:flex; align-items:center; justify-content:center; }'
+    + '.sub { font-size:13px; color:#666; margin-top:3px; }'
+    + '.periodo-box { background:#e8f5e9; border:1px solid #a5d6a7; border-radius:12px; padding:12px 18px; text-align:right; }'
+    + '.periodo-label { font-size:10px; font-weight:700; color:#2e7d32; letter-spacing:.08em; }'
+    + '.periodo-val { font-size:16px; font-weight:900; color:#1b5e20; margin:2px 0; }'
+    + '.periodo-count { font-size:12px; color:#555; }'
+    + '.impreso { font-size:11px; color:#aaa; margin-top:6px; text-align:right; }'
+    + '.dia-bloque { margin-bottom:28px; break-inside:avoid; }'
+    + '.dia-header { background:linear-gradient(135deg,#1b5e20,#388e3c); border-radius:10px 10px 0 0; padding:11px 18px; display:flex; align-items:center; justify-content:space-between; }'
+    + '.dia-titulo { font-size:15px; font-weight:800; color:#fff; text-transform:capitalize; }'
+    + '.dia-badge { background:rgba(255,255,255,.22); border-radius:20px; padding:3px 14px; font-size:12px; font-weight:700; color:#fff; }'
+    + 'table { width:100%; border-collapse:collapse; background:#fff; border-radius:0 0 10px 10px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.07); }'
+    + 'thead tr { background:#f1f8e9; }'
+    + 'th { text-align:left; padding:9px 14px; font-size:10px; font-weight:800; color:#2e7d32; letter-spacing:.07em; text-transform:uppercase; }'
+    + 'td { padding:11px 14px; font-size:13px; border-bottom:1px solid #f0f7f0; vertical-align:top; }'
+    + 'tr:last-child td { border-bottom:none; }'
+    + 'tr:nth-child(even) { background:#fafffe; }'
+    + '.td-hora { font-weight:700; color:#1b5e20; white-space:nowrap; }'
+    + '.td-nombre { font-weight:700; color:#0d1f0d; }'
+    + '.td-os { color:#388e3c; }'
+    + '.td-tel { color:#555; white-space:nowrap; }'
+    + '.td-nota { color:#888; font-size:12px; max-width:180px; }'
+    + '.btn-print { position:fixed; bottom:24px; right:24px; background:linear-gradient(135deg,#1b5e20,#2e7d32); color:#fff; border:none; border-radius:12px; padding:14px 26px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 4px 18px rgba(46,125,50,.45); }'
+    + '@media print { .btn-print { display:none!important; } body { background:#fff; padding:12mm; } }'
+    + '</style></head><body>'
+    + '<div class="header">'
+    +   '<div class="logo-wrap">'
+    +     '<div class="logo-box">' + svgCal + '</div>'
+    +     '<div><h1>Agenda de Citas</h1><div class="sub">Gastro CEDELU &middot; Sistema Médico</div></div>'
+    +   '</div>'
+    +   '<div>'
+    +     '<div class="periodo-box">'
+    +       '<div class="periodo-label">PERÍODO</div>'
+    +       '<div class="periodo-val">' + labelRango + '</div>'
+    +       '<div class="periodo-count">' + citas.length + ' cita' + (citas.length!==1?'s':'') + ' en total</div>'
+    +     '</div>'
+    +     '<div class="impreso">Impreso: ' + fechaImpresion + '</div>'
+    +   '</div>'
+    + '</div>'
+    + bloques
+    + '<button class="btn-print" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>'
+    + '</body></html>';
+
+  var w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  cerrarModalImprimirCitas();
+}
 // ─── GENERAR PDF ────────────────────────────────────────────────────────────
 
 
