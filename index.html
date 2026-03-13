@@ -5205,24 +5205,40 @@ function renderCalSemana(el) {
     chipHoyBg:'#e1f5fe', chipHoyTxt:'#01579b',
   };
 
-  // Todas las columnas tienen el mismo flex y min-width — el alto varía solo
+  // Calcular ISO del día siguiente con turnos (después de hoy)
+  var diasConCitas = dias.filter(function(d){
+    var iso = _isoFecha(d);
+    return iso > hoy && citas.some(function(c){ return c.fecha === iso; });
+  }).sort(function(a,b){ return _isoFecha(a).localeCompare(_isoFecha(b)); });
+  var isoSiguienteConCitas = diasConCitas.length ? _isoFecha(diasConCitas[0]) : null;
+
   var cols = dias.map(function(d) {
     var iso    = _isoFecha(d);
     var esHoy  = iso === hoy;
+    var esSig  = iso === isoSiguienteConCitas; // día siguiente con turnos
     var dcitas = citas.filter(function(c){ return c.fecha === iso; })
                       .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
     var tieneCitas = dcitas.length > 0;
     var diaNum = d.getDay();
     var esFind = diaNum === 0 || diaNum === 6;
 
+    // Colores columna
     var colBg     = esHoy ? C.hoyBg    : esFind ? C.findBg   : C.colBg;
     var colBorder = esHoy ? C.hoyBorder : (esFind ? C.findBorder : C.colBorder);
     var lblColor  = esHoy ? C.hoyLabel  : C.txtLabel;
     var diaColor  = esHoy ? C.hoyDia    : C.txtDia;
-    var chipBg    = esHoy ? C.chipHoyBg  : C.chipBg;
-    var chipTxt   = esHoy ? C.chipHoyTxt : C.chipTxt;
-    var btnColor  = esHoy ? 'rgba(255,255,255,.45)' : '#bbb';
-    var btnBorder = esHoy ? 'rgba(255,255,255,.2)'  : '#ddd';
+
+    // Chips: HOY → celeste, resto → verde oscuro
+    var chipBg  = esHoy ? C.chipHoyBg  : C.chipBg;
+    var chipTxt = esHoy ? C.chipHoyTxt : C.chipTxt;
+
+    // Botón + cita: más contraste según fondo
+    var btnBg     = esHoy ? 'rgba(255,255,255,.15)' : 'transparent';
+    var btnBorder = esHoy ? 'rgba(255,255,255,.5)'  : (esFind ? '#bbb' : '#aaa');
+    var btnColor  = esHoy ? '#e1f5fe'               : (esFind ? '#888' : '#666');
+
+    // Mostrar nombre completo solo en HOY y día siguiente con turnos
+    var mostrarNombre = esHoy || esSig;
 
     var chips = tieneCitas
       ? dcitas.map(function(c) {
@@ -5231,18 +5247,19 @@ function renderCalSemana(el) {
             ? 'toggleSeleccionCita(\'' + c.id + '\', event)'
             : 'verCita(\'' + c.id + '\')';
           return '<div id="chip-cita-' + c.id + '" onclick="' + clickFn + '"'
-            + ' style="cursor:pointer;background:' + chipBg + ';color:' + chipTxt + ';border-radius:8px;padding:7px 9px;margin-bottom:5px;box-shadow:0 1px 4px rgba(0,0,0,.12);position:relative;user-select:none'
+            + ' style="cursor:pointer;background:' + chipBg + ';color:' + chipTxt + ';border-radius:8px;padding:7px 9px;margin-bottom:5px;box-shadow:0 2px 5px rgba(0,0,0,.15);position:relative;user-select:none'
             + (esSel ? ';outline:2px solid ' + (esHoy?'rgba(255,255,255,.8)':'#1b5e20') : ';opacity:' + (_modoSeleccion?'0.65':'1')) + '">'
-            + '<div class="chip-check" style="display:' + (esSel?'flex':'none') + ';position:absolute;top:4px;right:4px;background:' + (esHoy?'rgba(27,94,32,.9)':'rgba(255,255,255,.9)') + ';color:' + (esHoy?'#fff':'#1b5e20') + ';border-radius:50%;width:15px;height:15px;align-items:center;justify-content:center;font-size:10px;font-weight:800">✓</div>'
-            + '<div style="font-size:10px;font-weight:700;opacity:.7;margin-bottom:2px">' + (c.hora||'') + '</div>'
-            + '<div style="font-weight:800;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.nombre||'') + '</div>'
-            + (c.obraSocial ? '<div style="font-size:10px;opacity:.65;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.obraSocial + '</div>' : '')
+            + '<div class="chip-check" style="display:' + (esSel?'flex':'none') + ';position:absolute;top:4px;right:4px;background:rgba(255,255,255,.9);color:#1b5e20;border-radius:50%;width:15px;height:15px;align-items:center;justify-content:center;font-size:10px;font-weight:800">✓</div>'
+            + '<div style="font-size:10px;font-weight:700;opacity:.75;margin-bottom:2px">' + (c.hora||'') + '</div>'
+            + (mostrarNombre
+                ? '<div style="font-weight:800;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.nombre||'') + '</div>'
+                  + (c.obraSocial ? '<div style="font-size:10px;opacity:.65;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.obraSocial + '</div>' : '')
+                : '<div style="font-weight:700;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85">' + (c.nombre||'').split(',')[0] + '</div>'
+              )
             + '</div>';
         }).join('')
       : '<div style="font-size:11px;color:' + lblColor + ';text-align:center;padding:6px 0;opacity:.35">—</div>';
 
-    // Todas las columnas igual ancho (flex:1, min-width:80px)
-    // El alto crece solo si hay citas (chips apilados verticalmente)
     return '<div style="flex:1;min-width:80px;background:' + colBg + ';border-radius:12px;border:1px solid ' + colBorder + ';padding:10px 8px;display:flex;flex-direction:column">'
       + '<div style="text-align:center;margin-bottom:8px">'
       +   '<div style="font-size:9px;font-weight:800;color:' + lblColor + ';letter-spacing:.1em">' + _DIAS_CORTO[diaNum].toUpperCase() + '</div>'
@@ -5251,7 +5268,7 @@ function renderCalSemana(el) {
       + '</div>'
       + chips
       + '<div style="margin-top:auto;padding-top:6px">'
-      +   '<button onclick="abrirModalNuevaCita(\'' + iso + '\')" style="background:none;border:1px dashed ' + btnBorder + ';border-radius:5px;width:100%;padding:3px;font-size:10px;color:' + btnColor + ';cursor:pointer">+ cita</button>'
+      +   '<button onclick="abrirModalNuevaCita(\'' + iso + '\')" style="background:' + btnBg + ';border:1px dashed ' + btnBorder + ';border-radius:5px;width:100%;padding:4px;font-size:10px;font-weight:700;color:' + btnColor + ';cursor:pointer">+ cita</button>'
       + '</div>'
       + '</div>';
   }).join('');
