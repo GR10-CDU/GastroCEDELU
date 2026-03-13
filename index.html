@@ -5197,12 +5197,12 @@ function renderCalSemana(el) {
 
   var C = {
     colBg:'#ffffff', colBorder:'#e8e8e8',
-    hoyBg:'#01579b', hoyBorder:'#01579b',
+    hoyBg:'#e1f5fe', hoyBorder:'#81d4fa',
     findBg:'#f7f7f7', findBorder:'#e0e0e0',
     txtLabel:'#999', txtDia:'#111',
-    hoyLabel:'#b3e5fc', hoyDia:'#fff',
+    hoyLabel:'#0277bd', hoyDia:'#01579b',
     chipBg:'#1b5e20', chipTxt:'#fff',
-    chipHoyBg:'#e1f5fe', chipHoyTxt:'#01579b',
+    chipHoyBg:'#0277bd', chipHoyTxt:'#fff',
   };
 
   // Calcular ISO del día siguiente con turnos (después de hoy)
@@ -5233,9 +5233,9 @@ function renderCalSemana(el) {
     var chipTxt = esHoy ? C.chipHoyTxt : C.chipTxt;
 
     // Botón + cita: más contraste según fondo
-    var btnBg     = esHoy ? 'rgba(255,255,255,.15)' : 'transparent';
-    var btnBorder = esHoy ? 'rgba(255,255,255,.5)'  : (esFind ? '#bbb' : '#aaa');
-    var btnColor  = esHoy ? '#e1f5fe'               : (esFind ? '#888' : '#666');
+    var btnBg     = esHoy ? 'rgba(1,87,155,.08)' : 'transparent';
+    var btnBorder = esHoy ? '#81d4fa'             : (esFind ? '#bbb' : '#aaa');
+    var btnColor  = esHoy ? '#0277bd'             : (esFind ? '#888' : '#666');
 
     // Mostrar nombre completo solo en HOY y día siguiente con turnos
     var mostrarNombre = esHoy || esSig;
