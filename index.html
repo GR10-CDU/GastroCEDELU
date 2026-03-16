@@ -1817,16 +1817,13 @@ color:#555;
           </div>
         </div>
 
-        <!-- ── PANEL PRÓXIMAS CITAS ── -->
-        <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap">
-          <div id="panel-citas-hoy" style="flex:1;min-width:220px;background:var(--bg1);border:2px solid var(--primary);border-radius:12px;padding:14px 18px">
-            <div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:.06em;margin-bottom:8px">HOY</div>
+        <!-- ── PANEL HOY ── -->
+        <div style="margin-top:12px">
+          <div id="panel-citas-hoy" style="background:var(--bg1);border:2px solid var(--primary);border-radius:12px;padding:12px 18px">
+            <div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:.06em;margin-bottom:6px">HOY</div>
             <div id="citas-hoy-lista" style="font-size:13px;color:var(--text2)">Sin citas hoy</div>
           </div>
-          <div id="panel-citas-semana" style="flex:2;min-width:280px;background:var(--bg1);border:1px solid var(--border1);border-radius:12px;padding:14px 18px">
-            <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.06em;margin-bottom:8px">PRÓXIMOS 7 DÍAS</div>
-            <div id="citas-proximas-lista" style="font-size:13px;color:var(--text2)">Sin citas próximas</div>
-          </div>
+          <div id="panel-citas-semana" style="display:none"><div id="citas-proximas-lista"></div></div>
         </div>
 
         <!-- ── CALENDARIO ── -->
@@ -5645,10 +5642,13 @@ function _bodyFormCita(c) {
   return '<div style="display:flex;flex-direction:column;gap:16px">'
 
     + '<div style="display:flex;gap:8px;align-items:flex-end">'
-    + '<div style="flex:1"><label style="' + LBL + '">NOMBRE PACIENTE *</label>'
+    + '<div style="flex:1;position:relative"><label style="' + LBL + '">NOMBRE PACIENTE *</label>'
     + '<input id="nc-nombre" type="text" placeholder="Apellido, Nombre" value="' + nombre.replace(/"/g,'&quot;') + '"'
-    + ' style="' + INP + 'padding:11px 14px;font-size:15px;font-weight:600"'
-    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '"></div>'
+    + ' style="' + INP + 'padding:11px 14px;font-size:15px;font-weight:600" autocomplete="off"'
+    + ' oninput="_citaAutocomplete(this)"'
+    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '">'
+    + '<div id="nc-sugg" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1a2e1a;border:1px solid rgba(100,220,140,.3);border-radius:10px;z-index:500;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.4)"></div>'
+    + '</div>'
     + speechBtnHTML
     + '</div>'
 
@@ -6178,16 +6178,16 @@ function _sEscucharCampo() {
     _sAplicarCampo(campo, raw);
   };
   _sRec.onerror = function(ev) {
+    if (!_sActivo) return; // ya se paró manualmente
     if (ev.error === 'no-speech') {
-      // Reintentar el mismo campo
-      _sEscucharCampo();
+      _sEscucharCampo(); // reintentar mismo campo
     } else {
       _sParar();
     }
   };
   _sRec.onend = function() {
-    // Si sigue activo y no fue parado manualmente, se manejó en onresult
-    // (onresult llama a _sEscucharCampo o _sParar)
+    // No hacer nada: onresult y onerror ya manejan el flujo
+    // _sActivo=false significa que el usuario paró manualmente
   };
   try { _sRec.start(); } catch(e) { _sParar(); }
 }
@@ -6581,6 +6581,7 @@ function _abrirPanelBloques(iso) {
     'box-shadow:0 32px 80px rgba(0,0,0,.7)'
   ].join(';');
   document.body.appendChild(panel);
+  window._panelBloquesIso = iso; // recordar para re-abrir tras guardar cita
 
   _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel);
 }
@@ -6677,6 +6678,7 @@ function cerrarPanelBloques() {
   var o = document.getElementById('panel-bloques-overlay');
   if (p) p.remove();
   if (o) o.remove();
+  window._panelBloquesIso = null;
 }
 
 // Refrescar el panel si está abierto (después de guardar una cita)
@@ -6822,7 +6824,11 @@ function _guardarCitaBloqueDoble(iso, hora, estudio) {
   _citasGuardar(citas);
   cerrarModalCita();
   renderCalendario();
-  _refreshPanelBloques(); // refrescar el panel si está abierto
+  // Re-abrir el panel de bloques si estaba abierto
+  setTimeout(function(){
+    var isoAbierto = window._panelBloquesIso;
+    if (isoAbierto) { _abrirPanelBloques(isoAbierto); }
+  }, 50);
 }
 
 
@@ -6885,6 +6891,63 @@ function _endoBtnWsp(e) {
     + ' class="btn btn-ghost btn-sm" title="Enviar informe por WhatsApp"'
     + ' style="background:#dcfce7;color:#16a34a;border:1px solid #86efac;display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:5px 10px">'
     + svgWsp + '</a>';
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// AUTOCOMPLETE PACIENTES EN NUEVA CITA
+// ═══════════════════════════════════════════════════════════════
+
+function _citaAutocomplete(input) {
+  var q = input.value.trim().toLowerCase();
+  var sugg = document.getElementById('nc-sugg');
+  if (!sugg) return;
+  if (q.length < 2) { sugg.style.display = 'none'; return; }
+
+  var pacs = App.pacientes || [];
+  var matches = pacs.filter(function(p) {
+    return (p.apellidoNombre || '').toLowerCase().indexOf(q) !== -1;
+  }).slice(0, 6);
+
+  if (!matches.length) { sugg.style.display = 'none'; return; }
+
+  sugg.innerHTML = matches.map(function(p) {
+    var os  = p.obraSocial ? '<span style="font-size:10px;opacity:.6;margin-left:6px">' + p.obraSocial + '</span>' : '';
+    var tel = p.telefono   ? '<span style="font-size:10px;opacity:.5;margin-left:6px">📱 ' + p.telefono + '</span>' : '';
+    return '<div onclick="_citaSeleccionarPac(\'' + p.id + '\')"'
+      + ' style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:4px;flex-wrap:wrap"'
+      + ' onmouseenter="this.style.background=\'rgba(100,220,140,.15)\'" onmouseleave="this.style.background=\'\'">'
+      + '<span style="font-size:13px;font-weight:700;color:#fff">' + p.apellidoNombre + '</span>'
+      + os + tel
+      + '</div>';
+  }).join('');
+  sugg.style.display = 'block';
+}
+
+function _citaSeleccionarPac(pacId) {
+  var pacs = App.pacientes || [];
+  var p = pacs.find(function(x) { return String(x.id) === String(pacId); });
+  if (!p) return;
+
+  // Rellenar nombre
+  var elNom = document.getElementById('nc-nombre');
+  if (elNom) elNom.value = p.apellidoNombre || '';
+
+  // Rellenar OS
+  var elOs = document.getElementById('nc-os');
+  if (elOs) elOs.value = p.obraSocial || '';
+
+  // Rellenar teléfono
+  var elTel = document.getElementById('nc-tel');
+  if (elTel) elTel.value = p.telefono || '';
+
+  // Cerrar sugerencias
+  var sugg = document.getElementById('nc-sugg');
+  if (sugg) sugg.style.display = 'none';
+
+  // Foco en hora
+  var elHora = document.getElementById('nc-hora');
+  if (elHora) elHora.focus();
 }
 
 
