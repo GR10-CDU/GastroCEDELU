@@ -3273,7 +3273,7 @@ async function abrirPaciente(id) {
 
     try { renderHC(hc); }             catch(ex) { console.error('renderHC:', ex); }
     try { renderConsultas(cons); }    catch(ex) { console.error('renderConsultas:', ex); }
-    try { renderEndoscopias(endos); } catch(ex) { console.error('renderEndoscopias:', ex); }
+    try { renderEndoscopias(endos); } catch(ex) { console.error('renderEndoscopias:', ex); document.getElementById('endoscopias-list').innerHTML = '<div style="padding:20px;color:red;font-size:12px">Error: '+ex.message+'</div>'; }
 
     if (!pacLocal) {
       showPage('detalle');
