@@ -4419,7 +4419,7 @@ function renderEndoscopias(list) {
            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirPDFHistorico('${pdfHistoricoUrl}')" title="Imprimir PDF original">🖨</button>`
         : (function(){
             var pac2 = App.pacienteActual || {};
-            var tel2 = (pac2.telefono || '').replace(/\D/g,'');
+            var tel2 = String(pac2.telefono || '').replace(/\D/g,'');
             var tipo2 = (e.tipoEstudio||'VEDA').toUpperCase().includes('COLON') ? 'Colonoscop\u00eda' : 'VEDA';
             var fec2 = e.fecha || '';
             if (/^\d{4}-\d{2}-\d{2}$/.test(fec2)){var pp=fec2.split('-');fec2=pp[2]+'/'+pp[1]+'/'+pp[0];}
