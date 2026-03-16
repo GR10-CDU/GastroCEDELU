@@ -4674,13 +4674,8 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .diag-bullet { display:flex; align-items:flex-start; gap:7px; margin-bottom:4px; font-size:14px; font-weight:600; }
   .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:17px; line-height:1; margin-top:-1px; }
 
-  /* ── FOTOS con badge ── */
-  .fotos-section { margin:0 12px 6px; break-inside:avoid; page-break-inside:avoid; }
-  .fotos-badge   { display:inline-flex; align-items:center; gap:6px; background:#f0f9f4;
-                   border:1px solid #c0ddc9; border-radius:6px; padding:4px 12px;
-                   font-size:11px; font-weight:800; color:#1a7a4a; text-transform:uppercase;
-                   letter-spacing:.8px; margin-bottom:6px; }
-  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+  /* ── FOTOS ── */
+  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; padding:6px 12px 10px; }
   .fotos-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px;
                     border:1px solid #d0e8d8; display:block; }
 
@@ -4800,11 +4795,8 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
 
   <!-- FOTOS con badge -->
   ${fotoImgs ? `
-  <div class="fotos-section">
-    <div class="fotos-badge">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1a7a4a" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-      Imágenes
-    </div>
+  <div class="card" style="break-inside:avoid;page-break-inside:avoid">
+    <span class="sec-badge">Imágenes</span>
     <div class="fotos-grid">${fotoImgs}</div>
   </div>` : ''}
 
