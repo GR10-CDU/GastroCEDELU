@@ -1566,9 +1566,27 @@ color:#555;
 
           <!-- Tab: Endoscopias -->
           <div class="tab-content" id="tab-content-endoscopias">
-            <div style="display:flex; justify-content:flex-end; margin-bottom:14px; gap:10px">
-              <button class="btn btn-secondary btn-sm" onclick="nuevaEndoscopia('VEDA')">Nueva VEDA</button>
-              <button class="btn btn-secondary btn-sm" onclick="nuevaEndoscopia('Colonoscopía')">Nueva COLONOSCOPÍA</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px; flex-wrap:wrap">
+              <button onclick="toggleEndoMsgAdmin()" style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Mensaje WhatsApp
+              </button>
+              <div style="display:flex;gap:10px">
+                <button class="btn btn-secondary btn-sm" onclick="nuevaEndoscopia('VEDA')">Nueva VEDA</button>
+                <button class="btn btn-secondary btn-sm" onclick="nuevaEndoscopia('Colonoscopía')">Nueva COLONOSCOPÍA</button>
+              </div>
+            </div>
+            <!-- Panel config mensaje WSP endoscopía -->
+            <div id="endo-msg-admin-panel" style="display:none;margin-bottom:16px;background:#fff8e1;border:1px solid #ffe082;border-radius:12px;padding:18px 20px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <span style="font-size:14px;font-weight:700;color:#e65100">📱 Mensaje WhatsApp — Informe Endoscópico</span>
+                <button onclick="toggleEndoMsgAdmin()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#e65100">✕</button>
+              </div>
+              <div style="font-size:12px;color:#92400e;margin-bottom:8px">
+                Variables: <code>{nombre}</code> <code>{fecha}</code> <code>{tipo}</code>
+              </div>
+              <textarea id="endo-msg-texto" rows="3" oninput="_endoMsgGuardar()"
+                style="width:100%;border:1px solid #ffe082;border-radius:8px;padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;background:#fffde7;outline:none"></textarea>
             </div>
             <div id="endoscopias-list"></div>
           </div>
@@ -4401,7 +4419,8 @@ function renderEndoscopias(list) {
            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirPDFHistorico('${pdfHistoricoUrl}')" title="Imprimir PDF original">🖨</button>`
         : `<!-- NUEVO -->
            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verInformeEndoscopia('${e.id}')" title="Ver informe">Ver</button>
-           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();descargarInformeEndoscopia('${e.id}')" title="Descargar PDF" style="font-size:15px;padding:6px 10px">⬇</button>\n           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')" title="Imprimir informe">🖨</button>`;
+           ${_endoBtnWsp(e)}
+           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')" title="Imprimir informe">🖨</button>`;
 
       // Color de fondo de la fila: diferente para históricos
       const rowBg = esHistorico ? '#fffbeb' : 'transparent';
@@ -6789,6 +6808,66 @@ function _guardarCitaBloqueDoble(iso, hora, estudio) {
 }
 
 
+
+
+// ═══════════════════════════════════════════════════════════════
+// WHATSAPP INFORME ENDOSCÓPICO
+// ═══════════════════════════════════════════════════════════════
+
+var _ENDO_MSG_KEY = 'gastro_endo_msg';
+var _ENDO_MSG_DEFAULT = 'Hola {nombre}, le informamos que su informe de {tipo} realizado el {fecha} ya está disponible. Ante cualquier consulta comuníquese con el consultorio.';
+
+function _endoMsgCargar() {
+  try { return localStorage.getItem(_ENDO_MSG_KEY) || _ENDO_MSG_DEFAULT; } catch(e) { return _ENDO_MSG_DEFAULT; }
+}
+function _endoMsgGuardar() {
+  var el = document.getElementById('endo-msg-texto');
+  if (el) { try { localStorage.setItem(_ENDO_MSG_KEY, el.value); } catch(e){} }
+}
+
+function toggleEndoMsgAdmin() {
+  var panel = document.getElementById('endo-msg-admin-panel');
+  if (!panel) return;
+  var visible = panel.style.display !== 'none';
+  panel.style.display = visible ? 'none' : 'block';
+  if (!visible) {
+    var el = document.getElementById('endo-msg-texto');
+    if (el) el.value = _endoMsgCargar();
+  }
+}
+
+// Genera el botón WSP para cada fila de endoscopía
+function _endoBtnWsp(e) {
+  var pac  = App.pacienteActual || {};
+  var tel  = (pac.telefono || '').replace(/\D/g, '');
+  var tipo = (e.tipoEstudio || 'VEDA').toUpperCase().includes('COLON') ? 'Colonoscopía' : 'VEDA';
+  var fecha = e.fecha || '';
+  // Formatear fecha DD/MM/YYYY
+  if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+    var p = fecha.split('-'); fecha = p[2] + '/' + p[1] + '/' + p[0];
+  }
+
+  if (!tel || tel.length < 6) {
+    // Sin teléfono — botón deshabilitado
+    return '<button class="btn btn-ghost btn-sm" disabled title="Sin teléfono registrado"'
+      + ' style="opacity:.45;cursor:not-allowed;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-size:10px;padding:4px 8px;font-weight:700">'
+      + 'SIN TEL</button>';
+  }
+
+  var msg  = _endoMsgCargar();
+  var texto = msg
+    .split('{nombre}').join(pac.apellidoNombre || '')
+    .split('{fecha}').join(fecha)
+    .split('{tipo}').join(tipo);
+  var url  = 'https://wa.me/549' + tel + '?text=' + encodeURIComponent(texto);
+
+  var svgWsp = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+
+  return '<a href="' + url + '" target="_blank" onclick="event.stopPropagation()"'
+    + ' class="btn btn-ghost btn-sm" title="Enviar informe por WhatsApp"'
+    + ' style="background:#dcfce7;color:#16a34a;border:1px solid #86efac;display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:5px 10px">'
+    + svgWsp + '</a>';
+}
 
 
 // ── Admin mensajes WhatsApp ────────────────────────────────────────
