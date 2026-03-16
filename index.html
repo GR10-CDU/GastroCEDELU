@@ -4619,86 +4619,90 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;600;700;800;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Inter',Arial,sans-serif; font-size:10.5px; color:#1a1a1a; background:#fff; }
-  .page { padding:0; max-width:794px; margin:0 auto; position:relative; min-height:0; padding-bottom:0; }
+  body { font-family:'Inter',Arial,sans-serif; font-size:11.5px; color:#1a1a1a; background:#fff; }
+  .page { padding:0; max-width:794px; margin:0 auto; position:relative;
+          display:flex; flex-direction:column; height:277mm; overflow:hidden; }
 
   /* ── HEADER ── */
   .header {
-    background:#fff;
-    padding:7px 20px 6px; position:relative; overflow:hidden;
-    border-bottom:2px solid #e0ece6;
-    min-height:60px;
+    background:#fff; padding:9px 22px 7px;
+    position:relative; overflow:hidden;
+    border-bottom:2px solid #e0ece6; flex-shrink:0;
   }
-  /* Círculos grandes con border-radius:50% — solo asoma el arco desde top-right */
   .hdr-circle { position:absolute; border-radius:50%; }
-  .hdr-c1 { width:380px; height:380px; background:#c0efd8; top:-120px; right:-120px; }
-  .hdr-c2 { width:290px; height:290px; background:#60cc98; top:-90px;  right:-90px;  }
-  .hdr-c3 { width:200px; height:200px; background:#2a9d6e; top:-60px;  right:-60px;  }
+  .hdr-c1 { width:400px; height:400px; background:#c0efd8; top:-130px; right:-130px; }
+  .hdr-c2 { width:300px; height:300px; background:#60cc98; top:-95px;  right:-95px;  }
+  .hdr-c3 { width:205px; height:205px; background:#2a9d6e; top:-65px;  right:-65px;  }
   .hdr-row { display:flex; align-items:center; gap:14px; position:relative; z-index:10; }
   .hdr-texts { flex:1; color:#111; }
-  .hdr-clinica { font-size:20px; font-weight:900; letter-spacing:.4px; line-height:1.1; color:#111; }
-  .hdr-sub { font-size:12px; font-weight:400; color:#666; margin-top:1px; }
-  .hdr-unidad { margin-top:5px; font-size:13px; font-weight:700; color:#1a7a4a; }
-  .hdr-dra { font-size:12px; color:#555; }
+  .hdr-clinica { font-size:22px; font-weight:900; letter-spacing:.4px; line-height:1.1; color:#111; }
+  .hdr-sub     { font-size:12.5px; font-weight:400; color:#666; margin-top:2px; }
+  .hdr-unidad  { margin-top:5px; font-size:14px; font-weight:700; color:#1a7a4a; }
+  .hdr-dra     { font-size:12.5px; color:#555; }
 
   /* ── TÍTULO CENTRAL ── */
-  .titulo-wrap { text-align:center; padding:4px 20px 2px; }
-  .titulo-main { font-size:17px; font-weight:900; color:#1a7a4a; letter-spacing:1.2px; text-transform:uppercase; line-height:1; }
-  .titulo-sub  { font-size:10px; color:#555; margin-top:3px; font-weight:400; letter-spacing:.25px; }
+  .titulo-wrap { text-align:center; padding:5px 20px 3px; flex-shrink:0; }
+  .titulo-main { font-size:19px; font-weight:900; color:#1a7a4a; letter-spacing:1.4px; text-transform:uppercase; line-height:1; }
+  .titulo-sub  { font-size:11px; color:#555; margin-top:3px; font-weight:400; letter-spacing:.3px; }
 
-  /* ── CARD CONTENIDO ── */
-  .card { margin:0 10px 4px; border:1px solid #e0ece6; border-radius:8px; overflow:hidden; }
+  /* ── CONTENIDO CENTRAL CRECE ── */
+  .content-grow { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+
+  /* ── CARD ── */
+  .card { margin:0 12px 5px; border:1px solid #e0ece6; border-radius:9px; overflow:hidden; }
 
   /* ── SECCIÓN BADGE ── */
-  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:11px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; padding:2px 7px; border-radius:4px; margin:5px 10px 3px; }
+  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:11.5px; font-weight:800;
+               letter-spacing:1.2px; text-transform:uppercase; padding:3px 9px; border-radius:4px; margin:6px 12px 4px; }
 
-  /* ── TABLA PACIENTE ── */
-  .pac-nombre { font-size:14px; font-weight:900; color:#111; padding:0 12px 3px; }
+  /* ── PACIENTE ── */
+  .pac-nombre { font-size:16px; font-weight:900; color:#111; padding:0 14px 4px; }
   .pac-row    { display:flex; gap:0; border-top:1px solid #e8f2ec; }
-  .pac-cell   { flex:1; padding:2px 10px; border-right:1px solid #e8f2ec; }
+  .pac-cell   { flex:1; padding:4px 12px; border-right:1px solid #e8f2ec; }
   .pac-cell:last-child { border-right:none; }
-  .pac-lbl { font-size:12.5px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.5px; }
-  .pac-val { font-size:13px; font-weight:600; margin-top:1px; }
-  .pac-row-full { padding:2px 10px; border-top:1px solid #e8f2ec; display:flex; gap:20px; }
+  .pac-lbl { font-size:10px; font-weight:800; color:#1a7a4a; text-transform:uppercase; letter-spacing:.6px; }
+  .pac-val { font-size:13.5px; font-weight:600; margin-top:1px; }
+  .pac-row-full { padding:4px 12px; border-top:1px solid #e8f2ec; display:flex; gap:24px; flex-wrap:wrap; }
 
   /* ── INFORME ── */
-  .informe-text { font-size:11.5px; line-height:1.0; white-space:pre-wrap; padding:4px 10px 5px; color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
+  .informe-text { font-size:12.5px; line-height:1.45; white-space:pre-wrap; padding:5px 14px 7px;
+                  color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
 
   /* ── DIAGNÓSTICO ── */
-  .diag-wrap { margin:0 10px 4px; }
-  .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:6px; padding:4px 10px; }
-  .diag-row { display:flex; gap:20px; }
-  .diag-bullets { flex:1; }
-  .diag-bullet { display:flex; align-items:flex-start; gap:6px; margin-bottom:2px; font-size:12px; font-weight:600; }
-  .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:14px; line-height:1; margin-top:-1px; }
-  .diag-anest { font-size:10px; color:#555; text-align:right; white-space:nowrap; padding-top:2px; }
-  .diag-anest b { color:#111; }
+  .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:7px; padding:6px 14px; margin:0 12px 5px; }
+  .diag-bullet { display:flex; align-items:flex-start; gap:7px; margin-bottom:3px; font-size:13px; font-weight:600; }
+  .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:16px; line-height:1; margin-top:-1px; }
 
-  /* ── FOTOS: grid 4 columnas ── */
-  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:3px; padding:3px 14px 0; break-inside:avoid; page-break-inside:avoid; }
-  .fotos-grid img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:3px; border:1px solid #ddd; display:block; max-height:3.2cm; }
+  /* ── FOTOS con badge ── */
+  .fotos-section { margin:0 12px 5px; break-inside:avoid; page-break-inside:avoid; }
+  .fotos-badge   { display:inline-flex; align-items:center; gap:6px; background:#f0f9f4;
+                   border:1px solid #c0ddc9; border-radius:6px; padding:3px 10px;
+                   font-size:10.5px; font-weight:800; color:#1a7a4a; text-transform:uppercase;
+                   letter-spacing:.8px; margin-bottom:5px; }
+  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+  .fotos-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:5px;
+                    border:1px solid #d0e8d8; display:block; }
 
-  /* ── FIRMA: fila propia alineada a la derecha ── */
-  .firma-row { display:flex; justify-content:flex-end; padding:2px 14px 2px; }
-  .firma-wrap { text-align:center; min-width:150px; }
-  .firma-img { width:130px; max-height:46px; object-fit:contain; display:block; margin:0 auto 2px; }
-  .firma-name { font-size:10.5px; font-weight:800; }
-  .firma-mp, .firma-mn { font-size:9px; color:#555; }
+  /* ── FIRMA ── */
+  .firma-row  { display:flex; justify-content:flex-end; padding:3px 16px 3px; flex-shrink:0; }
+  .firma-wrap { text-align:center; min-width:160px; }
+  .firma-img  { width:140px; max-height:50px; object-fit:contain; display:block; margin:0 auto 3px; }
+  .firma-name { font-size:11.5px; font-weight:800; }
+  .firma-mp, .firma-mn { font-size:10px; color:#555; }
 
-  /* ── FOOTER estático — no fixed, nunca rompe a 2da pág ── */
-  .footer { border-top:2px solid #1a7a4a; padding:3px 20px; text-align:center; font-size:9px; color:#555; line-height:1.3; background:#fff; margin-top:2px; }
+  /* ── FOOTER fijo al fondo ── */
+  .footer { flex-shrink:0; border-top:2px solid #1a7a4a; padding:4px 20px;
+            text-align:center; font-size:9.5px; color:#555; line-height:1.4;
+            background:#fff; margin-top:auto; }
   .footer b { color:#1a7a4a; }
   .footer-dots { color:#1a7a4a; margin:0 5px; }
 
   @media print {
     html,body { margin:0; padding:0; }
-    .page { max-width:100%; padding-bottom:0; }
+    .page { max-width:100%; height:100%; }
     * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
   }
-  @page {
-    size: A4 portrait;
-    margin: 8mm 8mm 6mm 8mm;
-  }
+  @page { size:A4 portrait; margin:7mm 8mm 6mm 8mm; }
 
 </style>
 </head>
@@ -4725,6 +4729,8 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
     <div class="titulo-main">Informe Endoscópico</div>
     <div class="titulo-sub">Videoesofagogastroduodenoscopia — ${(e.tipoEstudio||'VEDA').toUpperCase()}</div>
   </div>
+
+  <div class="content-grow">
 
   <!-- CARD PACIENTE -->
   <div class="card">
@@ -4762,8 +4768,8 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   </div>
 
   <!-- INFORME ENDOSCÓPICO -->
-  <div class="card" style="margin-bottom:8px">
-    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px;flex-wrap:wrap">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px 5px;flex-wrap:wrap">
       <span class="sec-badge" style="margin:0">Informe Endoscópico</span>
       ${!(e.tipoEstudio||'').toUpperCase().includes('VEDA') && regionAlcanzada ? `
       <span style="background:#d4f5e4;color:#1a7a4a;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;border:1px solid #a8e6c6">
@@ -4783,24 +4789,23 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   </div>
 
   <!-- DIAGNÓSTICO -->
-  <div class="card" style="margin-bottom:8px">
-    <span class="sec-badge">Impresión Diagnóstica</span>
-    <div class="diag-wrap" style="margin-top:0">
-      <div class="diag-inner">
-        <div class="diag-row">
-          <div class="diag-bullets">
-            ${(e.impresionDiagnostica||'—').split('\\n').map(l=>l.trim()).filter(Boolean).map(l=>
-              `<div class="diag-bullet">${l.replace(/^[•·-]\s*/,'')}</div>`
-            ).join('')}
-          </div>
-        </div>
-      </div>
-    </div>
+  <span class="sec-badge">Impresión Diagnóstica</span>
+  <div class="diag-inner">
+    ${(e.impresionDiagnostica||'—').split('\\n').map(l=>l.trim()).filter(Boolean).map(l=>
+      `<div class="diag-bullet">${l.replace(/^[•·-]\s*/,'')}</div>`
+    ).join('')}
   </div>
 
 
-  <!-- FOTOS (grid 4 col) -->
-  ${fotoImgs ? `<div class="fotos-grid">${fotoImgs}</div>` : ''}
+  <!-- FOTOS con badge -->
+  ${fotoImgs ? `
+  <div class="fotos-section">
+    <div class="fotos-badge">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1a7a4a" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Imágenes
+    </div>
+    <div class="fotos-grid">${fotoImgs}</div>
+  </div>` : ''}
 
   <!-- FIRMA -->
   <div class="firma-row">
@@ -4812,6 +4817,8 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
       <div class="firma-mn">MN 126.095</div>
     </div>
   </div>
+
+  </div><!-- /content-grow -->
 
   <!-- FOOTER estático -->
   <div class="footer">
