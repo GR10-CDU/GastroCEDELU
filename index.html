@@ -1876,7 +1876,7 @@ color:#555;
       </div>
 
       <!-- ── MODAL NUEVA CITA / DETALLE CITA ── -->
-      <div id="modal-cita" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+      <div id="modal-cita" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1300;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
         <div style="background:#1a2e1a;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:0;width:100%;max-width:500px;box-shadow:0 24px 64px rgba(0,0,0,.6);max-height:92vh;overflow:hidden;margin:16px;display:flex;flex-direction:column">
           <!-- header del modal -->
           <div style="padding:24px 28px 0;display:flex;align-items:center;justify-content:space-between">
@@ -6677,7 +6677,7 @@ function abrirModalBloque(iso, hora) {
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'modal-bloque-estudio';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1400;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
     document.body.appendChild(modal);
   }
 
@@ -6726,14 +6726,26 @@ function cerrarModalBloqueEstudio() {
 
 function confirmarBloqueEstudio(iso, hora, estudio) {
   cerrarModalBloqueEstudio();
+  // Guardar contexto para que el botón Guardar lo use
+  window._bloqueCtx = { iso: iso, hora: hora, estudio: estudio };
   var c = { nombre:'', fecha:iso, hora:hora, estudio:estudio, obraSocial:'', telefono:'', nota:'' };
   document.getElementById('modal-cita-titulo').textContent = 'Nueva Cita';
-  document.getElementById('modal-cita-body').innerHTML =
-    _bodyFormCita(c)
-    + '<div style="display:flex;gap:10px;padding-top:4px;margin-top:4px">'
-    + '<button onclick="cerrarModalCita()" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px;font-size:14px;cursor:pointer;color:rgba(255,255,255,.6);font-weight:600">Cancelar</button>'
-    + '<button onclick="_guardarCitaBloqueDoble(\'' + iso + '\',\'' + hora + '\',\'' + estudio + '\')" style="flex:2;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(46,125,50,.4)">✓ Guardar Cita</button>'
-    + '</div>';
+  var body = document.getElementById('modal-cita-body');
+  body.innerHTML = _bodyFormCita(c);
+  // Footer con botones — usando DOM para evitar escapes
+  var footer = document.createElement('div');
+  footer.style.cssText = 'display:flex;gap:10px;padding-top:4px;margin-top:4px';
+  var btnCancel = document.createElement('button');
+  btnCancel.textContent = 'Cancelar';
+  btnCancel.style.cssText = 'flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px;font-size:14px;cursor:pointer;color:rgba(255,255,255,.6);font-weight:600';
+  btnCancel.onclick = cerrarModalCita;
+  var btnGuardar = document.createElement('button');
+  btnGuardar.textContent = '\u2713 Guardar Cita';
+  btnGuardar.style.cssText = 'flex:2;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(46,125,50,.4)';
+  btnGuardar.onclick = function() { _guardarCitaBloqueDoble(iso, hora, estudio); };
+  footer.appendChild(btnCancel);
+  footer.appendChild(btnGuardar);
+  body.appendChild(footer);
   document.getElementById('modal-cita').style.display = 'flex';
   setTimeout(function(){ var el=document.getElementById('nc-nombre'); if(el) el.focus(); }, 80);
 }
