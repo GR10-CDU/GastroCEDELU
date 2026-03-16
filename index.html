@@ -4619,13 +4619,13 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;600;700;800;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Inter',Arial,sans-serif; font-size:11.5px; color:#1a1a1a; background:#fff; }
+  body { font-family:'Inter',Arial,sans-serif; font-size:13.5px; color:#1a1a1a; background:#fff; }
   .page { padding:0; max-width:794px; margin:0 auto; position:relative;
-          display:flex; flex-direction:column; height:277mm; overflow:hidden; }
+          display:flex; flex-direction:column; min-height:277mm; height:277mm; overflow:hidden; }
 
   /* ── HEADER ── */
   .header {
-    background:#fff; padding:9px 22px 7px;
+    background:#fff; padding:10px 22px 8px;
     position:relative; overflow:hidden;
     border-bottom:2px solid #e0ece6; flex-shrink:0;
   }
@@ -4635,64 +4635,65 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .hdr-c3 { width:205px; height:205px; background:#2a9d6e; top:-65px;  right:-65px;  }
   .hdr-row { display:flex; align-items:center; gap:14px; position:relative; z-index:10; }
   .hdr-texts { flex:1; color:#111; }
-  .hdr-clinica { font-size:22px; font-weight:900; letter-spacing:.4px; line-height:1.1; color:#111; }
-  .hdr-sub     { font-size:12.5px; font-weight:400; color:#666; margin-top:2px; }
-  .hdr-unidad  { margin-top:5px; font-size:14px; font-weight:700; color:#1a7a4a; }
-  .hdr-dra     { font-size:12.5px; color:#555; }
+  .hdr-clinica { font-size:24px; font-weight:900; letter-spacing:.4px; line-height:1.1; color:#111; }
+  .hdr-sub     { font-size:13px; font-weight:400; color:#666; margin-top:2px; }
+  .hdr-unidad  { margin-top:5px; font-size:15px; font-weight:700; color:#1a7a4a; }
+  .hdr-dra     { font-size:13px; color:#555; }
 
   /* ── TÍTULO CENTRAL ── */
-  .titulo-wrap { text-align:center; padding:5px 20px 3px; flex-shrink:0; }
-  .titulo-main { font-size:19px; font-weight:900; color:#1a7a4a; letter-spacing:1.4px; text-transform:uppercase; line-height:1; }
-  .titulo-sub  { font-size:11px; color:#555; margin-top:3px; font-weight:400; letter-spacing:.3px; }
+  .titulo-wrap { text-align:center; padding:6px 20px 4px; flex-shrink:0; }
+  .titulo-main { font-size:21px; font-weight:900; color:#1a7a4a; letter-spacing:1.4px; text-transform:uppercase; line-height:1; }
+  .titulo-sub  { font-size:12px; color:#555; margin-top:3px; font-weight:400; letter-spacing:.3px; }
 
   /* ── CONTENIDO CENTRAL CRECE ── */
-  .content-grow { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+  .content-grow { flex:1; display:flex; flex-direction:column; min-height:0; }
 
   /* ── CARD ── */
-  .card { margin:0 12px 5px; border:1px solid #e0ece6; border-radius:9px; overflow:hidden; }
+  .card { margin:0 12px 6px; border:1px solid #e0ece6; border-radius:9px; overflow:hidden; }
 
   /* ── SECCIÓN BADGE ── */
-  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:11.5px; font-weight:800;
-               letter-spacing:1.2px; text-transform:uppercase; padding:3px 9px; border-radius:4px; margin:6px 12px 4px; }
+  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:12px; font-weight:800;
+               letter-spacing:1.2px; text-transform:uppercase; padding:3px 10px; border-radius:4px; margin:6px 12px 4px; }
 
   /* ── PACIENTE ── */
-  .pac-nombre { font-size:16px; font-weight:900; color:#111; padding:0 14px 4px; }
+  .pac-nombre { font-size:18px; font-weight:900; color:#111; padding:2px 14px 5px; }
   .pac-row    { display:flex; gap:0; border-top:1px solid #e8f2ec; }
-  .pac-cell   { flex:1; padding:4px 12px; border-right:1px solid #e8f2ec; }
+  .pac-cell   { flex:1; padding:5px 12px; border-right:1px solid #e8f2ec; }
   .pac-cell:last-child { border-right:none; }
   .pac-lbl { font-size:10px; font-weight:800; color:#1a7a4a; text-transform:uppercase; letter-spacing:.6px; }
-  .pac-val { font-size:13.5px; font-weight:600; margin-top:1px; }
-  .pac-row-full { padding:4px 12px; border-top:1px solid #e8f2ec; display:flex; gap:24px; flex-wrap:wrap; }
+  .pac-val { font-size:14.5px; font-weight:600; margin-top:2px; }
+  .pac-row-full { padding:5px 12px; border-top:1px solid #e8f2ec; display:flex; gap:24px; flex-wrap:wrap; }
+  .pac-row-full span { font-size:13px; }
 
   /* ── INFORME ── */
-  .informe-text { font-size:12.5px; line-height:1.45; white-space:pre-wrap; padding:5px 14px 7px;
+  .informe-text { font-size:13.5px; line-height:1.5; white-space:pre-wrap; padding:6px 14px 8px;
                   color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
 
   /* ── DIAGNÓSTICO ── */
-  .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:7px; padding:6px 14px; margin:0 12px 5px; }
-  .diag-bullet { display:flex; align-items:flex-start; gap:7px; margin-bottom:3px; font-size:13px; font-weight:600; }
-  .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:16px; line-height:1; margin-top:-1px; }
+  .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:7px; padding:7px 14px; margin:0 12px 6px; }
+  .diag-bullet { display:flex; align-items:flex-start; gap:7px; margin-bottom:4px; font-size:14px; font-weight:600; }
+  .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:17px; line-height:1; margin-top:-1px; }
 
   /* ── FOTOS con badge ── */
-  .fotos-section { margin:0 12px 5px; break-inside:avoid; page-break-inside:avoid; }
+  .fotos-section { margin:0 12px 6px; break-inside:avoid; page-break-inside:avoid; }
   .fotos-badge   { display:inline-flex; align-items:center; gap:6px; background:#f0f9f4;
-                   border:1px solid #c0ddc9; border-radius:6px; padding:3px 10px;
-                   font-size:10.5px; font-weight:800; color:#1a7a4a; text-transform:uppercase;
-                   letter-spacing:.8px; margin-bottom:5px; }
-  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
-  .fotos-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:5px;
+                   border:1px solid #c0ddc9; border-radius:6px; padding:4px 12px;
+                   font-size:11px; font-weight:800; color:#1a7a4a; text-transform:uppercase;
+                   letter-spacing:.8px; margin-bottom:6px; }
+  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+  .fotos-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px;
                     border:1px solid #d0e8d8; display:block; }
 
   /* ── FIRMA ── */
-  .firma-row  { display:flex; justify-content:flex-end; padding:3px 16px 3px; flex-shrink:0; }
-  .firma-wrap { text-align:center; min-width:160px; }
-  .firma-img  { width:140px; max-height:50px; object-fit:contain; display:block; margin:0 auto 3px; }
-  .firma-name { font-size:11.5px; font-weight:800; }
-  .firma-mp, .firma-mn { font-size:10px; color:#555; }
+  .firma-row  { display:flex; justify-content:flex-end; padding:4px 16px 4px; flex-shrink:0; }
+  .firma-wrap { text-align:center; min-width:165px; }
+  .firma-img  { width:148px; max-height:54px; object-fit:contain; display:block; margin:0 auto 3px; }
+  .firma-name { font-size:13px; font-weight:800; }
+  .firma-mp, .firma-mn { font-size:11px; color:#555; }
 
-  /* ── FOOTER fijo al fondo ── */
-  .footer { flex-shrink:0; border-top:2px solid #1a7a4a; padding:4px 20px;
-            text-align:center; font-size:9.5px; color:#555; line-height:1.4;
+  /* ── FOOTER siempre al fondo ── */
+  .footer { flex-shrink:0; border-top:2px solid #1a7a4a; padding:5px 20px;
+            text-align:center; font-size:10px; color:#555; line-height:1.4;
             background:#fff; margin-top:auto; }
   .footer b { color:#1a7a4a; }
   .footer-dots { color:#1a7a4a; margin:0 5px; }
