@@ -6968,15 +6968,18 @@ function abrirResumenTurnos() {
   var diasCandidatos = [];
 
   // Revisar las próximas 8 semanas
+  // Usar _parseFechaISO sobre ISO string para evitar offset de timezone
   for (var i = 0; i <= 56; i++) {
     var d   = _addDias(new Date(), i);
     var iso = _isoFecha(d);
-    var dow = d.getDay(); // 1=lun, 2=mar
-    if (dow !== 1 && dow !== 2) continue;
     if (iso < hoy) continue;
+    // Reconstruir date desde ISO para evitar timezone offset en getDay/getDate
+    var dLocal = _parseFechaISO(iso);
+    var dow = dLocal.getDay(); // 1=lun, 2=mar
+    if (dow !== 1 && dow !== 2) continue;
     var citasDelDia = citas.filter(function(c) { return c.fecha === iso; });
     if (!citasDelDia.length) continue;
-    diasCandidatos.push({ iso: iso, d: d, dow: dow, citas: citasDelDia });
+    diasCandidatos.push({ iso: iso, d: dLocal, dow: dow, citas: citasDelDia });
     if (diasCandidatos.length >= 8) break;
   }
 
@@ -7036,8 +7039,9 @@ function abrirResumenTurnos() {
 
   diasCandidatos.forEach(function(dia, idx) {
     var btn = document.createElement('button');
-    var diaLabel = DIAS_FULL[dia.dow];
-    var fechaLabel = dia.d.getDate() + ' de ' + MESES_FULL[dia.d.getMonth()];
+    var dSafe2 = _parseFechaISO(dia.iso);
+    var diaLabel = DIAS_FULL[dSafe2.getDay()];
+    var fechaLabel = dSafe2.getDate() + ' de ' + MESES_FULL[dSafe2.getMonth()];
     btn.innerHTML = '<strong>' + diaLabel + '</strong><br><span style="font-size:11px;opacity:.7">' + fechaLabel + '</span>'
       + '<span style="display:block;font-size:10px;opacity:.5;margin-top:2px">' + dia.citas.length + ' turno' + (dia.citas.length!==1?'s':'') + '</span>';
     btn.style.cssText = 'background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px 16px;color:#fff;cursor:pointer;font-size:13px;text-align:center;min-width:110px;transition:all .15s';
@@ -7079,7 +7083,9 @@ function _renderResumenDia(dia, DIAS_FULL, MESES_FULL) {
   if (!resDiv) return;
 
   var citas = dia.citas.slice().sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
-  var fechaLabel = DIAS_FULL[dia.dow] + ', ' + dia.d.getDate() + ' de ' + MESES_FULL[dia.d.getMonth()] + ' de ' + dia.d.getFullYear();
+  // Usar _parseFechaISO para evitar offset de timezone
+  var dSafe = _parseFechaISO(dia.iso);
+  var fechaLabel = DIAS_FULL[dSafe.getDay()] + ', ' + dSafe.getDate() + ' de ' + MESES_FULL[dSafe.getMonth()] + ' de ' + dSafe.getFullYear();
 
   // Construir texto para copiar/WSP
   var lineas = ['📅 *' + fechaLabel.toUpperCase() + '*', ''];
