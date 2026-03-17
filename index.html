@@ -4101,6 +4101,90 @@ function nuevaEndoscopia(tipo) {
   showModal('modal-endoscopia');
 }
 
+function editarEndoscopia(endoId) {
+  const pac  = App.pacienteActual;
+  const list = App.endoscopiasList || [];
+  const e    = list.find(x => x.id == endoId);
+  if (!e || !pac) { toast('No se encontró el estudio', 'error'); return; }
+
+  // Resetear form y cargar datos
+  resetFormEndoscopia();
+
+  const tipo   = (e.tipoEstudio || 'VEDA');
+  const esVeda = !tipo.toUpperCase().includes('COLON');
+
+  // ID para que submitEndoscopia actualice en vez de crear
+  document.getElementById('endo-id').value    = e.id;
+  document.getElementById('endo-tipo').value  = tipo;
+  document.getElementById('endo-paciente-id').value = pac.id;
+  document.getElementById('endo-modal-titulo').textContent =
+    'Editar ' + tipo + ' — ' + pac.apellidoNombre;
+
+  // Datos del paciente en el header del modal
+  const _edadEndo = calcEdadFiliatorios(pac.fechaNac) || pac.edad;
+  const _sexoEndo = pac.sexo || inferirSexo(pac.apellidoNombre) || '—';
+  document.getElementById('endo-pac-nombre').textContent = pac.apellidoNombre || '';
+  document.getElementById('endo-pac-dni').textContent    = pac.dni || '—';
+  document.getElementById('endo-pac-edad').textContent   = _edadEndo ? _edadEndo + ' años' : '—';
+  document.getElementById('endo-pac-sexo').textContent   = _sexoEndo;
+  document.getElementById('endo-pac-os').textContent     = pac.obraSocial || '—';
+  document.getElementById('endo-pac-afil').textContent   = pac.nroAfiliado || '—';
+
+  // Campos del formulario
+  document.getElementById('endo-fecha').value      = e.fecha || todayInputDMY();
+  const lugarEl = document.getElementById('endo-lugar');
+  if (lugarEl) lugarEl.value = e.lugarRealizacion || '';
+  const pedidoEl = document.getElementById('endo-pedidopor');
+  if (pedidoEl) pedidoEl.value = e.pedidoPor || '';
+  const antecEl = document.getElementById('endo-antec');
+  if (antecEl) antecEl.value = e.antecedentes || '';
+  const motivoEl = document.getElementById('endo-motivo');
+  if (motivoEl) motivoEl.value = e.motivoExamen || '';
+  const impresionEl = document.getElementById('endo-impresion');
+  if (impresionEl) impresionEl.value = e.impresionDiagnostica || '';
+  const analgesiaEl = document.getElementById('endo-analgesia');
+  if (analgesiaEl) analgesiaEl.value = e.analgesia || '';
+  const anestesistaEl = document.getElementById('endo-anestesista');
+  if (anestesistaEl) anestesistaEl.value = e.anestesista || '';
+
+  // Mostrar/ocultar secciones
+  document.getElementById('seccion-veda').style.display  = esVeda ? '' : 'none';
+  document.getElementById('seccion-colon').style.display = esVeda ? 'none' : '';
+
+  if (esVeda) {
+    const esofagoEl = document.getElementById('endo-esofago');
+    if (esofagoEl) esofagoEl.value = e.esofago || '';
+    const etipoEl = document.getElementById('endo-endoscopia-tipo');
+    if (etipoEl) etipoEl.value = e.Endoscopia || '';
+  } else {
+    const colonEl = document.getElementById('endo-colon-informe');
+    if (colonEl) colonEl.value = e.esofago || e.colonInforme || '';
+    const regionAlcEl = document.getElementById('endo-region-alcanzada');
+    if (regionAlcEl) regionAlcEl.value = e.RegionAlcanzada || e.regionAlcanzada || '';
+    const regionEl = document.getElementById('endo-region');
+    if (regionEl) regionEl.value = e.RegionAlcanzada || e.regionAlcanzada || '';
+    // Boston
+    ['CD','CT','CI'].forEach(function(seg) {
+      const el = document.getElementById('endo-boston-' + seg.toLowerCase());
+      const val = e['boston' + seg];
+      if (el && val !== undefined && val !== '') el.value = val;
+    });
+  }
+
+  // Cambiar botón guardar para indicar que es edición
+  ['btn-guardar-endo','btn-guardar-endo-bottom'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = '✓ Guardar Cambios'; el.style.background = '#1565c0'; }
+  });
+  ['btn-pdf-endo','btn-pdf-endo-bottom'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none'; // ocultar "Guardar y PDF" en edición
+  });
+
+  actualizarDatalistAnestesistas();
+  showModal('modal-endoscopia');
+}
+
 function nuevaEndoscopiaDesdeNav() {
   if (!App.pacienteActual) {
     toast('Primero abrí un paciente para agregar una endoscopía', 'info');
@@ -4112,6 +4196,15 @@ function nuevaEndoscopiaDesdeNav() {
 
 function resetFormEndoscopia() {
   fotosData = [];
+  // Restaurar botones al estado original (por si venimos de editar)
+  ['btn-guardar-endo','btn-guardar-endo-bottom'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = 'Guardar Estudio'; el.style.background = ''; }
+  });
+  ['btn-pdf-endo','btn-pdf-endo-bottom'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
   document.getElementById('fotos-preview').innerHTML = '';
   document.getElementById('fotos-status').textContent = '';
   document.getElementById('fotos-input').value = '';
@@ -4370,6 +4463,7 @@ async function submitEndoscopia(generarPDF = false) {
 
 // ─── RENDER ENDOSCOPÍAS ─────────────────────────────────────
 function renderEndoscopias(list) {
+  App.endoscopiasList = list; // cache para editarEndoscopia
   const cnt = document.getElementById('tab-endo-count');
   cnt.textContent = list.length || '';
 
@@ -4440,7 +4534,7 @@ function renderEndoscopias(list) {
             return '<!-- NUEVO -->'
               + '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verInformeEndoscopia(\'' + e.id + '\')" title="Ver informe">Ver</button> '
               + wspBtn2
-              + ' <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia(\'' + e.id + '\')" title="Imprimir informe">\uD83D\uDDA8</button>';
+              + ' <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editarEndoscopia(\'' + e.id + '\')" title="Editar informe" style="font-size:14px">✏️</button>'              + ' <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia(\'' + e.id + '\')" title="Imprimir informe">\uD83D\uDDA8</button>';
           })()
 
       // Color de fondo de la fila: diferente para históricos
