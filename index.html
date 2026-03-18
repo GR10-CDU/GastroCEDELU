@@ -2549,6 +2549,13 @@ function showModal(id) {
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('show');
+  // Restaurar botones "Guardando..." si quedaron colgados
+  if (id === 'modal-hc') {
+    ['btn-guardar-hc','btn-guardar-hc-bottom'].forEach(function(bid) {
+      var el = document.getElementById(bid);
+      if (el) { el.disabled = false; el.innerHTML = 'Guardar Historia Clínica'; }
+    });
+  }
 }
 
 function confirm_(msg, onOk) {
@@ -3532,6 +3539,8 @@ async function submitHC() {
   const btns = ['btn-guardar-hc','btn-guardar-hc-bottom'].map(id => document.getElementById(id)).filter(Boolean);
   btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
   const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = 'Guardar Historia Clínica'; });
+  // Seguridad: restaurar botones si algo falla silenciosamente (max 30s)
+  const _restoreTimer = setTimeout(restore, 30000);
 
   showLoading('Guardando Historia Clínica...');
 
@@ -3570,7 +3579,7 @@ async function submitHC() {
       restore();
     }
   } catch (e) { toast('Error de conexión: ' + e.message, 'error'); restore(); }
-  finally { hideLoading(); }
+  finally { hideLoading(); clearTimeout(_restoreTimer); restore(); }
 }
 
 // ─── CONSULTAS ───────────────────────────────────────────────
@@ -3691,6 +3700,11 @@ function _consultaDraftHasContent(d) {
 }
 
 function cancelarConsulta() {
+  // Restaurar botones por si quedaron en "Guardando..."
+  ['btn-guardar-consulta','btn-guardar-consulta-bottom'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.disabled = false; el.innerHTML = 'Guardar Consulta'; }
+  });
   // Guardar draft si hay contenido
   const draft = _consultaDraftRead();
   if (_consultaDraftHasContent(draft)) {
@@ -3818,6 +3832,8 @@ async function submitConsulta() {
   const btns = ['btn-guardar-consulta','btn-guardar-consulta-bottom'].map(id => document.getElementById(id)).filter(Boolean);
   btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
   const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = 'Guardar Consulta'; });
+  // Seguridad: restaurar botones si algo falla silenciosamente (max 30s)
+  const _restoreTimer = setTimeout(restore, 30000);
 
   showLoading('Guardando consulta...');
   const consId = document.getElementById('cons-id') ? document.getElementById('cons-id').value : '';
@@ -3846,7 +3862,7 @@ async function submitConsulta() {
       renderConsultas(r.ok ? r.data : []);
     } else { toast('Error: ' + res.error, 'error'); restore(); }
   } catch (e) { toast('Error de conexión: ' + e.message, 'error'); restore(); }
-  finally { hideLoading(); }
+  finally { hideLoading(); clearTimeout(_restoreTimer); restore(); }
 }
 
 // prepModalConsulta() se llama directo desde el onclick del botón (ver HTML)
