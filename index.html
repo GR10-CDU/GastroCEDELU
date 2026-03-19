@@ -2196,12 +2196,19 @@ color:#555;
 <!-- MODAL: HISTORIA CLÍNICA -->
 <div class="modal-overlay" id="modal-hc">
   <div class="modal modal-lg">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h2 style="margin:0">Historia Clínica</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <h2 style="margin:0">
+        <span id="hc-modal-paciente" style="font-size:24px;font-weight:700;color:var(--text)"></span>
+        <span style="font-size:14px;font-weight:400;color:var(--muted2);margin-left:10px">Historia Clínica</span>
+      </h2>
       <div style="display:flex;gap:8px">
         <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-hc')">× Cancelar</button>
         <button class="btn btn-primary btn-sm" id="btn-guardar-hc" onclick="submitHC()">Guardar Historia Clínica</button>
       </div>
+    </div>
+    <div id="hc-modal-os-row" style="display:none;margin-bottom:16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:13px;color:var(--muted2)">🏥 <strong style="color:var(--text)" id="hc-modal-os"></strong></span>
+      <span id="hc-modal-afiliado-wrap" style="font-size:13px;color:var(--muted2);display:none">Afiliado: <strong style="color:var(--text)" id="hc-modal-afiliado"></strong></span>
     </div>
     <input type="hidden" id="hc-id">
     <input type="hidden" id="hc-paciente-id">
@@ -3525,6 +3532,21 @@ function prepModalHC() {
     }
   }
   document.getElementById('hc-paciente-id').value = pac.id;
+  // Poblar nombre y OS en el header del modal
+  var hcPacEl = document.getElementById('hc-modal-paciente');
+  if (hcPacEl) hcPacEl.textContent = pac.apellidoNombre || '';
+  var hcOsRow   = document.getElementById('hc-modal-os-row');
+  var hcOsEl    = document.getElementById('hc-modal-os');
+  var hcAfilEl  = document.getElementById('hc-modal-afiliado');
+  var hcAfilWrap= document.getElementById('hc-modal-afiliado-wrap');
+  if (hcOsRow && pac.obraSocial) {
+    hcOsRow.style.display = 'flex';
+    if (hcOsEl)   hcOsEl.textContent   = pac.obraSocial;
+    if (hcAfilEl && pac.nroAfiliado) {
+      hcAfilEl.textContent = pac.nroAfiliado;
+      if (hcAfilWrap) hcAfilWrap.style.display = 'inline';
+    } else if (hcAfilWrap) { hcAfilWrap.style.display = 'none'; }
+  } else if (hcOsRow) { hcOsRow.style.display = 'none'; }
   showModal('modal-hc');
 }
 
