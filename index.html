@@ -2083,7 +2083,7 @@ color:#555;
           <button class="btn btn-ghost btn-sm" onclick="insertarPlantillaVEDA(2)" style="font-size:12px">Esofagitis</button>
         </div>
         <div class="field">
-          <textarea id="endo-esofago" rows="14" placeholder="Completá el informe manualmente o seleccioná una plantilla arriba..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
+          <textarea id="endo-esofago" rows="14" oninput="_endoAutoguardadoGuardar()" placeholder="Completá el informe manualmente o seleccioná una plantilla arriba..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
         </div>
       </div>
 
@@ -2125,7 +2125,7 @@ color:#555;
           </div>
         </div>
         <div class="field">
-          <textarea id="endo-colon-informe" rows="14" placeholder="Completá el informe manualmente o seleccioná una plantilla..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
+          <textarea id="endo-colon-informe" rows="14" oninput="_endoAutoguardadoGuardar()" placeholder="Completá el informe manualmente o seleccioná una plantilla..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
         </div>
       </div>
 
@@ -2133,7 +2133,7 @@ color:#555;
       <div class="field-row cols-2" style="margin-top:8px">
         <div class="field">
           <label>Impresión Diagnóstica</label>
-          <textarea id="endo-impresion" rows="3" placeholder="Diagnóstico endoscópico final..."></textarea>
+          <textarea id="endo-impresion" rows="3" oninput="_endoAutoguardadoGuardar()" placeholder="Diagnóstico endoscópico final..."></textarea>
         </div>
       </div>
       <div class="field">
@@ -4080,6 +4080,129 @@ function nuevaEndoscopia(tipo) {
   showModal('modal-endoscopia');
 }
 
+// ── EDITAR ENDOSCOPÍA ────────────────────────────────────────────
+function editarEndoscopia(endoId) {
+  const pac  = App.pacienteActual;
+  const list = App.endoscopiasList || [];
+  const e    = list.find(x => x.id == endoId);
+  if (!e || !pac) { toast('No se encontró el estudio', 'error'); return; }
+
+  resetFormEndoscopia();
+
+  const tipo   = e.tipoEstudio || 'VEDA';
+  const esVeda = !tipo.toUpperCase().includes('COLON');
+
+  document.getElementById('endo-id').value           = e.id;
+  document.getElementById('endo-tipo').value         = tipo;
+  document.getElementById('endo-paciente-id').value  = pac.id;
+  document.getElementById('endo-modal-titulo').textContent = 'Editar ' + tipo + ' — ' + pac.apellidoNombre;
+
+  const _edad = calcEdadFiliatorios(pac.fechaNac) || pac.edad;
+  const _sexo = pac.sexo || inferirSexo(pac.apellidoNombre) || '—';
+  document.getElementById('endo-pac-nombre').textContent = pac.apellidoNombre || '';
+  document.getElementById('endo-pac-dni').textContent    = pac.dni || '—';
+  document.getElementById('endo-pac-edad').textContent   = _edad ? _edad + ' años' : '—';
+  document.getElementById('endo-pac-sexo').textContent   = _sexo;
+  document.getElementById('endo-pac-os').textContent     = pac.obraSocial || '—';
+  document.getElementById('endo-pac-afil').textContent   = pac.nroAfiliado || '—';
+
+  const sv = id => { const el = document.getElementById(id); if (el) el.value = ''; };
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+
+  set('endo-fecha',      e.fecha || todayInputDMY());
+  set('endo-lugar',      e.lugarRealizacion);
+  set('endo-pedidopor',  e.pedidoPor);
+  set('endo-antec',      e.antecedentes);
+  set('endo-motivo',     e.motivoExamen);
+  set('endo-impresion',  e.impresionDiagnostica);
+  set('endo-analgesia',  e.analgesia);
+  set('endo-anestesista',e.anestesista);
+
+  document.getElementById('seccion-veda').style.display  = esVeda ? '' : 'none';
+  document.getElementById('seccion-colon').style.display = esVeda ? 'none' : '';
+
+  if (esVeda) {
+    set('endo-esofago',         e.esofago);
+    set('endo-endoscopia-tipo', e.Endoscopia);
+  } else {
+    set('endo-colon-informe',     e.esofago || e.colonInforme);
+    set('endo-region-alcanzada',  e.RegionAlcanzada || e.regionAlcanzada);
+    const rh = document.getElementById('endo-region');
+    if (rh) rh.value = e.RegionAlcanzada || e.regionAlcanzada || '';
+    ['CD','CT','CI'].forEach(seg => {
+      const el = document.getElementById('endo-boston-' + seg.toLowerCase());
+      if (el && e['boston'+seg] !== undefined && e['boston'+seg] !== '') el.value = e['boston'+seg];
+    });
+  }
+
+  // Cambiar botones: ocultar "Guardar y PDF", cambiar texto de guardar
+  ['btn-guardar-endo','btn-guardar-endo-bottom'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = '✓ Guardar Cambios'; el.style.background = '#1565c0'; }
+  });
+  ['btn-pdf-endo','btn-pdf-endo-bottom'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
+  actualizarDatalistAnestesistas();
+  showModal('modal-endoscopia');
+  _endoAutoguardadoCargar(endoId); // cargar borrador si existe
+}
+
+// ── AUTOGUARDADO DE ENDOSCOPÍA ────────────────────────────────
+const _ENDO_DRAFT_KEY = 'gastro_endo_draft_';
+
+function _endoAutoguardadoGuardar() {
+  const id = document.getElementById('endo-id').value;
+  if (!id) return; // solo en modo edición
+  const tipo   = document.getElementById('endo-tipo').value || 'VEDA';
+  const esVeda = !tipo.toUpperCase().includes('COLON');
+  const draft  = {
+    fecha:      (document.getElementById('endo-fecha')||{}).value || '',
+    lugar:      (document.getElementById('endo-lugar')||{}).value || '',
+    pedidopor:  (document.getElementById('endo-pedidopor')||{}).value || '',
+    antec:      (document.getElementById('endo-antec')||{}).value || '',
+    motivo:     (document.getElementById('endo-motivo')||{}).value || '',
+    impresion:  (document.getElementById('endo-impresion')||{}).value || '',
+    analgesia:  (document.getElementById('endo-analgesia')||{}).value || '',
+    anestesista:(document.getElementById('endo-anestesista')||{}).value || '',
+    informe:    esVeda
+      ? (document.getElementById('endo-esofago')||{}).value || ''
+      : (document.getElementById('endo-colon-informe')||{}).value || '',
+    ts: Date.now()
+  };
+  try { localStorage.setItem(_ENDO_DRAFT_KEY + id, JSON.stringify(draft)); } catch(e) {}
+}
+
+function _endoAutoguardadoCargar(endoId) {
+  try {
+    const raw = localStorage.getItem(_ENDO_DRAFT_KEY + endoId);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    // Solo restaurar si el borrador es de menos de 24h
+    if (Date.now() - d.ts > 86400000) { localStorage.removeItem(_ENDO_DRAFT_KEY + endoId); return; }
+    const tipo   = document.getElementById('endo-tipo').value || 'VEDA';
+    const esVeda = !tipo.toUpperCase().includes('COLON');
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    set('endo-fecha',      d.fecha);
+    set('endo-lugar',      d.lugar);
+    set('endo-pedidopor',  d.pedidopor);
+    set('endo-antec',      d.antec);
+    set('endo-motivo',     d.motivo);
+    set('endo-impresion',  d.impresion);
+    set('endo-analgesia',  d.analgesia);
+    set('endo-anestesista',d.anestesista);
+    if (esVeda) set('endo-esofago', d.informe);
+    else        set('endo-colon-informe', d.informe);
+    toast('Borrador restaurado. Guardá para confirmar.', 'info');
+  } catch(e) {}
+}
+
+function _endoAutoguardadoBorrar(endoId) {
+  try { localStorage.removeItem(_ENDO_DRAFT_KEY + endoId); } catch(e) {}
+}
+
 function nuevaEndoscopiaDesdeNav() {
   if (!App.pacienteActual) {
     toast('Primero abrí un paciente para agregar una endoscopía', 'info');
@@ -4091,6 +4214,15 @@ function nuevaEndoscopiaDesdeNav() {
 
 function resetFormEndoscopia() {
   fotosData = [];
+  // Restaurar botones al estado original (por si venimos de editar)
+  ['btn-guardar-endo','btn-guardar-endo-bottom'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = 'Guardar Estudio'; el.style.background = ''; }
+  });
+  ['btn-pdf-endo','btn-pdf-endo-bottom'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
   document.getElementById('fotos-preview').innerHTML = '';
   document.getElementById('fotos-status').textContent = '';
   document.getElementById('fotos-input').value = '';
@@ -4333,6 +4465,7 @@ async function submitEndoscopia(generarPDF = false) {
       renderEndoscopias(rEndo.ok ? rEndo.data : []);
 
       // Listo
+      _endoAutoguardadoBorrar(endoId || savedId); // borrar draft
       SaveBanner.success('Estudio guardado' + (tieneFotos ? ' con fotos' : ''));
 
       // PDF si se pidió
@@ -4401,7 +4534,7 @@ function renderEndoscopias(list) {
            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirPDFHistorico('${pdfHistoricoUrl}')" title="Imprimir PDF original">🖨</button>`
         : `<!-- NUEVO -->
            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verInformeEndoscopia('${e.id}')" title="Ver informe">Ver</button>
-           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();descargarInformeEndoscopia('${e.id}')" title="Descargar PDF" style="font-size:15px;padding:6px 10px">⬇</button>\n           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')" title="Imprimir informe">🖨</button>`;
+           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();descargarInformeEndoscopia('${e.id}')" title="Descargar PDF" style="font-size:15px;padding:6px 10px">⬇</button>\n           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editarEndoscopia('${e.id}')" title="Editar informe" style="font-size:14px">✏️</button>\n           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')" title="Imprimir informe">🖨</button>`;
 
       // Color de fondo de la fila: diferente para históricos
       const rowBg = esHistorico ? '#fffbeb' : 'transparent';
@@ -4585,7 +4718,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   const todasFotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
   const fotos    = todasFotos.filter(url => !url.includes('/file/d/'));
   const pdfsMigrados = todasFotos.filter(url => url.includes('/file/d/'));
-  const fotoImgs = fotos.slice(0,4).map(url =>
+  const fotoImgs = fotos.map(url =>
     `<img src="${driveThumb(url)}">`
   ).join('');
 
@@ -4674,25 +4807,26 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .diag-anest { font-size:10px; color:#555; text-align:right; white-space:nowrap; padding-top:2px; }
   .diag-anest b { color:#111; }
 
-  /* ── FOTOS + FIRMA: row, fotos 2x2 6cm, firma al costado ── */
-  .fotos-firma-row { display:flex; align-items:flex-end; gap:10px; padding:4px 14px 0; break-inside:avoid; page-break-inside:avoid; }
-  .fotos-grid { display:grid; grid-template-columns:repeat(2,6cm); grid-template-rows:repeat(2,6cm); gap:5px; flex-shrink:0; }
-  .fotos-grid img { width:6cm; height:6cm; object-fit:cover; border-radius:4px; border:1px solid #ddd; display:block; }
-  /* ── FIRMA: al costado derecho del grid ── */
-  .firma-row { display:flex; justify-content:flex-end; flex:1; padding-bottom:6px; }
-  .firma-wrap { text-align:center; min-width:150px; }
-  .firma-img { width:130px; max-height:46px; object-fit:contain; display:block; margin:0 auto 2px; }
-  .firma-name { font-size:10.5px; font-weight:800; }
-  .firma-mp, .firma-mn { font-size:9px; color:#555; }
+  /* ── FOTOS: 3 arriba + 2 abajo, 5.8cm cada una ── */
+  .fotos-bloque img { width:5.8cm; height:5.8cm; object-fit:cover; border-radius:4px; border:1px solid #ddd; display:block; flex-shrink:0; }
+  .fotos-fila { display:flex; gap:5px; margin:0 10px 5px; break-inside:avoid; }
+  /* col 3 de fila1: foto + firma apiladas */
+  .col3-wrap { display:flex; flex-direction:column; gap:4px; }
+  /* FIRMA bajo la 3ra foto */
+  .firma-wrap { text-align:center; }
+  .firma-img  { width:110px; max-height:40px; object-fit:contain; display:block; margin:0 auto 2px; }
+  .firma-name { font-size:9.5px; font-weight:800; color:#111; }
+  .firma-mp,.firma-mn { font-size:8.5px; color:#555; }
 
-  /* ── FOOTER estático — no fixed, nunca rompe a 2da pág ── */
-  .footer { border-top:2px solid #1a7a4a; padding:3px 20px; text-align:center; font-size:9px; color:#555; line-height:1.3; background:#fff; margin-top:2px; }
+  /* ── FOOTER siempre al fondo: page = flex-column, footer margin-top:auto ── */
+  .page { display:flex; flex-direction:column; min-height:275mm; }
+  .footer { border-top:2px solid #1a7a4a; padding:3px 20px; text-align:center; font-size:9px; color:#555; line-height:1.3; background:#fff; margin-top:auto; }
   .footer b { color:#1a7a4a; }
   .footer-dots { color:#1a7a4a; margin:0 5px; }
 
   @media print {
     html,body { margin:0; padding:0; }
-    .page { max-width:100%; padding-bottom:0; }
+    .page { max-width:100%; min-height:275mm; }
     * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
   }
   @page {
@@ -4799,19 +4933,40 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   </div>
 
 
-  <!-- FOTOS (2x2, 6cm) + FIRMA al costado -->
-  <div class="fotos-firma-row">
-    ${fotoImgs ? `<div class="fotos-grid">${fotoImgs}</div>` : '<div></div>'}
-    <div class="firma-row">
-      <div class="firma-wrap">
-        ${firmaImgHtml}
-        <div style="width:148px;height:1px;background:#1a7a4a;margin:3px auto 3px"></div>
-        <div class="firma-name">Dra. Lorena Notari</div>
-        <div class="firma-mp">MP 12.710</div>
-        <div class="firma-mn">MN 126.095</div>
+  <!-- FOTOS: badge + fila1 (3 fotos, col3=foto+firma) + fila2 (2 fotos) -->
+  <div class="fotos-bloque">
+    <span class="sec-badge" style="margin-bottom:6px;display:inline-block">Imágenes</span>
+    <div class="fotos-fila">
+      ${fotos[0] ? `<img src="${driveThumb(fotos[0])}" alt="Foto 1">` : ''}
+      ${fotos[1] ? `<img src="${driveThumb(fotos[1])}" alt="Foto 2">` : ''}
+      <div class="col3-wrap">
+        ${fotos[2] ? `<img src="${driveThumb(fotos[2])}" alt="Foto 3">` : ''}
+        <div class="firma-wrap">
+          ${firmaImgHtml}
+          <div style="width:110px;height:1px;background:#1a7a4a;margin:2px auto"></div>
+          <div class="firma-name">Dra. Lorena Notari</div>
+          <div class="firma-mp">MP 12.710</div>
+          <div class="firma-mn">MN 126.095</div>
+        </div>
       </div>
     </div>
+    ${fotos[3] || fotos[4] ? `
+    <div class="fotos-fila">
+      ${fotos[3] ? `<img src="${driveThumb(fotos[3])}" alt="Foto 4">` : ''}
+      ${fotos[4] ? `<img src="${driveThumb(fotos[4])}" alt="Foto 5">` : ''}
+    </div>` : ''}
   </div>
+  <!-- Sin fotos: firma sola a la derecha -->
+  ${fotos.length === 0 ? `
+  <div style="display:flex;justify-content:flex-end;padding:4px 14px 0">
+    <div class="firma-wrap">
+      ${firmaImgHtml}
+      <div style="width:110px;height:1px;background:#1a7a4a;margin:2px auto"></div>
+      <div class="firma-name">Dra. Lorena Notari</div>
+      <div class="firma-mp">MP 12.710</div>
+      <div class="firma-mn">MN 126.095</div>
+    </div>
+  </div>` : ''}
 
   <!-- FOOTER estático -->
   <div class="footer">
