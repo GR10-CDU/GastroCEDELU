@@ -4839,9 +4839,11 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .fotos-fila img { flex:1; aspect-ratio:4/3; object-fit:cover; border-radius:6px;
                     border:1px solid #d0e8d8; display:block; min-width:0; }
   /* firma al costado de la fila 2 */
-  .firma-lado { display:flex; align-items:center; justify-content:center; flex:1; }
+  .firma-lado { display:flex; align-items:center; justify-content:center; flex:1;
+                background:#fff; border-radius:6px; }
   .firma-wrap { text-align:center; }
-  .firma-img  { width:148px; max-height:54px; object-fit:contain; display:block; margin:0 auto 3px; }
+  .firma-img  { width:148px; max-height:54px; object-fit:contain; display:block; margin:0 auto 3px;
+                background:#fff; border:none; }
   .firma-name { font-size:13px; font-weight:800; }
   .firma-mp, .firma-mn { font-size:11px; color:#555; }
 
