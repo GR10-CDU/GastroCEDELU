@@ -2175,19 +2175,23 @@ color:#555;
 <!-- MODAL: HISTORIA CLÍNICA -->
 <div class="modal-overlay" id="modal-hc">
   <div class="modal modal-lg">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <h2 style="margin:0">
-        <span id="hc-modal-nombre" style="font-size:24px;font-weight:700;color:var(--text)"></span>
-        <span style="font-size:14px;font-weight:400;color:var(--muted2);margin-left:10px">Historia Clínica</span>
-      </h2>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-hc')">× Cancelar</button>
-        <button class="btn btn-primary btn-sm" id="btn-guardar-hc" onclick="submitHC()">Guardar Historia Clínica</button>
+    <div style="margin-bottom:14px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+            <span id="hc-modal-nombre" style="font-size:24px;font-weight:700;color:var(--text);line-height:1.2"></span>
+            <span style="font-size:14px;font-weight:400;color:var(--muted2);white-space:nowrap">Historia Clínica</span>
+          </div>
+          <div id="hc-modal-os-row" style="display:none;margin-top:6px;gap:16px;align-items:center;flex-wrap:wrap">
+            <span style="font-size:13px;color:var(--muted2)">🏥 <strong style="color:var(--text)" id="hc-modal-os"></strong></span>
+            <span id="hc-modal-afiliado-wrap" style="display:none;font-size:13px;color:var(--muted2)">Afiliado: <strong style="color:var(--text)" id="hc-modal-afiliado"></strong></span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-hc')">× Cancelar</button>
+          <button class="btn btn-primary btn-sm" id="btn-guardar-hc" onclick="submitHC()">Guardar Historia Clínica</button>
+        </div>
       </div>
-    </div>
-    <div id="hc-modal-os-row" style="display:none;margin-bottom:14px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-      <span style="font-size:13px;color:var(--muted2)">🏥 <strong style="color:var(--text)" id="hc-modal-os"></strong></span>
-      <span id="hc-modal-afiliado-wrap" style="display:none;font-size:13px;color:var(--muted2)">Afiliado: <strong style="color:var(--text)" id="hc-modal-afiliado"></strong></span>
     </div>
     <input type="hidden" id="hc-id">
     <input type="hidden" id="hc-paciente-id">
@@ -4762,7 +4766,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   // Dejá FIRMA_DRIVE_ID = '' para que no muestre imagen (solo texto).
   const FIRMA_DRIVE_ID = '14Axzq68wEQsVdq4o-d6yY0yQQHNIGmEK';
   const firmaImgHtml = FIRMA_DRIVE_ID
-    ? `<img class="firma-img" src="https://drive.google.com/thumbnail?id=${FIRMA_DRIVE_ID}&sz=w150-h80" alt="Firma">`
+    ? `<img class="firma-img" src="https://drive.google.com/thumbnail?id=${FIRMA_DRIVE_ID}&sz=w200-h80" alt="Firma">`
     : `<div style="width:165px;height:50px;border-bottom:2px solid #1a7a4a;margin:0 auto 4px"></div>`;
 
 
@@ -4847,7 +4851,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   /* firma en celda col3/fila2, alineada arriba */
   .firma-celda { grid-column:3; grid-row:2; display:flex; align-items:center; justify-content:center; }
   .firma-wrap  { text-align:center; }
-  .firma-img   { width:100px; height:50px; object-fit:contain; display:block; margin:0 auto 3px; border:none; background:transparent; }
+  .firma-img   { max-width:130px; max-height:55px; width:auto; height:auto; display:block; margin:0 auto 3px; border:none; }
   .firma-name  { font-size:10px; font-weight:800; color:#111; }
   .firma-mp,.firma-mn { font-size:9px; color:#555; }
 
