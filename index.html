@@ -4766,7 +4766,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   // Dejá FIRMA_DRIVE_ID = '' para que no muestre imagen (solo texto).
   const FIRMA_DRIVE_ID = '14Axzq68wEQsVdq4o-d6yY0yQQHNIGmEK';
   const firmaImgHtml = FIRMA_DRIVE_ID
-    ? `<img class="firma-img" src="https://lh3.googleusercontent.com/d/${FIRMA_DRIVE_ID}" alt="Firma" onerror="this.src='https://drive.google.com/thumbnail?id=${FIRMA_DRIVE_ID}&sz=w200-h80'">`
+    ? `<img class="firma-img" src="https://drive.google.com/thumbnail?id=${FIRMA_DRIVE_ID}&sz=w300-h120&nonce=${Date.now()}" alt="Firma">`
     : `<div style="width:165px;height:50px;border-bottom:2px solid #1a7a4a;margin:0 auto 4px"></div>`;
 
 
@@ -4849,10 +4849,11 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .foto4 { grid-column:1; grid-row:2; }
   .foto5 { grid-column:2; grid-row:2; }
   /* firma en celda col3/fila2, alineada arriba */
-  .firma-celda { grid-column:3; grid-row:2; display:flex; align-items:center; justify-content:center; background:#fff; }
+  .firma-celda { grid-column:3; grid-row:2; display:flex; align-items:center; justify-content:center; }
   .firma-wrap  { text-align:center; }
-  .firma-img   { max-width:120px; height:auto; display:block; margin:0 auto 3px;
-                 border:none; mix-blend-mode:multiply; }
+  .firma-img   { max-width:110px; max-height:50px; width:auto; height:auto; display:block;
+                 margin:0 auto 3px; border:none; mix-blend-mode:multiply;
+                 background:transparent; filter:contrast(1.2); }
   .firma-name  { font-size:10px; font-weight:800; color:#111; }
   .firma-mp,.firma-mn { font-size:9px; color:#555; }
 
@@ -5549,18 +5550,17 @@ function renderCalSemana(el) {
         }).join('')
       : '<div style="font-size:11px;color:' + lblColor + ';text-align:center;padding:6px 0;opacity:.35">—</div>';
 
-    // Botón bloques para Lunes y Martes
+    // Botón bloques para Lunes y Martes (abre popup flotante)
     var esDiaBloques = (diaNum === 1 || diaNum === 2);
-    var bloquesAbiertos = esDiaBloques && !!_bloquesAbiertos[iso];
+    var panelAbierto = esDiaBloques && window._panelBloquesIso === iso;
     var btnBloquesHTML = '';
     if (esDiaBloques) {
-      var lblBloques = bloquesAbiertos ? '▲ Cerrar bloques' : '⊞ Abrir bloques';
-      var btnBloquesBg = bloquesAbiertos ? '#e8f5e9' : '#fff8e1';
-      var btnBloquesBorder = bloquesAbiertos ? '#a5d6a7' : '#ffe082';
-      var btnBloquesColor = bloquesAbiertos ? '#1b5e20' : '#e65100';
+      var lblBloques   = panelAbierto ? '▲ Cerrar bloques' : '⊞ Abrir bloques';
+      var btnBloquesBg = panelAbierto ? '#e8f5e9' : '#fff8e1';
+      var btnBloquesBorder = panelAbierto ? '#a5d6a7' : '#ffe082';
+      var btnBloquesColor  = panelAbierto ? '#1b5e20' : '#e65100';
       btnBloquesHTML = '<button onclick="toggleBloquesCol(\'' + iso + '\')" style="background:' + btnBloquesBg + ';border:1px solid ' + btnBloquesBorder + ';border-radius:6px;width:100%;padding:5px 4px;font-size:9px;font-weight:800;color:' + btnBloquesColor + ';cursor:pointer;letter-spacing:.03em;margin-bottom:6px">' + lblBloques + '</button>';
     }
-    var contenidoCol = bloquesAbiertos ? _renderBloques(iso, diaNum, colBg) : chips;
 
     return '<div style="flex:1;min-width:80px;background:' + colBg + ';border-radius:12px;border:1px solid ' + colBorder + ';padding:10px 8px;display:flex;flex-direction:column">'
       + '<div style="text-align:center;margin-bottom:8px">'
@@ -5569,7 +5569,7 @@ function renderCalSemana(el) {
       +   '<div style="font-size:11px;color:' + lblColor + '">' + _MESES[d.getMonth()].slice(0,3) + '</div>'
       + '</div>'
       + btnBloquesHTML
-      + contenidoCol
+      + chips
       + '<div style="margin-top:auto;padding-top:6px">'
       +   '<button onclick="abrirModalNuevaCita(\'' + iso + '\')" style="background:' + btnBg + ';border:1px dashed ' + btnBorder + ';border-radius:5px;width:100%;padding:4px;font-size:10px;font-weight:700;color:' + btnColor + ';cursor:pointer">+ cita</button>'
       + '</div>'
@@ -6660,18 +6660,16 @@ function _wspEnviarTodos() {
 
 
 
+
 // ══ BLOQUES DE TURNOS ══
 var _BLOQUES_CONFIG = {
-  1: { inicio: '09:30', fin: '12:30', label: 'Lunes' },   // getDay()=1
-  2: { inicio: '07:00', fin: '10:00', label: 'Martes' }   // getDay()=2
+  1: { inicio: '09:30', fin: '12:30', label: 'Lunes'  },
+  2: { inicio: '07:00', fin: '10:00', label: 'Martes' }
 };
-var _bloquesAbiertos = {}; // { 'YYYY-MM-DD': true }
 
 function _generarSlots(inicio, fin) {
-  // Genera array de 'HH:MM' de 30 en 30 min
   var slots = [];
-  var partes = function(h){ var p=h.split(':'); return { h:parseInt(p[0]), m:parseInt(p[1]) }; };
-  var toMin  = function(h){ var p=partes(h); return p.h*60+p.m; };
+  var toMin  = function(h){ var p=h.split(':'); return parseInt(p[0])*60+parseInt(p[1]); };
   var toHora = function(m){ return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); };
   var cur = toMin(inicio), end = toMin(fin);
   while (cur < end) { slots.push(toHora(cur)); cur += 30; }
@@ -6684,72 +6682,171 @@ function _siguienteSlot(hora) {
   return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
 }
 
-function toggleBloquesCol(iso) {
-  if (_bloquesAbiertos[iso]) {
-    delete _bloquesAbiertos[iso];
-  } else {
-    _bloquesAbiertos[iso] = true;
-  }
-  renderCalendario();
+function _colorEstudio(estudio) {
+  if (!estudio) return '#1b5e20';
+  if (estudio.indexOf('VEDA/VCC') !== -1) return '#6a1b9a';
+  if (estudio === 'VEDA') return '#0277bd';
+  if (estudio === 'VCC')  return '#2e7d32';
+  return '#e65100';
 }
 
-// Modal para elegir estudio ANTES de agendar el turno
-function abrirModalBloque(iso, hora) {
-  // Verificar que el slot no esté ya ocupado
-  var citas = _citasCargar();
-  var ocupado = citas.some(function(c){ return c.fecha === iso && c.hora === hora; });
-  if (ocupado) { toast('Ese horario ya tiene un turno', 'error'); return; }
+function toggleBloquesCol(iso) {
+  var existing = document.getElementById('panel-bloques');
+  if (existing && existing.dataset.iso === iso) { cerrarPanelBloques(); return; }
+  if (existing) cerrarPanelBloques();
+  _abrirPanelBloques(iso);
+}
 
+function _abrirPanelBloques(iso) {
   var d = _parseFechaISO(iso);
-  var fechaLabel = d ? _fmtFechaLarga(d) : iso;
+  if (!d) return;
+  var diaNum = d.getDay();
+  var cfg = _BLOQUES_CONFIG[diaNum];
+  if (!cfg) return;
+  var slots = _generarSlots(cfg.inicio, cfg.fin);
+  var DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var fechaLabel = DIAS[diaNum] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()] + ' ' + d.getFullYear();
 
-  // Construir modal selector de estudio
+  var ov = document.createElement('div');
+  ov.id = 'panel-bloques-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1050;backdrop-filter:blur(2px)';
+  ov.onclick = function(e){ if(e.target===ov) cerrarPanelBloques(); };
+  document.body.appendChild(ov);
+
+  var panel = document.createElement('div');
+  panel.id = 'panel-bloques';
+  panel.dataset.iso = iso;
+  panel.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1051;background:#0f1f0f;border:1px solid rgba(100,220,130,.25);border-radius:20px;padding:0;width:min(520px,96vw);max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,.7)';
+  document.body.appendChild(panel);
+  window._panelBloquesIso = iso;
+  _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel);
+}
+
+function _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel) {
+  var citas = _citasCargar();
+  var ocupados = 0;
+  slots.forEach(function(h){ if(citas.some(function(c){return c.fecha===iso&&c.hora===h;})) ocupados++; });
+  var libres = slots.length - ocupados;
+
+  var header = document.createElement('div');
+  header.style.cssText = 'background:linear-gradient(135deg,#1b5e20,#2e7d32);padding:22px 24px 18px;flex-shrink:0';
+  header.innerHTML = '<div style="display:flex;align-items:flex-start;justify-content:space-between">'
+    + '<div>'
+    + '<div style="font-size:28px;font-weight:900;color:#fff;line-height:1">' + fechaLabel.split(',')[0] + '</div>'
+    + '<div style="font-size:14px;color:rgba(255,255,255,.75);margin-top:4px">' + fechaLabel.split(',').slice(1).join(',').trim() + '</div>'
+    + '<div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">'
+    + '<span style="background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:12px;color:#fff;font-weight:700">\u23F0 ' + cfg.inicio + ' \u2013 ' + cfg.fin + '</span>'
+    + '<span style="background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:12px;color:#fff;font-weight:700">' + libres + ' libre' + (libres!==1?'s':'') + ' \u00b7 ' + ocupados + ' ocupado' + (ocupados!==1?'s':'') + '</span>'
+    + '</div></div>'
+    + '<button onclick="cerrarPanelBloques()" style="background:rgba(255,255,255,.15);border:none;border-radius:10px;padding:8px 12px;color:#fff;cursor:pointer;font-size:18px;line-height:1;flex-shrink:0">\u2715</button>'
+    + '</div>';
+  panel.appendChild(header);
+
+  var body = document.createElement('div');
+  body.style.cssText = 'overflow-y:auto;flex:1;padding:16px 20px';
+
+  slots.forEach(function(hora) {
+    var cita = citas.find(function(c){ return c.fecha===iso && c.hora===hora; });
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)';
+
+    var horaEl = document.createElement('div');
+    horaEl.style.cssText = 'font-size:20px;font-weight:900;color:rgba(255,255,255,.9);width:52px;flex-shrink:0;font-variant-numeric:tabular-nums';
+    horaEl.textContent = hora;
+    row.appendChild(horaEl);
+
+    if (cita) {
+      var info = document.createElement('div');
+      info.style.cssText = 'flex:1;min-width:0;cursor:pointer';
+      info.onclick = function(){ verCita(cita.id); };
+      var bg = _colorEstudio(cita.estudio);
+      var chip = document.createElement('div');
+      chip.style.cssText = 'background:' + bg + ';border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:10px';
+      chip.innerHTML = '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:14px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (cita.nombre||'\u2014') + '</div>'
+        + '<div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px">' + (cita.estudio||'') + (cita.obraSocial?' \u00b7 '+cita.obraSocial:'') + '</div>'
+        + '</div><div style="font-size:11px;color:rgba(255,255,255,.5);flex-shrink:0">ver \u203a</div>';
+      info.appendChild(chip);
+      row.appendChild(info);
+    } else {
+      var btn = document.createElement('button');
+      btn.style.cssText = 'flex:1;background:rgba(255,255,255,.04);border:1.5px dashed rgba(255,255,255,.2);border-radius:10px;padding:12px 16px;cursor:pointer;text-align:left;color:rgba(255,255,255,.35);font-size:13px;font-weight:600;transition:all .15s';
+      btn.textContent = '+ Agregar turno';
+      btn.onmouseenter = function(){ btn.style.background='rgba(46,125,50,.2)'; btn.style.borderColor='rgba(100,220,130,.4)'; btn.style.color='rgba(255,255,255,.8)'; };
+      btn.onmouseleave = function(){ btn.style.background='rgba(255,255,255,.04)'; btn.style.borderColor='rgba(255,255,255,.2)'; btn.style.color='rgba(255,255,255,.35)'; };
+      (function(h){ btn.onclick = function(){ abrirModalBloque(iso, h); }; })(hora);
+      row.appendChild(btn);
+    }
+    body.appendChild(row);
+  });
+  panel.appendChild(body);
+
+  var footer = document.createElement('div');
+  footer.style.cssText = 'padding:14px 20px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;display:flex;justify-content:flex-end';
+  footer.innerHTML = '<button onclick="cerrarPanelBloques()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:9px 20px;color:rgba(255,255,255,.6);cursor:pointer;font-size:13px;font-weight:600">Cerrar</button>';
+  panel.appendChild(footer);
+}
+
+function cerrarPanelBloques() {
+  var p = document.getElementById('panel-bloques');
+  var o = document.getElementById('panel-bloques-overlay');
+  if (p) p.remove();
+  if (o) o.remove();
+  window._panelBloquesIso = null;
+}
+
+function abrirModalBloque(iso, hora) {
+  var citas = _citasCargar();
+  if (citas.some(function(c){ return c.fecha===iso && c.hora===hora; })) { toast('Ese horario ya tiene un turno','error'); return; }
+  var d = _parseFechaISO(iso);
+  var DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var fechaLabel = d ? (DIAS[d.getDay()] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()]) : iso;
+
   var modal = document.getElementById('modal-bloque-estudio');
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'modal-bloque-estudio';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1400;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
     document.body.appendChild(modal);
   }
 
   var estudios = [
-    { val:'VEDA',     label:'VEDA',      sub:'Videoendoscopía digestiva alta',  bloques:1, color:'#0277bd' },
-    { val:'VCC',      label:'VCC',       sub:'Videocolonoscopía',               bloques:1, color:'#2e7d32' },
-    { val:'VEDA/VCC', label:'VEDA / VCC',sub:'Ambos — ocupa 2 bloques',         bloques:2, color:'#6a1b9a' },
-    { val:'Otro',     label:'Otro',      sub:'Estudio sin especificar',          bloques:1, color:'#e65100' }
+    { val:'VEDA',     label:'VEDA',       sub:'Videoendoscop\u00eda digestiva alta', bloques:1, color:'#0277bd' },
+    { val:'VCC',      label:'VCC',        sub:'Videocolonoscop\u00eda',              bloques:1, color:'#2e7d32' },
+    { val:'VEDA/VCC', label:'VEDA / VCC', sub:'Ambos \u00b7 ocupa 2 bloques',        bloques:2, color:'#6a1b9a' },
+    { val:'Otro',     label:'Otro',       sub:'Estudio sin especificar',             bloques:1, color:'#e65100' }
   ];
 
-  // Verificar si el slot SIGUIENTE está libre (para VEDA/VCC)
-  var sigHora  = _siguienteSlot(hora);
-  var diaNum   = d ? d.getDay() : 0;
-  var cfg      = _BLOQUES_CONFIG[diaNum];
-  var sigLibre = cfg && sigHora < cfg.fin &&
-    !citas.some(function(c){ return c.fecha === iso && c.hora === sigHora; });
+  var sigHora = _siguienteSlot(hora);
+  var diaNum  = d ? d.getDay() : 0;
+  var cfg     = _BLOQUES_CONFIG[diaNum];
+  var sigLibre = cfg && sigHora <= cfg.fin && !citas.some(function(c){ return c.fecha===iso && c.hora===sigHora; });
 
   var cards = estudios.map(function(e) {
-    var disabled = (e.bloques === 2 && !sigLibre);
-    var nota = disabled ? '<div style="font-size:10px;color:#f44336;margin-top:3px">Siguiente bloque ocupado</div>' : '';
-    var opacity = disabled ? 'opacity:.4;cursor:not-allowed' : 'cursor:pointer';
-    var onclick = disabled ? '' : 'onclick="confirmarBloqueEstudio(\'' + iso + '\',\'' + hora + '\',\'' + e.val + '\')"';
-    return '<div ' + onclick + ' style="' + opacity + ';background:#1e3a1e;border:2px solid ' + e.color + ';border-radius:12px;padding:14px 16px;transition:transform .1s;user-select:none"'
-      + (!disabled ? ' onmouseenter="this.style.transform=\'scale(1.02)\'" onmouseleave="this.style.transform=\'\'"' : '') + '>'
-      + '<div style="font-size:18px;font-weight:900;color:#fff">' + e.label + '</div>'
-      + '<div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:3px">' + e.sub + '</div>'
-      + nota
-      + '</div>';
+    var disabled = (e.bloques===2 && !sigLibre);
+    var div = document.createElement('div');
+    div.style.cssText = (disabled?'opacity:.4;cursor:not-allowed':'cursor:pointer') + ';background:#1a2e1a;border:2px solid ' + e.color + ';border-radius:14px;padding:16px 18px;user-select:none;transition:transform .1s';
+    div.innerHTML = '<div style="font-size:22px;font-weight:900;color:#fff">' + e.label + '</div>'
+      + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">' + e.sub + '</div>'
+      + (disabled ? '<div style="font-size:11px;color:#f44336;margin-top:5px;font-weight:600">Siguiente bloque ocupado</div>' : '');
+    if (!disabled) {
+      div.onmouseenter = function(){ div.style.transform='scale(1.02)'; };
+      div.onmouseleave = function(){ div.style.transform=''; };
+      (function(v){ div.onclick = function(){ confirmarBloqueEstudio(iso, hora, v); }; })(e.val);
+    }
+    return div.outerHTML;
   }).join('');
 
-  modal.innerHTML = '<div style="background:#152815;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px;width:100%;max-width:420px;margin:16px;box-shadow:0 24px 64px rgba(0,0,0,.6)">'
-    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">'
-    +   '<div>'
-    +     '<div style="font-size:16px;font-weight:900;color:#fff">Tipo de estudio</div>'
-    +     '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">' + fechaLabel + ' · ' + hora + 'hs</div>'
-    +   '</div>'
-    +   '<button onclick="cerrarModalBloqueEstudio()" style="background:rgba(255,255,255,.08);border:none;border-radius:8px;padding:6px 12px;color:rgba(255,255,255,.5);cursor:pointer;font-size:18px">✕</button>'
+  modal.innerHTML = '<div style="background:#0f1f0f;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px;width:min(400px,92vw);box-shadow:0 24px 64px rgba(0,0,0,.7)">'
+    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">'
+    + '<div><div style="font-size:18px;font-weight:900;color:#fff">\u00bfQu\u00e9 estudio?</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.45);margin-top:4px">' + fechaLabel + ' \u00b7 <strong style="color:rgba(255,255,255,.7)">' + hora + ' hs</strong></div></div>'
+    + '<button onclick="cerrarModalBloqueEstudio()" style="background:rgba(255,255,255,.08);border:none;border-radius:8px;padding:6px 12px;color:rgba(255,255,255,.45);cursor:pointer;font-size:20px;line-height:1">\u2715</button>'
     + '</div>'
-    + '<div style="display:flex;flex-direction:column;gap:10px">' + cards + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' + cards + '</div>'
     + '</div>';
-
   modal.style.display = 'flex';
 }
 
@@ -6760,93 +6857,62 @@ function cerrarModalBloqueEstudio() {
 
 function confirmarBloqueEstudio(iso, hora, estudio) {
   cerrarModalBloqueEstudio();
-  // Abrir modal de nueva cita con fecha, hora y estudio pre-cargados
   var c = { nombre:'', fecha:iso, hora:hora, estudio:estudio, obraSocial:'', telefono:'', nota:'' };
   document.getElementById('modal-cita-titulo').textContent = 'Nueva Cita';
-  document.getElementById('modal-cita-body').innerHTML =
-    _bodyFormCita(c)
-    + '<div style="display:flex;gap:10px;padding-top:4px;margin-top:4px">'
-    + '<button onclick="cerrarModalCita()" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px;font-size:14px;cursor:pointer;color:rgba(255,255,255,.6);font-weight:600">Cancelar</button>'
-    + '<button onclick="_guardarCitaBloqueDoble(\'' + iso + '\',\'' + hora + '\',\'' + estudio + '\')" style="flex:2;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(46,125,50,.4)">✓ Guardar Cita</button>'
-    + '</div>';
+  var body = document.getElementById('modal-cita-body');
+  body.innerHTML = _bodyFormCita(c);
+  var footer = document.createElement('div');
+  footer.style.cssText = 'display:flex;gap:10px;padding-top:4px;margin-top:4px';
+  var btnC = document.createElement('button');
+  btnC.textContent = 'Cancelar';
+  btnC.style.cssText = 'flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px;font-size:14px;cursor:pointer;color:rgba(255,255,255,.6);font-weight:600';
+  btnC.onclick = cerrarModalCita;
+  var btnG = document.createElement('button');
+  btnG.textContent = '\u2713 Guardar Cita';
+  btnG.style.cssText = 'flex:2;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(46,125,50,.4)';
+  btnG.onclick = function(){ _guardarCitaBloqueDoble(iso, hora, estudio); };
+  footer.appendChild(btnC);
+  footer.appendChild(btnG);
+  body.appendChild(footer);
   document.getElementById('modal-cita').style.display = 'flex';
   setTimeout(function(){ var el=document.getElementById('nc-nombre'); if(el) el.focus(); }, 80);
 }
 
 function _guardarCitaBloqueDoble(iso, hora, estudio) {
-  // Guardar usando la función normal, luego si es VEDA/VCC agregar 2do bloque
   var nombre = document.getElementById('nc-nombre').value.trim();
-  if (!nombre) { toast('Ingresá el nombre del paciente', 'error'); return; }
-  var fecha  = document.getElementById('nc-fecha').value || iso;
-  var horaVal= document.getElementById('nc-hora').value  || hora;
-  var os     = document.getElementById('nc-os').value.trim();
-  var tel    = document.getElementById('nc-tel').value.trim();
-  var nota   = document.getElementById('nc-nota').value.trim();
-  var estVal = document.getElementById('nc-estudio').value || estudio;
+  if (!nombre) { toast('Ingres\u00e1 el nombre del paciente','error'); return; }
+  var fecha   = document.getElementById('nc-fecha').value || iso;
+  var horaVal = document.getElementById('nc-hora').value  || hora;
+  var os      = document.getElementById('nc-os').value.trim();
+  var tel     = document.getElementById('nc-tel').value.trim();
+  var nota    = document.getElementById('nc-nota').value.trim();
+  var estVal  = document.getElementById('nc-estudio').value || estudio;
 
-  if (_haySuperpuesto(fecha, horaVal, null)) {
-    toast('Ya existe un turno a esa hora', 'error'); return;
-  }
+  if (_haySuperpuesto(fecha, horaVal, null)) { toast('Ya existe un turno a esa hora','error'); return; }
 
   var citas = _citasCargar();
-  var id1   = 'cita_' + Date.now();
-  citas.push({ id:id1, nombre:nombre, fecha:fecha, hora:horaVal,
+  citas.push({ id:'cita_'+Date.now(), nombre:nombre, fecha:fecha, hora:horaVal,
                estudio:estVal, obraSocial:os, telefono:tel, nota:nota, origen:'bloque' });
 
-  // Si es VEDA/VCC → agregar segundo bloque automáticamente
   if (estVal === 'VEDA/VCC') {
     var sig = _siguienteSlot(horaVal);
-    var ocupado2 = citas.some(function(c){ return c.fecha === fecha && c.hora === sig; });
+    var ocupado2 = citas.some(function(c){ return c.fecha===fecha && c.hora===sig; });
     if (!ocupado2) {
-      citas.push({ id:'cita_' + (Date.now()+1), nombre:nombre, fecha:fecha, hora:sig,
+      citas.push({ id:'cita_'+(Date.now()+1), nombre:nombre, fecha:fecha, hora:sig,
                    estudio:'VEDA/VCC (cont.)', obraSocial:os, telefono:tel, nota:'2do bloque', origen:'bloque' });
-      toast('✓ Cita guardada en 2 bloques (' + horaVal + ' y ' + sig + ')', 'ok');
+      toast('\u2713 Guardado en 2 bloques: ' + horaVal + ' y ' + sig, 'ok');
     } else {
-      toast('✓ Cita guardada (no se pudo reservar 2do bloque)', 'ok');
+      toast('\u2713 Cita guardada (2do bloque ocupado)', 'ok');
     }
   } else {
-    toast('✓ Cita guardada', 'ok');
+    toast('\u2713 Cita guardada', 'ok');
   }
-
   _citasGuardar(citas);
   cerrarModalCita();
   renderCalendario();
-}
-
-// Render de bloques en una columna
-function _renderBloques(iso, diaNum, colBg) {
-  var cfg    = _BLOQUES_CONFIG[diaNum];
-  if (!cfg) return '';
-  var slots  = _generarSlots(cfg.inicio, cfg.fin);
-  var citas  = _citasCargar();
-
-  var rows = slots.map(function(hora) {
-    var cita = citas.find(function(c){ return c.fecha === iso && c.hora === hora; });
-    if (cita) {
-      // Slot ocupado — mostrar chip clicable
-      var esDoble = cita.origen === 'bloque' && cita.estudio === 'VEDA/VCC';
-      var bg = cita.estudio === 'VEDA/VCC' || cita.estudio === 'VEDA/VCC (cont.)' ? '#6a1b9a'
-             : cita.estudio === 'VEDA' ? '#0277bd'
-             : cita.estudio === 'VCC'  ? '#2e7d32' : '#1b5e20';
-      return '<div onclick="verCita(\'' + cita.id + '\')" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:7px;background:' + bg + ';margin-bottom:4px">'
-        + '<span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.7);flex-shrink:0">' + hora + '</span>'
-        + '<span style="font-size:11px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + (cita.nombre||'').split(',')[0] + '</span>'
-        + '</div>';
-    } else {
-      // Slot libre — clic para agendar
-      return '<div onclick="abrirModalBloque(\'' + iso + '\',\'' + hora + '\')" style="cursor:pointer;display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:7px;border:1px dashed #aaa;margin-bottom:4px;background:rgba(0,0,0,.03)">'
-        + '<span style="font-size:10px;font-weight:600;color:#888">' + hora + '</span>'
-        + '<span style="font-size:10px;color:#bbb;flex:1;text-align:right">+ turno</span>'
-        + '</div>';
-    }
-  }).join('');
-
-  return '<div style="margin-top:8px">'
-    + '<div style="font-size:9px;font-weight:800;color:#888;letter-spacing:.08em;margin-bottom:5px">'
-    +   cfg.inicio + ' – ' + cfg.fin
-    + '</div>'
-    + rows
-    + '</div>';
+  setTimeout(function(){
+    if (window._panelBloquesIso) _abrirPanelBloques(window._panelBloquesIso);
+  }, 50);
 }
 
 
