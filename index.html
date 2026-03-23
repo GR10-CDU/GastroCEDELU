@@ -4807,16 +4807,27 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .diag-anest { font-size:10px; color:#555; text-align:right; white-space:nowrap; padding-top:2px; }
   .diag-anest b { color:#111; }
 
-  /* ── FOTOS: 3 arriba + 2 abajo, 5.8cm cada una ── */
-  .fotos-bloque img { width:5.8cm; height:5.8cm; object-fit:cover; border-radius:4px; border:1px solid #ddd; display:block; flex-shrink:0; }
-  .fotos-fila { display:flex; gap:5px; margin:0 10px 5px; break-inside:avoid; }
-  /* col 3 de fila1: foto + firma apiladas */
-  .col3-wrap { display:flex; flex-direction:column; gap:4px; }
-  /* FIRMA bajo la 3ra foto */
-  .firma-wrap { text-align:center; }
-  .firma-img  { width:110px; max-height:40px; object-fit:contain; display:block; margin:0 auto 2px; }
-  .firma-name { font-size:9.5px; font-weight:800; color:#111; }
-  .firma-mp,.firma-mn { font-size:8.5px; color:#555; }
+  /* ── FOTOS: grid 3 cols x 2 filas, firma en celda col3/fila1 bajo la foto ── */
+  .fotos-bloque { margin:0 10px 0; break-inside:avoid; page-break-inside:avoid; }
+  .fotos-grid-main {
+    display:grid;
+    grid-template-columns: repeat(3, 5.6cm);
+    grid-template-rows: 5.6cm auto;
+    gap:5px;
+  }
+  .fotos-grid-main img {
+    width:5.6cm; height:5.6cm;
+    object-fit:cover; border-radius:4px; border:1px solid #ddd; display:block;
+  }
+  /* fotos 4 y 5 en fila 2, cols 1-2 */
+  .foto4 { grid-column:1; grid-row:2; }
+  .foto5 { grid-column:2; grid-row:2; }
+  /* firma en celda col3/fila2, alineada arriba */
+  .firma-celda { grid-column:3; grid-row:2; display:flex; align-items:flex-start; justify-content:center; padding-top:4px; }
+  .firma-wrap  { text-align:center; }
+  .firma-img   { width:120px; max-height:46px; object-fit:contain; display:block; margin:0 auto 3px; }
+  .firma-name  { font-size:10px; font-weight:800; color:#111; }
+  .firma-mp,.firma-mn { font-size:9px; color:#555; }
 
   /* ── FOOTER siempre al fondo: page = flex-column, footer margin-top:auto ── */
   .page { display:flex; flex-direction:column; min-height:275mm; }
@@ -4933,40 +4944,36 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   </div>
 
 
-  <!-- FOTOS: badge + fila1 (3 fotos, col3=foto+firma) + fila2 (2 fotos) -->
+  <!-- FOTOS: grid 3×2 con firma en col3/fila2 -->
+  ${fotos.length > 0 ? `
   <div class="fotos-bloque">
     <span class="sec-badge" style="margin-bottom:6px;display:inline-block">Imágenes</span>
-    <div class="fotos-fila">
-      ${fotos[0] ? `<img src="${driveThumb(fotos[0])}" alt="Foto 1">` : ''}
-      ${fotos[1] ? `<img src="${driveThumb(fotos[1])}" alt="Foto 2">` : ''}
-      <div class="col3-wrap">
-        ${fotos[2] ? `<img src="${driveThumb(fotos[2])}" alt="Foto 3">` : ''}
+    <div class="fotos-grid-main">
+      ${fotos[0] ? `<img src="${driveThumb(fotos[0])}" alt="Foto 1" style="grid-column:1;grid-row:1">` : ''}
+      ${fotos[1] ? `<img src="${driveThumb(fotos[1])}" alt="Foto 2" style="grid-column:2;grid-row:1">` : ''}
+      ${fotos[2] ? `<img src="${driveThumb(fotos[2])}" alt="Foto 3" style="grid-column:3;grid-row:1">` : ''}
+      ${fotos[3] ? `<img src="${driveThumb(fotos[3])}" alt="Foto 4" class="foto4">` : ''}
+      ${fotos[4] ? `<img src="${driveThumb(fotos[4])}" alt="Foto 5" class="foto5">` : ''}
+      <div class="firma-celda">
         <div class="firma-wrap">
           ${firmaImgHtml}
-          <div style="width:110px;height:1px;background:#1a7a4a;margin:2px auto"></div>
+          <div style="width:120px;height:1px;background:#1a7a4a;margin:3px auto"></div>
           <div class="firma-name">Dra. Lorena Notari</div>
           <div class="firma-mp">MP 12.710</div>
           <div class="firma-mn">MN 126.095</div>
         </div>
       </div>
     </div>
-    ${fotos[3] || fotos[4] ? `
-    <div class="fotos-fila">
-      ${fotos[3] ? `<img src="${driveThumb(fotos[3])}" alt="Foto 4">` : ''}
-      ${fotos[4] ? `<img src="${driveThumb(fotos[4])}" alt="Foto 5">` : ''}
-    </div>` : ''}
-  </div>
-  <!-- Sin fotos: firma sola a la derecha -->
-  ${fotos.length === 0 ? `
+  </div>` : `
   <div style="display:flex;justify-content:flex-end;padding:4px 14px 0">
     <div class="firma-wrap">
       ${firmaImgHtml}
-      <div style="width:110px;height:1px;background:#1a7a4a;margin:2px auto"></div>
+      <div style="width:120px;height:1px;background:#1a7a4a;margin:3px auto"></div>
       <div class="firma-name">Dra. Lorena Notari</div>
       <div class="firma-mp">MP 12.710</div>
       <div class="firma-mn">MN 126.095</div>
     </div>
-  </div>` : ''}
+  </div>`}
 
   <!-- FOOTER estático -->
   <div class="footer">
