@@ -4833,14 +4833,14 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .diag-anest { font-size:10px; color:#555; text-align:right; white-space:nowrap; padding-top:2px; }
   .diag-anest b { color:#111; }
 
-  /* ── FOTOS ── */
-  .fotos-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; padding:6px 12px 10px; }
-  .fotos-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px;
-                    border:1px solid #d0e8d8; display:block; }
-
-  /* ── FIRMA ── */
-  .firma-row  { display:flex; justify-content:flex-end; padding:4px 16px 4px; flex-shrink:0; }
-  .firma-wrap { text-align:center; min-width:165px; }
+  /* ── FOTOS: fila1=3 fotos, fila2=2 fotos+firma al lado ── */
+  .fotos-bloque { padding:6px 12px 4px; }
+  .fotos-fila   { display:flex; gap:7px; margin-bottom:7px; }
+  .fotos-fila img { flex:1; aspect-ratio:4/3; object-fit:cover; border-radius:6px;
+                    border:1px solid #d0e8d8; display:block; min-width:0; }
+  /* firma al costado de la fila 2 */
+  .firma-lado { display:flex; align-items:center; justify-content:center; flex:1; }
+  .firma-wrap { text-align:center; }
   .firma-img  { width:148px; max-height:54px; object-fit:contain; display:block; margin:0 auto 3px; }
   .firma-name { font-size:13px; font-weight:800; }
   .firma-mp, .firma-mn { font-size:11px; color:#555; }
@@ -4960,21 +4960,30 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   </div>
 
 
-  <!-- FOTOS con badge -->
-  ${fotoImgs ? `
+  <!-- FOTOS: max 5, fila1=3, fila2=2+firma al costado -->
   <div class="card" style="break-inside:avoid;page-break-inside:avoid">
     <span class="sec-badge">Imágenes</span>
-    <div class="fotos-grid">${fotoImgs}</div>
-  </div>` : ''}
-
-  <!-- FIRMA -->
-  <div class="firma-row">
-    <div class="firma-wrap">
-      ${firmaImgHtml}
-      <div style="width:148px;height:1px;background:#1a7a4a;margin:3px auto 3px"></div>
-      <div class="firma-name">Dra. Lorena Notari</div>
-      <div class="firma-mp">MP 12.710</div>
-      <div class="firma-mn">MN 126.095</div>
+    <div class="fotos-bloque">
+      <!-- Fila 1: fotos 1-3 -->
+      <div class="fotos-fila">
+        ${fotos[0] ? `<img src="${driveThumb(fotos[0])}" alt="1">` : ''}
+        ${fotos[1] ? `<img src="${driveThumb(fotos[1])}" alt="2">` : ''}
+        ${fotos[2] ? `<img src="${driveThumb(fotos[2])}" alt="3">` : ''}
+      </div>
+      <!-- Fila 2: fotos 4-5 + firma al lado -->
+      <div class="fotos-fila">
+        ${fotos[3] ? `<img src="${driveThumb(fotos[3])}" alt="4">` : ''}
+        ${fotos[4] ? `<img src="${driveThumb(fotos[4])}" alt="5">` : ''}
+        <div class="firma-lado">
+          <div class="firma-wrap">
+            ${firmaImgHtml}
+            <div style="width:148px;height:1px;background:#1a7a4a;margin:3px auto 3px"></div>
+            <div class="firma-name">Dra. Lorena Notari</div>
+            <div class="firma-mp">MP 12.710</div>
+            <div class="firma-mn">MN 126.095</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
