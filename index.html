@@ -4838,7 +4838,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .fotos-grid-main {
     display:grid;
     grid-template-columns: repeat(3, 5.6cm);
-    grid-template-rows: 5.6cm auto;
+    grid-template-rows: 5.6cm 5.6cm;
     gap:5px;
   }
   .fotos-grid-main img {
@@ -4849,9 +4849,10 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   .foto4 { grid-column:1; grid-row:2; }
   .foto5 { grid-column:2; grid-row:2; }
   /* firma en celda col3/fila2, alineada arriba */
-  .firma-celda { grid-column:3; grid-row:2; display:flex; align-items:center; justify-content:center; }
+  .firma-celda { grid-column:3; grid-row:2; display:flex; align-items:center; justify-content:center; background:#fff; }
   .firma-wrap  { text-align:center; }
-  .firma-img   { max-width:130px; max-height:55px; width:auto; height:auto; display:block; margin:0 auto 3px; border:none; }
+  .firma-img   { max-width:120px; height:auto; display:block; margin:0 auto 3px;
+                 border:none; mix-blend-mode:multiply; }
   .firma-name  { font-size:10px; font-weight:800; color:#111; }
   .firma-mp,.firma-mn { font-size:9px; color:#555; }
 
@@ -4983,7 +4984,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
       <div class="firma-celda">
         <div class="firma-wrap">
           ${firmaImgHtml}
-          <div style="width:120px;height:1px;background:#1a7a4a;margin:3px auto"></div>
+          <div style="width:110px;height:1px;background:#1a7a4a;margin:3px auto"></div>
           <div class="firma-name">Dra. Lorena Notari</div>
           <div class="firma-mp">MP 12.710</div>
           <div class="firma-mn">MN 126.095</div>
