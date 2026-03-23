@@ -1566,27 +1566,9 @@ color:#555;
 
           <!-- Tab: Endoscopias -->
           <div class="tab-content" id="tab-content-endoscopias">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px; flex-wrap:wrap">
-              <button onclick="toggleEndoMsgAdmin()" style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border1);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                Mensaje WhatsApp
-              </button>
-              <div style="display:flex;gap:10px">
-                <button class="btn btn-secondary btn-sm" onclick="nuevaEndoscopia('VEDA')">Nueva VEDA</button>
-                <button class="btn btn-secondary btn-sm" onclick="nuevaEndoscopia('Colonoscopía')">Nueva COLONOSCOPÍA</button>
-              </div>
-            </div>
-            <!-- Panel config mensaje WSP endoscopía -->
-            <div id="endo-msg-admin-panel" style="display:none;margin-bottom:16px;background:#fff8e1;border:1px solid #ffe082;border-radius:12px;padding:18px 20px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                <span style="font-size:14px;font-weight:700;color:#e65100">📱 Mensaje WhatsApp — Informe Endoscópico</span>
-                <button onclick="toggleEndoMsgAdmin()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#e65100">✕</button>
-              </div>
-              <div style="font-size:12px;color:#92400e;margin-bottom:8px">
-                Variables: <code>{nombre}</code> <code>{fecha}</code> <code>{tipo}</code>
-              </div>
-              <textarea id="endo-msg-texto" rows="3" oninput="_endoMsgGuardar()"
-                style="width:100%;border:1px solid #ffe082;border-radius:8px;padding:10px;font-size:13px;resize:vertical;box-sizing:border-box;background:#fffde7;outline:none"></textarea>
+            <div style="display:flex; justify-content:flex-end; margin-bottom:14px; gap:10px">
+              <button class="btn btn-secondary btn-sm" onclick="nuevaEndoscopia('VEDA')">Nueva VEDA</button>
+              <button class="btn btn-secondary btn-sm" onclick="nuevaEndoscopia('Colonoscopía')">Nueva COLONOSCOPÍA</button>
             </div>
             <div id="endoscopias-list"></div>
           </div>
@@ -1761,12 +1743,6 @@ color:#555;
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Nueva Cita
             </button>
-            <!-- resumen WSP -->
-            <button onclick="abrirResumenTurnos()"
-              style="display:inline-flex;align-items:center;gap:6px;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;color:#1b5e20;cursor:pointer">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              Ver Resumen
-            </button>
             <!-- imprimir -->
             <button onclick="abrirModalImprimirCitas()"
               style="display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border1);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--text2);cursor:pointer">
@@ -1823,13 +1799,16 @@ color:#555;
           </div>
         </div>
 
-        <!-- ── PANEL HOY ── -->
-        <div style="margin-top:12px">
-          <div id="panel-citas-hoy" style="background:var(--bg1);border:2px solid var(--primary);border-radius:12px;padding:12px 18px">
-            <div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:.06em;margin-bottom:6px">HOY</div>
+        <!-- ── PANEL PRÓXIMAS CITAS ── -->
+        <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap">
+          <div id="panel-citas-hoy" style="flex:1;min-width:220px;background:var(--bg1);border:2px solid var(--primary);border-radius:12px;padding:14px 18px">
+            <div style="font-size:11px;font-weight:700;color:var(--primary);letter-spacing:.06em;margin-bottom:8px">HOY</div>
             <div id="citas-hoy-lista" style="font-size:13px;color:var(--text2)">Sin citas hoy</div>
           </div>
-          <div id="panel-citas-semana" style="display:none"><div id="citas-proximas-lista"></div></div>
+          <div id="panel-citas-semana" style="flex:2;min-width:280px;background:var(--bg1);border:1px solid var(--border1);border-radius:12px;padding:14px 18px">
+            <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:.06em;margin-bottom:8px">PRÓXIMOS 7 DÍAS</div>
+            <div id="citas-proximas-lista" style="font-size:13px;color:var(--text2)">Sin citas próximas</div>
+          </div>
         </div>
 
         <!-- ── CALENDARIO ── -->
@@ -1897,7 +1876,7 @@ color:#555;
       </div>
 
       <!-- ── MODAL NUEVA CITA / DETALLE CITA ── -->
-      <div id="modal-cita" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1300;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+      <div id="modal-cita" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
         <div style="background:#1a2e1a;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:0;width:100%;max-width:500px;box-shadow:0 24px 64px rgba(0,0,0,.6);max-height:92vh;overflow:hidden;margin:16px;display:flex;flex-direction:column">
           <!-- header del modal -->
           <div style="padding:24px 28px 0;display:flex;align-items:center;justify-content:space-between">
@@ -2196,19 +2175,12 @@ color:#555;
 <!-- MODAL: HISTORIA CLÍNICA -->
 <div class="modal-overlay" id="modal-hc">
   <div class="modal modal-lg">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <h2 style="margin:0">
-        <span id="hc-modal-paciente" style="font-size:24px;font-weight:700;color:var(--text)"></span>
-        <span style="font-size:14px;font-weight:400;color:var(--muted2);margin-left:10px">Historia Clínica</span>
-      </h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="margin:0">Historia Clínica</h2>
       <div style="display:flex;gap:8px">
         <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-hc')">× Cancelar</button>
         <button class="btn btn-primary btn-sm" id="btn-guardar-hc" onclick="submitHC()">Guardar Historia Clínica</button>
       </div>
-    </div>
-    <div id="hc-modal-os-row" style="display:none;margin-bottom:16px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-      <span style="font-size:13px;color:var(--muted2)">🏥 <strong style="color:var(--text)" id="hc-modal-os"></strong></span>
-      <span id="hc-modal-afiliado-wrap" style="font-size:13px;color:var(--muted2);display:none">Afiliado: <strong style="color:var(--text)" id="hc-modal-afiliado"></strong></span>
     </div>
     <input type="hidden" id="hc-id">
     <input type="hidden" id="hc-paciente-id">
@@ -2556,13 +2528,6 @@ function showModal(id) {
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('show');
-  // Restaurar botones "Guardando..." si quedaron colgados
-  if (id === 'modal-hc') {
-    ['btn-guardar-hc','btn-guardar-hc-bottom'].forEach(function(bid) {
-      var el = document.getElementById(bid);
-      if (el) { el.disabled = false; el.innerHTML = 'Guardar Historia Clínica'; }
-    });
-  }
 }
 
 function confirm_(msg, onOk) {
@@ -3290,7 +3255,7 @@ async function abrirPaciente(id) {
 
     try { renderHC(hc); }             catch(ex) { console.error('renderHC:', ex); }
     try { renderConsultas(cons); }    catch(ex) { console.error('renderConsultas:', ex); }
-    try { renderEndoscopias(endos); } catch(ex) { console.error('renderEndoscopias:', ex); document.getElementById('endoscopias-list').innerHTML = '<div style="padding:20px;color:red;font-size:12px">Error: '+ex.message+'</div>'; }
+    try { renderEndoscopias(endos); } catch(ex) { console.error('renderEndoscopias:', ex); }
 
     if (!pacLocal) {
       showPage('detalle');
@@ -3532,21 +3497,6 @@ function prepModalHC() {
     }
   }
   document.getElementById('hc-paciente-id').value = pac.id;
-  // Poblar nombre y OS en el header del modal
-  var hcPacEl = document.getElementById('hc-modal-paciente');
-  if (hcPacEl) hcPacEl.textContent = pac.apellidoNombre || '';
-  var hcOsRow   = document.getElementById('hc-modal-os-row');
-  var hcOsEl    = document.getElementById('hc-modal-os');
-  var hcAfilEl  = document.getElementById('hc-modal-afiliado');
-  var hcAfilWrap= document.getElementById('hc-modal-afiliado-wrap');
-  if (hcOsRow && pac.obraSocial) {
-    hcOsRow.style.display = 'flex';
-    if (hcOsEl)   hcOsEl.textContent   = pac.obraSocial;
-    if (hcAfilEl && pac.nroAfiliado) {
-      hcAfilEl.textContent = pac.nroAfiliado;
-      if (hcAfilWrap) hcAfilWrap.style.display = 'inline';
-    } else if (hcAfilWrap) { hcAfilWrap.style.display = 'none'; }
-  } else if (hcOsRow) { hcOsRow.style.display = 'none'; }
   showModal('modal-hc');
 }
 
@@ -3561,8 +3511,6 @@ async function submitHC() {
   const btns = ['btn-guardar-hc','btn-guardar-hc-bottom'].map(id => document.getElementById(id)).filter(Boolean);
   btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
   const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = 'Guardar Historia Clínica'; });
-  // Seguridad: restaurar botones si algo falla silenciosamente (max 30s)
-  const _restoreTimer = setTimeout(restore, 30000);
 
   showLoading('Guardando Historia Clínica...');
 
@@ -3601,7 +3549,7 @@ async function submitHC() {
       restore();
     }
   } catch (e) { toast('Error de conexión: ' + e.message, 'error'); restore(); }
-  finally { hideLoading(); clearTimeout(_restoreTimer); restore(); }
+  finally { hideLoading(); }
 }
 
 // ─── CONSULTAS ───────────────────────────────────────────────
@@ -3722,11 +3670,6 @@ function _consultaDraftHasContent(d) {
 }
 
 function cancelarConsulta() {
-  // Restaurar botones por si quedaron en "Guardando..."
-  ['btn-guardar-consulta','btn-guardar-consulta-bottom'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.disabled = false; el.innerHTML = 'Guardar Consulta'; }
-  });
   // Guardar draft si hay contenido
   const draft = _consultaDraftRead();
   if (_consultaDraftHasContent(draft)) {
@@ -3854,8 +3797,6 @@ async function submitConsulta() {
   const btns = ['btn-guardar-consulta','btn-guardar-consulta-bottom'].map(id => document.getElementById(id)).filter(Boolean);
   btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
   const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = 'Guardar Consulta'; });
-  // Seguridad: restaurar botones si algo falla silenciosamente (max 30s)
-  const _restoreTimer = setTimeout(restore, 30000);
 
   showLoading('Guardando consulta...');
   const consId = document.getElementById('cons-id') ? document.getElementById('cons-id').value : '';
@@ -3884,7 +3825,7 @@ async function submitConsulta() {
       renderConsultas(r.ok ? r.data : []);
     } else { toast('Error: ' + res.error, 'error'); restore(); }
   } catch (e) { toast('Error de conexión: ' + e.message, 'error'); restore(); }
-  finally { hideLoading(); clearTimeout(_restoreTimer); restore(); }
+  finally { hideLoading(); }
 }
 
 // prepModalConsulta() se llama directo desde el onclick del botón (ver HTML)
@@ -4139,90 +4080,6 @@ function nuevaEndoscopia(tipo) {
   showModal('modal-endoscopia');
 }
 
-function editarEndoscopia(endoId) {
-  const pac  = App.pacienteActual;
-  const list = App.endoscopiasList || [];
-  const e    = list.find(x => x.id == endoId);
-  if (!e || !pac) { toast('No se encontró el estudio', 'error'); return; }
-
-  // Resetear form y cargar datos
-  resetFormEndoscopia();
-
-  const tipo   = (e.tipoEstudio || 'VEDA');
-  const esVeda = !tipo.toUpperCase().includes('COLON');
-
-  // ID para que submitEndoscopia actualice en vez de crear
-  document.getElementById('endo-id').value    = e.id;
-  document.getElementById('endo-tipo').value  = tipo;
-  document.getElementById('endo-paciente-id').value = pac.id;
-  document.getElementById('endo-modal-titulo').textContent =
-    'Editar ' + tipo + ' — ' + pac.apellidoNombre;
-
-  // Datos del paciente en el header del modal
-  const _edadEndo = calcEdadFiliatorios(pac.fechaNac) || pac.edad;
-  const _sexoEndo = pac.sexo || inferirSexo(pac.apellidoNombre) || '—';
-  document.getElementById('endo-pac-nombre').textContent = pac.apellidoNombre || '';
-  document.getElementById('endo-pac-dni').textContent    = pac.dni || '—';
-  document.getElementById('endo-pac-edad').textContent   = _edadEndo ? _edadEndo + ' años' : '—';
-  document.getElementById('endo-pac-sexo').textContent   = _sexoEndo;
-  document.getElementById('endo-pac-os').textContent     = pac.obraSocial || '—';
-  document.getElementById('endo-pac-afil').textContent   = pac.nroAfiliado || '—';
-
-  // Campos del formulario
-  document.getElementById('endo-fecha').value      = e.fecha || todayInputDMY();
-  const lugarEl = document.getElementById('endo-lugar');
-  if (lugarEl) lugarEl.value = e.lugarRealizacion || '';
-  const pedidoEl = document.getElementById('endo-pedidopor');
-  if (pedidoEl) pedidoEl.value = e.pedidoPor || '';
-  const antecEl = document.getElementById('endo-antec');
-  if (antecEl) antecEl.value = e.antecedentes || '';
-  const motivoEl = document.getElementById('endo-motivo');
-  if (motivoEl) motivoEl.value = e.motivoExamen || '';
-  const impresionEl = document.getElementById('endo-impresion');
-  if (impresionEl) impresionEl.value = e.impresionDiagnostica || '';
-  const analgesiaEl = document.getElementById('endo-analgesia');
-  if (analgesiaEl) analgesiaEl.value = e.analgesia || '';
-  const anestesistaEl = document.getElementById('endo-anestesista');
-  if (anestesistaEl) anestesistaEl.value = e.anestesista || '';
-
-  // Mostrar/ocultar secciones
-  document.getElementById('seccion-veda').style.display  = esVeda ? '' : 'none';
-  document.getElementById('seccion-colon').style.display = esVeda ? 'none' : '';
-
-  if (esVeda) {
-    const esofagoEl = document.getElementById('endo-esofago');
-    if (esofagoEl) esofagoEl.value = e.esofago || '';
-    const etipoEl = document.getElementById('endo-endoscopia-tipo');
-    if (etipoEl) etipoEl.value = e.Endoscopia || '';
-  } else {
-    const colonEl = document.getElementById('endo-colon-informe');
-    if (colonEl) colonEl.value = e.esofago || e.colonInforme || '';
-    const regionAlcEl = document.getElementById('endo-region-alcanzada');
-    if (regionAlcEl) regionAlcEl.value = e.RegionAlcanzada || e.regionAlcanzada || '';
-    const regionEl = document.getElementById('endo-region');
-    if (regionEl) regionEl.value = e.RegionAlcanzada || e.regionAlcanzada || '';
-    // Boston
-    ['CD','CT','CI'].forEach(function(seg) {
-      const el = document.getElementById('endo-boston-' + seg.toLowerCase());
-      const val = e['boston' + seg];
-      if (el && val !== undefined && val !== '') el.value = val;
-    });
-  }
-
-  // Cambiar botón guardar para indicar que es edición
-  ['btn-guardar-endo','btn-guardar-endo-bottom'].forEach(function(id) {
-    const el = document.getElementById(id);
-    if (el) { el.textContent = '✓ Guardar Cambios'; el.style.background = '#1565c0'; }
-  });
-  ['btn-pdf-endo','btn-pdf-endo-bottom'].forEach(function(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none'; // ocultar "Guardar y PDF" en edición
-  });
-
-  actualizarDatalistAnestesistas();
-  showModal('modal-endoscopia');
-}
-
 function nuevaEndoscopiaDesdeNav() {
   if (!App.pacienteActual) {
     toast('Primero abrí un paciente para agregar una endoscopía', 'info');
@@ -4234,15 +4091,6 @@ function nuevaEndoscopiaDesdeNav() {
 
 function resetFormEndoscopia() {
   fotosData = [];
-  // Restaurar botones al estado original (por si venimos de editar)
-  ['btn-guardar-endo','btn-guardar-endo-bottom'].forEach(function(id) {
-    const el = document.getElementById(id);
-    if (el) { el.textContent = 'Guardar Estudio'; el.style.background = ''; }
-  });
-  ['btn-pdf-endo','btn-pdf-endo-bottom'].forEach(function(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = '';
-  });
   document.getElementById('fotos-preview').innerHTML = '';
   document.getElementById('fotos-status').textContent = '';
   document.getElementById('fotos-input').value = '';
@@ -4501,7 +4349,6 @@ async function submitEndoscopia(generarPDF = false) {
 
 // ─── RENDER ENDOSCOPÍAS ─────────────────────────────────────
 function renderEndoscopias(list) {
-  App.endoscopiasList = list; // cache para editarEndoscopia
   const cnt = document.getElementById('tab-endo-count');
   cnt.textContent = list.length || '';
 
@@ -4552,28 +4399,9 @@ function renderEndoscopias(list) {
            <span style="background:#78350f;color:#fef3c7;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:.5px">HISTÓRICO</span>
            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verPDFHistorico('${pdfHistoricoUrl}')" title="Ver PDF original">Ver PDF</button>
            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirPDFHistorico('${pdfHistoricoUrl}')" title="Imprimir PDF original">🖨</button>`
-        : (function(){
-            var pac2 = App.pacienteActual || {};
-            var tel2 = String(pac2.telefono || '').replace(/\D/g,'');
-            var tipo2 = (e.tipoEstudio||'VEDA').toUpperCase().includes('COLON') ? 'Colonoscop\u00eda' : 'VEDA';
-            var fec2 = e.fecha || '';
-            if (/^\d{4}-\d{2}-\d{2}$/.test(fec2)){var pp=fec2.split('-');fec2=pp[2]+'/'+pp[1]+'/'+pp[0];}
-            var wspBtn2;
-            if (!tel2 || tel2.length < 6) {
-              wspBtn2 = '<button class="btn btn-ghost btn-sm" disabled title="Sin tel\u00e9fono" style="opacity:.45;cursor:not-allowed;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-size:10px;padding:4px 8px;font-weight:700">SIN TEL</button>';
-            } else {
-              var msg2 = _endoMsgCargar();
-              var txt2 = msg2.split('{nombre}').join(pac2.apellidoNombre||'').split('{fecha}').join(fec2).split('{tipo}').join(tipo2);
-              var url2 = 'https://wa.me/549'+tel2+'?text='+encodeURIComponent(txt2);
-              wspBtn2 = '<a href="'+url2+'" target="_blank" onclick="event.stopPropagation()" class="btn btn-ghost btn-sm" title="WhatsApp" style="background:#dcfce7;color:#16a34a;border:1px solid #86efac;display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:5px 10px">'
-                + '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>'
-                + '</a>';
-            }
-            return '<!-- NUEVO -->'
-              + '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verInformeEndoscopia(\'' + e.id + '\')" title="Ver informe">Ver</button> '
-              + wspBtn2
-              + ' <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editarEndoscopia(\'' + e.id + '\')" title="Editar informe" style="font-size:14px">✏️</button>'              + ' <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia(\'' + e.id + '\')" title="Imprimir informe">\uD83D\uDDA8</button>';
-          })()
+        : `<!-- NUEVO -->
+           <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();verInformeEndoscopia('${e.id}')" title="Ver informe">Ver</button>
+           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();descargarInformeEndoscopia('${e.id}')" title="Descargar PDF" style="font-size:15px;padding:6px 10px">⬇</button>\n           <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();imprimirEndoscopia('${e.id}')" title="Imprimir informe">🖨</button>`;
 
       // Color de fondo de la fila: diferente para históricos
       const rowBg = esHistorico ? '#fffbeb' : 'transparent';
@@ -4757,7 +4585,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   const todasFotos = [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean);
   const fotos    = todasFotos.filter(url => !url.includes('/file/d/'));
   const pdfsMigrados = todasFotos.filter(url => url.includes('/file/d/'));
-  const fotoImgs = fotos.map(url =>
+  const fotoImgs = fotos.slice(0,4).map(url =>
     `<img src="${driveThumb(url)}">`
   ).join('');
 
@@ -4791,86 +4619,86 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;600;700;800;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Inter',Arial,sans-serif; font-size:13.5px; color:#1a1a1a; background:#fff; }
-  .page { padding:0; max-width:794px; margin:0 auto; position:relative;
-          display:flex; flex-direction:column; min-height:277mm; height:277mm; overflow:hidden; }
+  body { font-family:'Inter',Arial,sans-serif; font-size:10.5px; color:#1a1a1a; background:#fff; }
+  .page { padding:0; max-width:794px; margin:0 auto; position:relative; min-height:0; padding-bottom:0; }
 
   /* ── HEADER ── */
   .header {
-    background:#fff; padding:10px 22px 8px;
-    position:relative; overflow:hidden;
-    border-bottom:2px solid #e0ece6; flex-shrink:0;
+    background:#fff;
+    padding:7px 20px 6px; position:relative; overflow:hidden;
+    border-bottom:2px solid #e0ece6;
+    min-height:60px;
   }
+  /* Círculos grandes con border-radius:50% — solo asoma el arco desde top-right */
   .hdr-circle { position:absolute; border-radius:50%; }
-  .hdr-c1 { width:400px; height:400px; background:#c0efd8; top:-130px; right:-130px; }
-  .hdr-c2 { width:300px; height:300px; background:#60cc98; top:-95px;  right:-95px;  }
-  .hdr-c3 { width:205px; height:205px; background:#2a9d6e; top:-65px;  right:-65px;  }
+  .hdr-c1 { width:380px; height:380px; background:#c0efd8; top:-120px; right:-120px; }
+  .hdr-c2 { width:290px; height:290px; background:#60cc98; top:-90px;  right:-90px;  }
+  .hdr-c3 { width:200px; height:200px; background:#2a9d6e; top:-60px;  right:-60px;  }
   .hdr-row { display:flex; align-items:center; gap:14px; position:relative; z-index:10; }
   .hdr-texts { flex:1; color:#111; }
-  .hdr-clinica { font-size:24px; font-weight:900; letter-spacing:.4px; line-height:1.1; color:#111; }
-  .hdr-sub     { font-size:13px; font-weight:400; color:#666; margin-top:2px; }
-  .hdr-unidad  { margin-top:5px; font-size:15px; font-weight:700; color:#1a7a4a; }
-  .hdr-dra     { font-size:13px; color:#555; }
+  .hdr-clinica { font-size:20px; font-weight:900; letter-spacing:.4px; line-height:1.1; color:#111; }
+  .hdr-sub { font-size:12px; font-weight:400; color:#666; margin-top:1px; }
+  .hdr-unidad { margin-top:5px; font-size:13px; font-weight:700; color:#1a7a4a; }
+  .hdr-dra { font-size:12px; color:#555; }
 
   /* ── TÍTULO CENTRAL ── */
-  .titulo-wrap { text-align:center; padding:6px 20px 4px; flex-shrink:0; }
-  .titulo-main { font-size:21px; font-weight:900; color:#1a7a4a; letter-spacing:1.4px; text-transform:uppercase; line-height:1; }
-  .titulo-sub  { font-size:12px; color:#555; margin-top:3px; font-weight:400; letter-spacing:.3px; }
+  .titulo-wrap { text-align:center; padding:4px 20px 2px; }
+  .titulo-main { font-size:17px; font-weight:900; color:#1a7a4a; letter-spacing:1.2px; text-transform:uppercase; line-height:1; }
+  .titulo-sub  { font-size:10px; color:#555; margin-top:3px; font-weight:400; letter-spacing:.25px; }
 
-  /* ── CONTENIDO CENTRAL CRECE ── */
-  .content-grow { flex:1; display:flex; flex-direction:column; min-height:0; }
-
-  /* ── CARD ── */
-  .card { margin:0 12px 6px; border:1px solid #e0ece6; border-radius:9px; overflow:hidden; }
+  /* ── CARD CONTENIDO ── */
+  .card { margin:0 10px 4px; border:1px solid #e0ece6; border-radius:8px; overflow:hidden; }
 
   /* ── SECCIÓN BADGE ── */
-  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:12px; font-weight:800;
-               letter-spacing:1.2px; text-transform:uppercase; padding:3px 10px; border-radius:4px; margin:6px 12px 4px; }
+  .sec-badge { display:inline-block; background:#1a7a4a; color:#fff; font-size:11px; font-weight:800; letter-spacing:1.2px; text-transform:uppercase; padding:2px 7px; border-radius:4px; margin:5px 10px 3px; }
 
-  /* ── PACIENTE ── */
-  .pac-nombre { font-size:18px; font-weight:900; color:#111; padding:2px 14px 5px; }
+  /* ── TABLA PACIENTE ── */
+  .pac-nombre { font-size:14px; font-weight:900; color:#111; padding:0 12px 3px; }
   .pac-row    { display:flex; gap:0; border-top:1px solid #e8f2ec; }
-  .pac-cell   { flex:1; padding:5px 12px; border-right:1px solid #e8f2ec; }
+  .pac-cell   { flex:1; padding:2px 10px; border-right:1px solid #e8f2ec; }
   .pac-cell:last-child { border-right:none; }
-  .pac-lbl { font-size:10px; font-weight:800; color:#1a7a4a; text-transform:uppercase; letter-spacing:.6px; }
-  .pac-val { font-size:14.5px; font-weight:600; margin-top:2px; }
-  .pac-row-full { padding:5px 12px; border-top:1px solid #e8f2ec; display:flex; gap:24px; flex-wrap:wrap; }
-  .pac-row-full span { font-size:13px; }
+  .pac-lbl { font-size:12.5px; font-weight:700; color:#1a7a4a; text-transform:uppercase; letter-spacing:.5px; }
+  .pac-val { font-size:13px; font-weight:600; margin-top:1px; }
+  .pac-row-full { padding:2px 10px; border-top:1px solid #e8f2ec; display:flex; gap:20px; }
 
   /* ── INFORME ── */
-  .informe-text { font-size:13.5px; line-height:1.5; white-space:pre-wrap; padding:6px 14px 8px;
-                  color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
+  .informe-text { font-size:11.5px; line-height:1.0; white-space:pre-wrap; padding:4px 10px 5px; color:#222; font-family:'IBM Plex Sans','Inter',system-ui,sans-serif; }
 
   /* ── DIAGNÓSTICO ── */
-  .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:7px; padding:7px 14px; margin:0 12px 6px; }
-  .diag-bullet { display:flex; align-items:flex-start; gap:7px; margin-bottom:4px; font-size:14px; font-weight:600; }
-  .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:17px; line-height:1; margin-top:-1px; }
+  .diag-wrap { margin:0 10px 4px; }
+  .diag-inner { background:#f0f9f4; border:1px solid #c0ddc9; border-radius:6px; padding:4px 10px; }
+  .diag-row { display:flex; gap:20px; }
+  .diag-bullets { flex:1; }
+  .diag-bullet { display:flex; align-items:flex-start; gap:6px; margin-bottom:2px; font-size:12px; font-weight:600; }
+  .diag-bullet::before { content:'•'; color:#1a7a4a; font-size:14px; line-height:1; margin-top:-1px; }
+  .diag-anest { font-size:10px; color:#555; text-align:right; white-space:nowrap; padding-top:2px; }
+  .diag-anest b { color:#111; }
 
-  /* ── FOTOS ── */
-  .fotos-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; padding:6px 12px 10px; }
-  .fotos-grid img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:6px;
-                    border:1px solid #d0e8d8; display:block; }
+  /* ── FOTOS + FIRMA: row, fotos 2x2 6cm, firma al costado ── */
+  .fotos-firma-row { display:flex; align-items:flex-end; gap:10px; padding:4px 14px 0; break-inside:avoid; page-break-inside:avoid; }
+  .fotos-grid { display:grid; grid-template-columns:repeat(2,6cm); grid-template-rows:repeat(2,6cm); gap:5px; flex-shrink:0; }
+  .fotos-grid img { width:6cm; height:6cm; object-fit:cover; border-radius:4px; border:1px solid #ddd; display:block; }
+  /* ── FIRMA: al costado derecho del grid ── */
+  .firma-row { display:flex; justify-content:flex-end; flex:1; padding-bottom:6px; }
+  .firma-wrap { text-align:center; min-width:150px; }
+  .firma-img { width:130px; max-height:46px; object-fit:contain; display:block; margin:0 auto 2px; }
+  .firma-name { font-size:10.5px; font-weight:800; }
+  .firma-mp, .firma-mn { font-size:9px; color:#555; }
 
-  /* ── FIRMA ── */
-  .firma-row  { display:flex; justify-content:flex-end; padding:4px 16px 4px; flex-shrink:0; }
-  .firma-wrap { text-align:center; min-width:165px; }
-  .firma-img  { width:148px; max-height:54px; object-fit:contain; display:block; margin:0 auto 3px; }
-  .firma-name { font-size:13px; font-weight:800; }
-  .firma-mp, .firma-mn { font-size:11px; color:#555; }
-
-  /* ── FOOTER siempre al fondo ── */
-  .footer { flex-shrink:0; border-top:2px solid #1a7a4a; padding:5px 20px;
-            text-align:center; font-size:10px; color:#555; line-height:1.4;
-            background:#fff; margin-top:auto; }
+  /* ── FOOTER estático — no fixed, nunca rompe a 2da pág ── */
+  .footer { border-top:2px solid #1a7a4a; padding:3px 20px; text-align:center; font-size:9px; color:#555; line-height:1.3; background:#fff; margin-top:2px; }
   .footer b { color:#1a7a4a; }
   .footer-dots { color:#1a7a4a; margin:0 5px; }
 
   @media print {
     html,body { margin:0; padding:0; }
-    .page { max-width:100%; height:100%; }
+    .page { max-width:100%; padding-bottom:0; }
     * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
   }
-  @page { size:A4 portrait; margin:7mm 8mm 6mm 8mm; }
+  @page {
+    size: A4 portrait;
+    margin: 8mm 8mm 6mm 8mm;
+  }
 
 </style>
 </head>
@@ -4897,8 +4725,6 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
     <div class="titulo-main">Informe Endoscópico</div>
     <div class="titulo-sub">Videoesofagogastroduodenoscopia — ${(e.tipoEstudio||'VEDA').toUpperCase()}</div>
   </div>
-
-  <div class="content-grow">
 
   <!-- CARD PACIENTE -->
   <div class="card">
@@ -4936,8 +4762,8 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   </div>
 
   <!-- INFORME ENDOSCÓPICO -->
-  <div class="card">
-    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px 5px;flex-wrap:wrap">
+  <div class="card" style="margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px;flex-wrap:wrap">
       <span class="sec-badge" style="margin:0">Informe Endoscópico</span>
       ${!(e.tipoEstudio||'').toUpperCase().includes('VEDA') && regionAlcanzada ? `
       <span style="background:#d4f5e4;color:#1a7a4a;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;border:1px solid #a8e6c6">
@@ -4957,33 +4783,35 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   </div>
 
   <!-- DIAGNÓSTICO -->
-  <span class="sec-badge">Impresión Diagnóstica</span>
-  <div class="diag-inner">
-    ${(e.impresionDiagnostica||'—').split('\\n').map(l=>l.trim()).filter(Boolean).map(l=>
-      `<div class="diag-bullet">${l.replace(/^[•·-]\s*/,'')}</div>`
-    ).join('')}
-  </div>
-
-
-  <!-- FOTOS con badge -->
-  ${fotoImgs ? `
-  <div class="card" style="break-inside:avoid;page-break-inside:avoid">
-    <span class="sec-badge">Imágenes</span>
-    <div class="fotos-grid">${fotoImgs}</div>
-  </div>` : ''}
-
-  <!-- FIRMA -->
-  <div class="firma-row">
-    <div class="firma-wrap">
-      ${firmaImgHtml}
-      <div style="width:148px;height:1px;background:#1a7a4a;margin:3px auto 3px"></div>
-      <div class="firma-name">Dra. Lorena Notari</div>
-      <div class="firma-mp">MP 12.710</div>
-      <div class="firma-mn">MN 126.095</div>
+  <div class="card" style="margin-bottom:8px">
+    <span class="sec-badge">Impresión Diagnóstica</span>
+    <div class="diag-wrap" style="margin-top:0">
+      <div class="diag-inner">
+        <div class="diag-row">
+          <div class="diag-bullets">
+            ${(e.impresionDiagnostica||'—').split('\\n').map(l=>l.trim()).filter(Boolean).map(l=>
+              `<div class="diag-bullet">${l.replace(/^[•·-]\s*/,'')}</div>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  </div><!-- /content-grow -->
+
+  <!-- FOTOS (2x2, 6cm) + FIRMA al costado -->
+  <div class="fotos-firma-row">
+    ${fotoImgs ? `<div class="fotos-grid">${fotoImgs}</div>` : '<div></div>'}
+    <div class="firma-row">
+      <div class="firma-wrap">
+        ${firmaImgHtml}
+        <div style="width:148px;height:1px;background:#1a7a4a;margin:3px auto 3px"></div>
+        <div class="firma-name">Dra. Lorena Notari</div>
+        <div class="firma-mp">MP 12.710</div>
+        <div class="firma-mn">MN 126.095</div>
+      </div>
+    </div>
+  </div>
 
   <!-- FOOTER estático -->
   <div class="footer">
@@ -5532,26 +5360,12 @@ function renderCalSemana(el) {
         }).join('')
       : '<div style="font-size:11px;color:' + lblColor + ';text-align:center;padding:6px 0;opacity:.35">—</div>';
 
-    // ── Bloques de turnos para Lunes y Martes ──
-    var esDiaBloques = (diaNum === 1 || diaNum === 2);
-    var panelAbierto = esDiaBloques && !!document.getElementById('panel-bloques') && document.getElementById('panel-bloques').dataset.iso === iso;
-    var btnBloquesHTML = '';
-    if (esDiaBloques) {
-      var lblBloques   = panelAbierto ? '▲ Cerrar bloques' : '⊞ Abrir bloques';
-      var btnBloquesBg = panelAbierto ? '#e8f5e9' : '#fff8e1';
-      var btnBloquesBorder = panelAbierto ? '#a5d6a7' : '#ffe082';
-      var btnBloquesColor = panelAbierto ? '#1b5e20' : '#e65100';
-      btnBloquesHTML = '<button onclick="toggleBloquesCol(\'' + iso + '\')" style="background:' + btnBloquesBg + ';border:1px solid ' + btnBloquesBorder + ';border-radius:6px;width:100%;padding:5px 4px;font-size:9px;font-weight:800;color:' + btnBloquesColor + ';cursor:pointer;letter-spacing:.03em;margin-bottom:6px">' + lblBloques + '</button>';
-    }
-
-
     return '<div style="flex:1;min-width:80px;background:' + colBg + ';border-radius:12px;border:1px solid ' + colBorder + ';padding:10px 8px;display:flex;flex-direction:column">'
       + '<div style="text-align:center;margin-bottom:8px">'
       +   '<div style="font-size:11px;font-weight:800;color:' + lblColor + ';letter-spacing:.1em">' + _DIAS_CORTO[diaNum].toUpperCase() + '</div>'
       +   '<div style="font-size:24px;font-weight:900;color:' + diaColor + ';line-height:1.1;margin:3px 0">' + d.getDate() + '</div>'
       +   '<div style="font-size:11px;color:' + lblColor + '">' + _MESES[d.getMonth()].slice(0,3) + '</div>'
       + '</div>'
-      + btnBloquesHTML
       + chips
       + '<div style="margin-top:auto;padding-top:6px">'
       +   '<button onclick="abrirModalNuevaCita(\'' + iso + '\')" style="background:' + btnBg + ';border:1px dashed ' + btnBorder + ';border-radius:5px;width:100%;padding:4px;font-size:10px;font-weight:700;color:' + btnColor + ';cursor:pointer">+ cita</button>'
@@ -5780,13 +5594,10 @@ function _bodyFormCita(c) {
   return '<div style="display:flex;flex-direction:column;gap:16px">'
 
     + '<div style="display:flex;gap:8px;align-items:flex-end">'
-    + '<div style="flex:1;position:relative"><label style="' + LBL + '">NOMBRE PACIENTE *</label>'
+    + '<div style="flex:1"><label style="' + LBL + '">NOMBRE PACIENTE *</label>'
     + '<input id="nc-nombre" type="text" placeholder="Apellido, Nombre" value="' + nombre.replace(/"/g,'&quot;') + '"'
-    + ' style="' + INP + 'padding:11px 14px;font-size:15px;font-weight:600" autocomplete="off"'
-    + ' oninput="_citaAutocomplete(this)"'
-    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '">'
-    + '<div id="nc-sugg" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1a2e1a;border:1px solid rgba(100,220,140,.3);border-radius:10px;z-index:500;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.4)"></div>'
-    + '</div>'
+    + ' style="' + INP + 'padding:11px 14px;font-size:15px;font-weight:600"'
+    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '"></div>'
     + speechBtnHTML
     + '</div>'
 
@@ -6316,16 +6127,16 @@ function _sEscucharCampo() {
     _sAplicarCampo(campo, raw);
   };
   _sRec.onerror = function(ev) {
-    if (!_sActivo) return; // ya se paró manualmente
     if (ev.error === 'no-speech') {
-      _sEscucharCampo(); // reintentar mismo campo
+      // Reintentar el mismo campo
+      _sEscucharCampo();
     } else {
       _sParar();
     }
   };
   _sRec.onend = function() {
-    // No hacer nada: onresult y onerror ya manejan el flujo
-    // _sActivo=false significa que el usuario paró manualmente
+    // Si sigue activo y no fue parado manualmente, se manejó en onresult
+    // (onresult llama a _sEscucharCampo o _sParar)
   };
   try { _sRec.start(); } catch(e) { _sParar(); }
 }
@@ -6642,680 +6453,6 @@ function _wspEnviarTodos() {
   setTimeout(function() {
     toast(urls.length + ' recordatorio' + (urls.length !== 1 ? 's' : '') + ' enviado' + (urls.length !== 1 ? 's' : ''), 'ok');
   }, urls.length * 700 + 200);
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// BLOQUES DE TURNOS — Lunes 9:30-12:30 / Martes 07:00-10:00
-// Slots de 30 min. VEDA/VCC ocupa 2 bloques consecutivos.
-// ═══════════════════════════════════════════════════════════════
-
-var _BLOQUES_CONFIG = {
-  1: { inicio: '09:30', fin: '12:30', label: 'Lunes'  },
-  2: { inicio: '07:00', fin: '10:00', label: 'Martes' }
-};
-
-function _generarSlots(inicio, fin) {
-  var slots = [];
-  var toMin  = function(h){ var p=h.split(':'); return parseInt(p[0])*60+parseInt(p[1]); };
-  var toHora = function(m){ return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); };
-  var cur = toMin(inicio), end = toMin(fin);
-  while (cur < end) { slots.push(toHora(cur)); cur += 30; }
-  return slots;
-}
-
-function _siguienteSlot(hora) {
-  var p = hora.split(':'), h = parseInt(p[0]), m = parseInt(p[1]);
-  m += 30; if (m >= 60) { h += 1; m -= 60; }
-  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
-}
-
-// ── Abrir panel flotante de bloques ──────────────────────────────
-function toggleBloquesCol(iso) {
-  var existing = document.getElementById('panel-bloques');
-  // Si ya está abierto para este mismo día → cerrar
-  if (existing && existing.dataset.iso === iso) {
-    existing.remove();
-    return;
-  }
-  // Si está abierto para otro día → reemplazar
-  if (existing) existing.remove();
-  _abrirPanelBloques(iso);
-}
-
-function _abrirPanelBloques(iso) {
-  var d   = _parseFechaISO(iso);
-  if (!d) return;
-  var diaNum = d.getDay();
-  var cfg    = _BLOQUES_CONFIG[diaNum];
-  if (!cfg) return;
-
-  var citas  = _citasCargar();
-  var slots  = _generarSlots(cfg.inicio, cfg.fin);
-
-  // Nombres de día y mes completos
-  var DIAS_FULL  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  var fechaLabel = DIAS_FULL[diaNum] + ', ' + d.getDate() + ' de ' + MESES_FULL[d.getMonth()] + ' ' + d.getFullYear();
-
-  // Crear overlay semitransparente
-  var overlay = document.createElement('div');
-  overlay.id = 'panel-bloques-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1050;backdrop-filter:blur(2px)';
-  overlay.onclick = function(e){ if(e.target===overlay) cerrarPanelBloques(); };
-  document.body.appendChild(overlay);
-
-  // Crear panel
-  var panel = document.createElement('div');
-  panel.id = 'panel-bloques';
-  panel.dataset.iso = iso;
-  panel.style.cssText = [
-    'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%)',
-    'z-index:1051;background:#0f1f0f',
-    'border:1px solid rgba(100,220,130,.25)',
-    'border-radius:20px;padding:0',
-    'width:min(520px,96vw);max-height:90vh;overflow:hidden',
-    'display:flex;flex-direction:column',
-    'box-shadow:0 32px 80px rgba(0,0,0,.7)'
-  ].join(';');
-  document.body.appendChild(panel);
-  window._panelBloquesIso = iso; // recordar para re-abrir tras guardar cita
-
-  _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel);
-}
-
-function _colorEstudio(estudio) {
-  if (!estudio) return '#1b5e20';
-  if (estudio.indexOf('VEDA/VCC') !== -1) return '#6a1b9a';
-  if (estudio === 'VEDA') return '#0277bd';
-  if (estudio === 'VCC')  return '#2e7d32';
-  return '#e65100';
-}
-
-function _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel) {
-  var citas = _citasCargar();
-  var ocupados = 0;
-  slots.forEach(function(h){ if(citas.some(function(c){return c.fecha===iso&&c.hora===h;})) ocupados++; });
-  var libres = slots.length - ocupados;
-
-  // ── Header ──
-  var header = document.createElement('div');
-  header.style.cssText = 'background:linear-gradient(135deg,#1b5e20,#2e7d32);padding:22px 24px 18px;flex-shrink:0';
-  header.innerHTML = '<div style="display:flex;align-items:flex-start;justify-content:space-between">'
-    + '<div>'
-    +   '<div style="font-size:28px;font-weight:900;color:#fff;line-height:1">' + fechaLabel.split(',')[0] + '</div>'
-    +   '<div style="font-size:14px;color:rgba(255,255,255,.75);margin-top:4px">' + fechaLabel.split(',').slice(1).join(',').trim() + '</div>'
-    +   '<div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">'
-    +     '<span style="background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:12px;color:#fff;font-weight:700">🕐 ' + cfg.inicio + ' – ' + cfg.fin + '</span>'
-    +     '<span style="background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:12px;color:#fff;font-weight:700">' + libres + ' libre' + (libres!==1?'s':'') + ' · ' + ocupados + ' ocupado' + (ocupados!==1?'s':'') + '</span>'
-    +   '</div>'
-    + '</div>'
-    + '<button onclick="cerrarPanelBloques()" style="background:rgba(255,255,255,.15);border:none;border-radius:10px;padding:8px 12px;color:#fff;cursor:pointer;font-size:18px;line-height:1;flex-shrink:0">✕</button>'
-    + '</div>';
-  panel.appendChild(header);
-
-  // ── Lista de slots ──
-  var body = document.createElement('div');
-  body.id = 'panel-bloques-body';
-  body.style.cssText = 'overflow-y:auto;flex:1;padding:16px 20px';
-
-  slots.forEach(function(hora, idx) {
-    var cita = citas.find(function(c){ return c.fecha === iso && c.hora === hora; });
-    var row  = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)';
-
-    // Hora
-    var horaEl = document.createElement('div');
-    horaEl.style.cssText = 'font-size:20px;font-weight:900;color:rgba(255,255,255,.9);width:52px;flex-shrink:0;font-variant-numeric:tabular-nums';
-    horaEl.textContent = hora;
-    row.appendChild(horaEl);
-
-    if (cita) {
-      // ── Slot OCUPADO ──
-      var info = document.createElement('div');
-      info.style.cssText = 'flex:1;min-width:0;cursor:pointer';
-      info.onclick = function(){ verCita(cita.id); };
-
-      var bg = _colorEstudio(cita.estudio);
-      var chip = document.createElement('div');
-      chip.style.cssText = 'background:' + bg + ';border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:10px';
-      chip.innerHTML = '<div style="flex:1;min-width:0">'
-        +   '<div style="font-size:14px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (cita.nombre||'—') + '</div>'
-        +   '<div style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px">'
-        +     (cita.estudio||'') + (cita.obraSocial ? ' · ' + cita.obraSocial : '')
-        +   '</div>'
-        + '</div>'
-        + '<div style="font-size:11px;color:rgba(255,255,255,.5);flex-shrink:0">ver ›</div>';
-      info.appendChild(chip);
-      row.appendChild(info);
-    } else {
-      // ── Slot LIBRE ──
-      var btn = document.createElement('button');
-      btn.style.cssText = 'flex:1;background:rgba(255,255,255,.04);border:1.5px dashed rgba(255,255,255,.2);border-radius:10px;padding:12px 16px;cursor:pointer;text-align:left;color:rgba(255,255,255,.35);font-size:13px;font-weight:600;transition:all .15s';
-      btn.textContent = '+ Agregar turno';
-      btn.onmouseenter = function(){ btn.style.background='rgba(46,125,50,.2)'; btn.style.borderColor='rgba(100,220,130,.4)'; btn.style.color='rgba(255,255,255,.8)'; };
-      btn.onmouseleave = function(){ btn.style.background='rgba(255,255,255,.04)'; btn.style.borderColor='rgba(255,255,255,.2)'; btn.style.color='rgba(255,255,255,.35)'; };
-      (function(h){ btn.onclick = function(){ abrirModalBloque(iso, h); }; })(hora);
-      row.appendChild(btn);
-    }
-
-    body.appendChild(row);
-  });
-
-  panel.appendChild(body);
-
-  // ── Footer ──
-  var footer = document.createElement('div');
-  footer.style.cssText = 'padding:14px 20px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;display:flex;justify-content:flex-end';
-  footer.innerHTML = '<button onclick="cerrarPanelBloques()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:9px 20px;color:rgba(255,255,255,.6);cursor:pointer;font-size:13px;font-weight:600">Cerrar</button>';
-  panel.appendChild(footer);
-}
-
-function cerrarPanelBloques() {
-  var p = document.getElementById('panel-bloques');
-  var o = document.getElementById('panel-bloques-overlay');
-  if (p) p.remove();
-  if (o) o.remove();
-  window._panelBloquesIso = null;
-}
-
-// Refrescar el panel si está abierto (después de guardar una cita)
-function _refreshPanelBloques() {
-  var panel = document.getElementById('panel-bloques');
-  if (!panel) return;
-  var iso = panel.dataset.iso;
-  if (!iso) return;
-  var d = _parseFechaISO(iso);
-  if (!d) return;
-  var diaNum = d.getDay();
-  var cfg    = _BLOQUES_CONFIG[diaNum];
-  if (!cfg) return;
-  var slots  = _generarSlots(cfg.inicio, cfg.fin);
-  var DIAS_FULL  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  var fechaLabel = DIAS_FULL[diaNum] + ', ' + d.getDate() + ' de ' + MESES_FULL[d.getMonth()] + ' ' + d.getFullYear();
-  // Limpiar y re-renderizar
-  while (panel.firstChild) panel.removeChild(panel.firstChild);
-  _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel);
-}
-
-// Modal selector de estudio (sin cambios de lógica, solo estética mejorada)
-function abrirModalBloque(iso, hora) {
-  var citas = _citasCargar();
-  var ocupado = citas.some(function(c){ return c.fecha === iso && c.hora === hora; });
-  if (ocupado) { toast('Ese horario ya tiene un turno', 'error'); return; }
-
-  var d = _parseFechaISO(iso);
-  var DIAS_FULL  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  var fechaLabel = d ? (DIAS_FULL[d.getDay()] + ' ' + d.getDate() + ' de ' + MESES_FULL[d.getMonth()]) : iso;
-
-  var modal = document.getElementById('modal-bloque-estudio');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'modal-bloque-estudio';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1400;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
-    document.body.appendChild(modal);
-  }
-
-  var estudios = [
-    { val:'VEDA',     label:'VEDA',       sub:'Videoendoscopía digestiva alta', bloques:1, color:'#0277bd' },
-    { val:'VCC',      label:'VCC',        sub:'Videocolonoscopía',              bloques:1, color:'#2e7d32' },
-    { val:'VEDA/VCC', label:'VEDA / VCC', sub:'Ambos · ocupa 2 bloques',        bloques:2, color:'#6a1b9a' },
-    { val:'Otro',     label:'Otro',       sub:'Estudio sin especificar',         bloques:1, color:'#e65100' }
-  ];
-
-  var sigHora  = _siguienteSlot(hora);
-  var diaNum   = d ? d.getDay() : 0;
-  var cfg      = _BLOQUES_CONFIG[diaNum];
-  var sigLibre = cfg && sigHora <= cfg.fin &&
-    !citas.some(function(c){ return c.fecha === iso && c.hora === sigHora; });
-
-  var cards = estudios.map(function(e) {
-    var disabled = (e.bloques === 2 && !sigLibre);
-    return '<div onclick="' + (disabled ? '' : 'confirmarBloqueEstudio(\'' + iso + '\',\'' + hora + '\',\'' + e.val + '\')') + '"'
-      + ' style="' + (disabled ? 'opacity:.4;cursor:not-allowed' : 'cursor:pointer') + ';background:#1a2e1a;border:2px solid ' + e.color + ';border-radius:14px;padding:16px 18px;user-select:none;transition:transform .1s"'
-      + (!disabled ? ' onmouseenter="this.style.transform=\'scale(1.02)\'" onmouseleave="this.style.transform=\'\'"' : '') + '>'
-      + '<div style="font-size:22px;font-weight:900;color:#fff">' + e.label + '</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">' + e.sub + '</div>'
-      + (disabled ? '<div style="font-size:11px;color:#f44336;margin-top:5px;font-weight:600">Siguiente bloque ocupado</div>' : '')
-      + '</div>';
-  }).join('');
-
-  modal.innerHTML = '<div style="background:#0f1f0f;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px;width:min(400px,92vw);box-shadow:0 24px 64px rgba(0,0,0,.7)">'
-    + '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">'
-    +   '<div>'
-    +     '<div style="font-size:18px;font-weight:900;color:#fff">¿Qué estudio?</div>'
-    +     '<div style="font-size:13px;color:rgba(255,255,255,.45);margin-top:4px">' + fechaLabel + ' · <strong style="color:rgba(255,255,255,.7)">' + hora + ' hs</strong></div>'
-    +   '</div>'
-    +   '<button onclick="cerrarModalBloqueEstudio()" style="background:rgba(255,255,255,.08);border:none;border-radius:8px;padding:6px 12px;color:rgba(255,255,255,.45);cursor:pointer;font-size:20px;line-height:1">✕</button>'
-    + '</div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' + cards + '</div>'
-    + '</div>';
-
-  modal.style.display = 'flex';
-}
-
-function cerrarModalBloqueEstudio() {
-  var m = document.getElementById('modal-bloque-estudio');
-  if (m) m.style.display = 'none';
-}
-
-function confirmarBloqueEstudio(iso, hora, estudio) {
-  cerrarModalBloqueEstudio();
-  // Guardar contexto para que el botón Guardar lo use
-  window._bloqueCtx = { iso: iso, hora: hora, estudio: estudio };
-  var c = { nombre:'', fecha:iso, hora:hora, estudio:estudio, obraSocial:'', telefono:'', nota:'' };
-  document.getElementById('modal-cita-titulo').textContent = 'Nueva Cita';
-  var body = document.getElementById('modal-cita-body');
-  body.innerHTML = _bodyFormCita(c);
-  // Footer con botones — usando DOM para evitar escapes
-  var footer = document.createElement('div');
-  footer.style.cssText = 'display:flex;gap:10px;padding-top:4px;margin-top:4px';
-  var btnCancel = document.createElement('button');
-  btnCancel.textContent = 'Cancelar';
-  btnCancel.style.cssText = 'flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:11px;font-size:14px;cursor:pointer;color:rgba(255,255,255,.6);font-weight:600';
-  btnCancel.onclick = cerrarModalCita;
-  var btnGuardar = document.createElement('button');
-  btnGuardar.textContent = '\u2713 Guardar Cita';
-  btnGuardar.style.cssText = 'flex:2;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(46,125,50,.4)';
-  btnGuardar.onclick = function() { _guardarCitaBloqueDoble(iso, hora, estudio); };
-  footer.appendChild(btnCancel);
-  footer.appendChild(btnGuardar);
-  body.appendChild(footer);
-  document.getElementById('modal-cita').style.display = 'flex';
-  setTimeout(function(){ var el=document.getElementById('nc-nombre'); if(el) el.focus(); }, 80);
-}
-
-function _guardarCitaBloqueDoble(iso, hora, estudio) {
-  var nombre = document.getElementById('nc-nombre').value.trim();
-  if (!nombre) { toast('Ingresá el nombre del paciente', 'error'); return; }
-  var fecha  = document.getElementById('nc-fecha').value || iso;
-  var horaVal= document.getElementById('nc-hora').value  || hora;
-  var os     = document.getElementById('nc-os').value.trim();
-  var tel    = document.getElementById('nc-tel').value.trim();
-  var nota   = document.getElementById('nc-nota').value.trim();
-  var estVal = document.getElementById('nc-estudio').value || estudio;
-
-  if (_haySuperpuesto(fecha, horaVal, null)) {
-    toast('Ya existe un turno a esa hora', 'error'); return;
-  }
-
-  var citas = _citasCargar();
-  citas.push({ id:'cita_'+Date.now(), nombre:nombre, fecha:fecha, hora:horaVal,
-               estudio:estVal, obraSocial:os, telefono:tel, nota:nota, origen:'bloque' });
-
-  if (estVal === 'VEDA/VCC') {
-    var sig     = _siguienteSlot(horaVal);
-    var ocupado2 = citas.some(function(c){ return c.fecha===fecha && c.hora===sig; });
-    if (!ocupado2) {
-      citas.push({ id:'cita_'+(Date.now()+1), nombre:nombre, fecha:fecha, hora:sig,
-                   estudio:'VEDA/VCC (cont.)', obraSocial:os, telefono:tel, nota:'2do bloque', origen:'bloque' });
-      toast('✓ Guardado en 2 bloques: ' + horaVal + ' y ' + sig, 'ok');
-    } else {
-      toast('✓ Cita guardada (2do bloque ocupado)', 'ok');
-    }
-  } else {
-    toast('✓ Cita guardada', 'ok');
-  }
-
-  _citasGuardar(citas);
-  cerrarModalCita();
-  renderCalendario();
-  // Re-abrir el panel de bloques si estaba abierto
-  setTimeout(function(){
-    var isoAbierto = window._panelBloquesIso;
-    if (isoAbierto) { _abrirPanelBloques(isoAbierto); }
-  }, 50);
-}
-
-
-
-
-// ═══════════════════════════════════════════════════════════════
-// WHATSAPP INFORME ENDOSCÓPICO
-// ═══════════════════════════════════════════════════════════════
-
-var _ENDO_MSG_KEY = 'gastro_endo_msg';
-var _ENDO_MSG_DEFAULT = 'Hola {nombre}, le informamos que su informe de {tipo} realizado el {fecha} ya está disponible. Ante cualquier consulta comuníquese con el consultorio.';
-
-function _endoMsgCargar() {
-  try { return localStorage.getItem(_ENDO_MSG_KEY) || _ENDO_MSG_DEFAULT; } catch(e) { return _ENDO_MSG_DEFAULT; }
-}
-function _endoMsgGuardar() {
-  var el = document.getElementById('endo-msg-texto');
-  if (el) { try { localStorage.setItem(_ENDO_MSG_KEY, el.value); } catch(e){} }
-}
-
-function toggleEndoMsgAdmin() {
-  var panel = document.getElementById('endo-msg-admin-panel');
-  if (!panel) return;
-  var visible = panel.style.display !== 'none';
-  panel.style.display = visible ? 'none' : 'block';
-  if (!visible) {
-    var el = document.getElementById('endo-msg-texto');
-    if (el) el.value = _endoMsgCargar();
-  }
-}
-
-// Genera el botón WSP para cada fila de endoscopía
-function _endoBtnWsp(e) {
-  var pac  = App.pacienteActual || {};
-  var tel  = (pac.telefono || '').replace(/\D/g, '');
-  var tipo = (e.tipoEstudio || 'VEDA').toUpperCase().includes('COLON') ? 'Colonoscopía' : 'VEDA';
-  var fecha = e.fecha || '';
-  // Formatear fecha DD/MM/YYYY
-  if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-    var p = fecha.split('-'); fecha = p[2] + '/' + p[1] + '/' + p[0];
-  }
-
-  if (!tel || tel.length < 6) {
-    // Sin teléfono — botón deshabilitado
-    return '<button class="btn btn-ghost btn-sm" disabled title="Sin teléfono registrado"'
-      + ' style="opacity:.45;cursor:not-allowed;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-size:10px;padding:4px 8px;font-weight:700">'
-      + 'SIN TEL</button>';
-  }
-
-  var msg  = _endoMsgCargar();
-  var texto = msg
-    .split('{nombre}').join(pac.apellidoNombre || '')
-    .split('{fecha}').join(fecha)
-    .split('{tipo}').join(tipo);
-  var url  = 'https://wa.me/549' + tel + '?text=' + encodeURIComponent(texto);
-
-  var svgWsp = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
-
-  return '<a href="' + url + '" target="_blank" onclick="event.stopPropagation()"'
-    + ' class="btn btn-ghost btn-sm" title="Enviar informe por WhatsApp"'
-    + ' style="background:#dcfce7;color:#16a34a;border:1px solid #86efac;display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:5px 10px">'
-    + svgWsp + '</a>';
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// AUTOCOMPLETE PACIENTES EN NUEVA CITA
-// ═══════════════════════════════════════════════════════════════
-
-function _citaAutocomplete(input) {
-  var q = input.value.trim().toLowerCase();
-  var sugg = document.getElementById('nc-sugg');
-  if (!sugg) return;
-  if (q.length < 2) { sugg.style.display = 'none'; return; }
-
-  var pacs = App.pacientes || [];
-  var matches = pacs.filter(function(p) {
-    return (p.apellidoNombre || '').toLowerCase().indexOf(q) !== -1;
-  }).slice(0, 6);
-
-  if (!matches.length) { sugg.style.display = 'none'; return; }
-
-  sugg.innerHTML = matches.map(function(p) {
-    var os  = p.obraSocial ? '<span style="font-size:10px;opacity:.6;margin-left:6px">' + p.obraSocial + '</span>' : '';
-    var tel = p.telefono   ? '<span style="font-size:10px;opacity:.5;margin-left:6px">📱 ' + p.telefono + '</span>' : '';
-    return '<div onclick="_citaSeleccionarPac(\'' + p.id + '\')"'
-      + ' style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:4px;flex-wrap:wrap"'
-      + ' onmouseenter="this.style.background=\'rgba(100,220,140,.15)\'" onmouseleave="this.style.background=\'\'">'
-      + '<span style="font-size:13px;font-weight:700;color:#fff">' + p.apellidoNombre + '</span>'
-      + os + tel
-      + '</div>';
-  }).join('');
-  sugg.style.display = 'block';
-}
-
-function _citaSeleccionarPac(pacId) {
-  var pacs = App.pacientes || [];
-  var p = pacs.find(function(x) { return String(x.id) === String(pacId); });
-  if (!p) return;
-
-  // Rellenar nombre
-  var elNom = document.getElementById('nc-nombre');
-  if (elNom) elNom.value = p.apellidoNombre || '';
-
-  // Rellenar OS
-  var elOs = document.getElementById('nc-os');
-  if (elOs) elOs.value = p.obraSocial || '';
-
-  // Rellenar teléfono
-  var elTel = document.getElementById('nc-tel');
-  if (elTel) elTel.value = p.telefono || '';
-
-  // Cerrar sugerencias
-  var sugg = document.getElementById('nc-sugg');
-  if (sugg) sugg.style.display = 'none';
-
-  // Foco en hora
-  var elHora = document.getElementById('nc-hora');
-  if (elHora) elHora.focus();
-}
-
-
-// ═══════════════════════════════════════════════════════════════
-// RESUMEN DE TURNOS — Lunes y Martes con citas
-// ═══════════════════════════════════════════════════════════════
-
-function abrirResumenTurnos() {
-  // Buscar los próximos Lunes y Martes que tengan citas
-  var citas  = _citasCargar();
-  var hoy    = _isoFecha(new Date());
-  var diasCandidatos = [];
-
-  // Revisar las próximas 8 semanas
-  // Usar _parseFechaISO sobre ISO string para evitar offset de timezone
-  for (var i = 0; i <= 56; i++) {
-    var d   = _addDias(new Date(), i);
-    var iso = _isoFecha(d);
-    if (iso < hoy) continue;
-    // Reconstruir date desde ISO para evitar timezone offset en getDay/getDate
-    var dLocal = _parseFechaISO(iso);
-    var dow = dLocal.getDay(); // 1=lun, 2=mar
-    if (dow !== 1 && dow !== 2) continue;
-    var citasDelDia = citas.filter(function(c) { return c.fecha === iso; });
-    if (!citasDelDia.length) continue;
-    diasCandidatos.push({ iso: iso, d: dLocal, dow: dow, citas: citasDelDia });
-    if (diasCandidatos.length >= 8) break;
-  }
-
-  // Crear panel
-  var existing = document.getElementById('panel-resumen-turnos');
-  if (existing) existing.remove();
-  var overlay = document.getElementById('panel-resumen-overlay');
-  if (overlay) overlay.remove();
-
-  var ov = document.createElement('div');
-  ov.id = 'panel-resumen-overlay';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1100;backdrop-filter:blur(3px)';
-  ov.onclick = function(e) { if (e.target === ov) cerrarResumenTurnos(); };
-  document.body.appendChild(ov);
-
-  var panel = document.createElement('div');
-  panel.id = 'panel-resumen-turnos';
-  panel.style.cssText = [
-    'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%)',
-    'z-index:1101;background:#0f1f0f',
-    'border:1px solid rgba(100,220,130,.2)',
-    'border-radius:20px;width:min(500px,95vw)',
-    'max-height:88vh;overflow:hidden;display:flex;flex-direction:column',
-    'box-shadow:0 32px 80px rgba(0,0,0,.7)'
-  ].join(';');
-  document.body.appendChild(panel);
-
-  // Header
-  var hdr = document.createElement('div');
-  hdr.style.cssText = 'background:linear-gradient(135deg,#1b5e20,#2e7d32);padding:20px 24px 16px;flex-shrink:0';
-  hdr.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between">'
-    + '<div>'
-    +   '<div style="font-size:18px;font-weight:900;color:#fff">Resumen de Turnos</div>'
-    +   '<div style="font-size:12px;color:rgba(255,255,255,.65);margin-top:3px">Seleccioná un día para generar el resumen</div>'
-    + '</div>'
-    + '<button onclick="cerrarResumenTurnos()" style="background:rgba(255,255,255,.15);border:none;border-radius:10px;padding:7px 12px;color:#fff;cursor:pointer;font-size:18px;line-height:1">✕</button>'
-    + '</div>';
-  panel.appendChild(hdr);
-
-  // Body
-  var body = document.createElement('div');
-  body.style.cssText = 'overflow-y:auto;flex:1;padding:16px 20px';
-  panel.appendChild(body);
-
-  if (!diasCandidatos.length) {
-    body.innerHTML = '<div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,.4);font-size:14px">No hay Lunes ni Martes con turnos próximamente</div>';
-    return;
-  }
-
-  var DIAS_FULL = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  var MESES_FULL = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-
-  // Chips de selección de día
-  var selDiv = document.createElement('div');
-  selDiv.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px';
-  selDiv.innerHTML = '<div style="width:100%;font-size:10px;font-weight:800;color:rgba(255,255,255,.4);letter-spacing:.1em;margin-bottom:4px">ELEGÍ EL DÍA</div>';
-
-  diasCandidatos.forEach(function(dia, idx) {
-    var btn = document.createElement('button');
-    var dSafe2 = _parseFechaISO(dia.iso);
-    var diaLabel = DIAS_FULL[dSafe2.getDay()];
-    var fechaLabel = dSafe2.getDate() + ' de ' + MESES_FULL[dSafe2.getMonth()];
-    btn.innerHTML = '<strong>' + diaLabel + '</strong><br><span style="font-size:11px;opacity:.7">' + fechaLabel + '</span>'
-      + '<span style="display:block;font-size:10px;opacity:.5;margin-top:2px">' + dia.citas.length + ' turno' + (dia.citas.length!==1?'s':'') + '</span>';
-    btn.style.cssText = 'background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:12px;padding:10px 16px;color:#fff;cursor:pointer;font-size:13px;text-align:center;min-width:110px;transition:all .15s';
-    btn.id = 'resumen-btn-' + idx;
-    btn.onmouseenter = function() { if (!btn.classList.contains('sel')) btn.style.background = 'rgba(100,220,130,.1)'; };
-    btn.onmouseleave = function() { if (!btn.classList.contains('sel')) btn.style.background = 'rgba(255,255,255,.06)'; };
-    (function(d, b, i) {
-      b.onclick = function() {
-        // Deseleccionar todos
-        diasCandidatos.forEach(function(_, j) {
-          var ob = document.getElementById('resumen-btn-' + j);
-          if (ob) { ob.style.background = 'rgba(255,255,255,.06)'; ob.style.borderColor = 'rgba(255,255,255,.15)'; ob.classList.remove('sel'); }
-        });
-        // Seleccionar este
-        b.style.background = 'rgba(46,125,50,.4)';
-        b.style.borderColor = '#4caf50';
-        b.classList.add('sel');
-        _renderResumenDia(d, DIAS_FULL, MESES_FULL);
-      };
-    })(dia, btn, idx);
-    selDiv.appendChild(btn);
-  });
-  body.appendChild(selDiv);
-
-  // Área del resumen
-  var resDiv = document.createElement('div');
-  resDiv.id = 'resumen-contenido';
-  body.appendChild(resDiv);
-
-  // Seleccionar el primero automáticamente
-  diasCandidatos[0] && setTimeout(function() {
-    var firstBtn = document.getElementById('resumen-btn-0');
-    if (firstBtn) firstBtn.click();
-  }, 50);
-}
-
-function _renderResumenDia(dia, DIAS_FULL, MESES_FULL) {
-  var resDiv = document.getElementById('resumen-contenido');
-  if (!resDiv) return;
-
-  var citas = dia.citas.slice().sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
-  // Usar _parseFechaISO para evitar offset de timezone
-  var dSafe = _parseFechaISO(dia.iso);
-  var fechaLabel = DIAS_FULL[dSafe.getDay()] + ', ' + dSafe.getDate() + ' de ' + MESES_FULL[dSafe.getMonth()] + ' de ' + dSafe.getFullYear();
-
-  // Construir texto para copiar/WSP
-  var lineas = ['📅 *' + fechaLabel.toUpperCase() + '*', ''];
-  citas.forEach(function(c, i) {
-    var estudio = c.estudio && c.estudio !== 'Sin especificar' ? c.estudio : '—';
-    var os      = c.obraSocial || '—';
-    lineas.push('*' + (c.hora||'--:--') + 'hs* — ' + (c.nombre||'—'));
-    lineas.push('   ' + estudio + ' · ' + os);
-    if (i < citas.length-1) lineas.push('');
-  });
-  lineas.push('');
-  lineas.push('_Total: ' + citas.length + ' turno' + (citas.length!==1?'s':'') + '_');
-  var textoWSP = lineas.join('\n');
-
-  resDiv.innerHTML = '';
-
-  // Card visual del resumen
-  var card = document.createElement('div');
-  card.style.cssText = 'background:rgba(255,255,255,.04);border:1px solid rgba(100,220,130,.15);border-radius:14px;overflow:hidden;margin-bottom:12px';
-
-  // Header del resumen
-  var cardHdr = document.createElement('div');
-  cardHdr.style.cssText = 'background:rgba(46,125,50,.25);padding:12px 16px;display:flex;align-items:center;justify-content:space-between';
-  cardHdr.innerHTML = '<div style="font-size:14px;font-weight:800;color:#6ddc8c">' + fechaLabel + '</div>'
-    + '<div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:600">' + citas.length + ' turno' + (citas.length!==1?'s':'') + '</div>';
-  card.appendChild(cardHdr);
-
-  // Filas de citas
-  citas.forEach(function(c, i) {
-    var fila = document.createElement('div');
-    fila.style.cssText = 'display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:12px;padding:12px 16px;'
-      + (i < citas.length-1 ? 'border-bottom:1px solid rgba(255,255,255,.06)' : '');
-
-    // Hora
-    var horaEl = document.createElement('div');
-    horaEl.style.cssText = 'font-size:17px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1';
-    horaEl.textContent = c.hora || '--:--';
-
-    // Info central
-    var info = document.createElement('div');
-    var nombre = c.nombre || '—';
-    var estudio = c.estudio && c.estudio !== 'Sin especificar' ? c.estudio : '';
-    var os = c.obraSocial || '';
-
-    var estColor = estudio.indexOf('VEDA/VCC') !== -1 ? '#ce93d8'
-                 : estudio === 'VEDA' ? '#90caf9'
-                 : estudio === 'VCC'  ? '#a5d6a7' : 'rgba(255,255,255,.5)';
-
-    info.innerHTML = '<div style="font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + nombre + '</div>'
-      + '<div style="display:flex;gap:6px;margin-top:3px;flex-wrap:wrap">'
-      + (estudio ? '<span style="font-size:11px;font-weight:700;color:' + estColor + '">' + estudio + '</span>' : '')
-      + (estudio && os ? '<span style="font-size:11px;color:rgba(255,255,255,.3)">·</span>' : '')
-      + (os ? '<span style="font-size:11px;color:rgba(255,255,255,.5)">' + os + '</span>' : '')
-      + '</div>';
-
-    fila.appendChild(horaEl);
-    fila.appendChild(info);
-    card.appendChild(fila);
-  });
-
-  resDiv.appendChild(card);
-
-  // Botones de acción
-  var acciones = document.createElement('div');
-  acciones.style.cssText = 'display:flex;gap:10px';
-
-  // Copiar texto
-  var btnCopiar = document.createElement('button');
-  btnCopiar.style.cssText = 'flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:11px;color:rgba(255,255,255,.7);cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px';
-  btnCopiar.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar';
-  btnCopiar.onclick = function() {
-    navigator.clipboard.writeText(textoWSP).then(function() {
-      btnCopiar.innerHTML = '✓ Copiado';
-      btnCopiar.style.color = '#6ddc8c';
-      setTimeout(function() {
-        btnCopiar.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar';
-        btnCopiar.style.color = 'rgba(255,255,255,.7)';
-      }, 2000);
-    });
-  };
-
-  // Enviar por WhatsApp
-  var btnWsp = document.createElement('a');
-  btnWsp.href = 'https://wa.me/?text=' + encodeURIComponent(textoWSP);
-  btnWsp.target = '_blank';
-  btnWsp.style.cssText = 'flex:1;background:#25d366;border:none;border-radius:10px;padding:11px;color:#fff;cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none';
-  btnWsp.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp';
-
-  acciones.appendChild(btnCopiar);
-  acciones.appendChild(btnWsp);
-  resDiv.appendChild(acciones);
-}
-
-function cerrarResumenTurnos() {
-  var p = document.getElementById('panel-resumen-turnos');
-  var o = document.getElementById('panel-resumen-overlay');
-  if (p) p.remove();
-  if (o) o.remove();
 }
 
 
