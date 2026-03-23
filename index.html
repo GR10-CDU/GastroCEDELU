@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-23 15:50 ARG -->
+<!-- GastroCDELU index.html · 2026-03-23 15:55 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -2018,11 +2018,11 @@ color:#555;
       <div class="field-row cols-3">
         <div class="field">
           <label>Fecha del Estudio</label>
-          <input type="text" id="endo-fecha" placeholder="DD/MM/AAAA" maxlength="10">
+          <input type="text" id="endo-fecha" placeholder="DD/MM/AAAA" maxlength="10" oninput="_endoAutoguardadoGuardar()">
         </div>
         <div class="field">
           <label>Lugar de Realización</label>
-          <input type="text" id="endo-lugar" placeholder="Clínica / Sanatorio" list="endo-lugares">
+          <input type="text" id="endo-lugar" placeholder="Clínica / Sanatorio" list="endo-lugares" oninput="_endoAutoguardadoGuardar()">
           <datalist id="endo-lugares">
             <option value="Clínica Uruguay SRL">
             <option value="Consultorio">
@@ -2032,14 +2032,14 @@ color:#555;
         </div>
         <div class="field">
           <label>Pedido por</label>
-          <input type="text" id="endo-pedidopor" placeholder="Médico solicitante">
+          <input type="text" id="endo-pedidopor" placeholder="Médico solicitante" oninput="_endoAutoguardadoGuardar()">
         </div>
       </div>
 
       <div class="field-row cols-3">
         <div class="field">
           <label>Analgesia</label>
-          <select id="endo-analgesia">
+          <select id="endo-analgesia" onchange="_endoAutoguardadoGuardar()">
             <option value="">— Seleccionar —</option>
             <option value="Anestesia general">Anestesia general</option>
             <option value="Anestesia tópica">Anestesia tópica</option>
@@ -2049,12 +2049,12 @@ color:#555;
         </div>
         <div class="field">
           <label>Anestesiólogo</label>
-          <input type="text" id="endo-anestesista" placeholder="Dr/Dra." list="endo-anest-dl" onblur="autoguardarAnestesista(this.value)">
+          <input type="text" id="endo-anestesista" placeholder="Dr/Dra." list="endo-anest-dl" onblur="autoguardarAnestesista(this.value)" oninput="_endoAutoguardadoGuardar()">
           <datalist id="endo-anest-dl"></datalist>
         </div>
         <div class="field">
           <label>Tipo de Endoscopía</label>
-          <select id="endo-endoscopia-tipo">
+          <select id="endo-endoscopia-tipo" onchange="_endoAutoguardadoGuardar()">
             <option value="">— Seleccionar —</option>
             <option value="Diagnóstica">Diagnóstica</option>
             <option value="Terapéutica">Terapéutica</option>
@@ -2065,11 +2065,11 @@ color:#555;
       <div class="field-row cols-2">
         <div class="field">
           <label>Antecedentes</label>
-          <textarea id="endo-antec" rows="2" placeholder="Antecedentes relevantes para este estudio..."></textarea>
+          <textarea id="endo-antec" rows="2" placeholder="Antecedentes relevantes para este estudio..." oninput="_endoAutoguardadoGuardar()"></textarea>
         </div>
         <div class="field">
           <label>Motivo del Examen</label>
-          <textarea id="endo-motivo" rows="2" placeholder="Motivo por el cual se realiza el estudio..."></textarea>
+          <textarea id="endo-motivo" rows="2" placeholder="Motivo por el cual se realiza el estudio..." oninput="_endoAutoguardadoGuardar()"></textarea>
         </div>
       </div>
 
@@ -2098,7 +2098,7 @@ color:#555;
         </div>
         <div class="field" style="max-width:300px;margin-bottom:14px">
           <label>Región Alcanzada</label>
-          <select id="endo-region-alcanzada" onchange="document.getElementById('endo-region').value=this.value">
+          <select id="endo-region-alcanzada" onchange="document.getElementById('endo-region').value=this.value;_endoAutoguardadoGuardar()">
             <option value="">— Seleccionar —</option>
             <option value="Íleon">Íleon</option>
             <option value="Ciego">Ciego</option>
@@ -2113,13 +2113,13 @@ color:#555;
           <label style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Escala de Boston (preparación colónica)</label>
           <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
             <div style="display:flex;align-items:center;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--muted)">Colon Derecho</span>
-              <select id="endo-boston-cd" onchange="calcBoston()" style="width:62px;font-size:13px"><option value="">—</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+              <select id="endo-boston-cd" onchange="calcBoston();_endoAutoguardadoGuardar()" style="width:62px;font-size:13px"><option value="">—</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
             </div>
             <div style="display:flex;align-items:center;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--muted)">Colon Transverso</span>
-              <select id="endo-boston-ct" onchange="calcBoston()" style="width:62px;font-size:13px"><option value="">—</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+              <select id="endo-boston-ct" onchange="calcBoston();_endoAutoguardadoGuardar()" style="width:62px;font-size:13px"><option value="">—</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
             </div>
             <div style="display:flex;align-items:center;gap:6px"><span style="font-size:12px;font-weight:600;color:var(--muted)">Colon Izquierdo</span>
-              <select id="endo-boston-ci" onchange="calcBoston()" style="width:62px;font-size:13px"><option value="">—</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+              <select id="endo-boston-ci" onchange="calcBoston();_endoAutoguardadoGuardar()" style="width:62px;font-size:13px"><option value="">—</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
             </div>
             <div id="boston-total-badge" style="display:none;background:#f0f9f4;border:1.5px solid #9fd4b2;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;color:#155a32;white-space:nowrap">BOSTON: <span id="boston-total-val">0</span>/9</div>
           </div>
@@ -2138,7 +2138,7 @@ color:#555;
       </div>
       <div class="field">
         <label>Comentarios / Recomendaciones</label>
-        <textarea id="endo-comentarios" rows="2" placeholder="Recomendaciones post-procedimiento..."></textarea>
+        <textarea id="endo-comentarios" rows="2" oninput="_endoAutoguardadoGuardar()" placeholder="Recomendaciones post-procedimiento..."></textarea>
       </div>
 
       <!-- Fotos -->
@@ -4086,19 +4086,23 @@ function nuevaEndoscopia(tipo) {
   document.getElementById('endo-pac-os').textContent     = pac.obraSocial || '—';
   document.getElementById('endo-pac-afil').textContent   = pac.nroAfiliado || '—';
 
-  // Auto-llenar antecedentes y motivo desde HC si existe
-  if (App.hcActual) {
-    document.getElementById('endo-antec').value  = App.hcActual.antecGrales || '';
-    document.getElementById('endo-motivo').value = App.hcActual.motivoConsulta || '';
-  }
-
   // Mostrar/ocultar secciones según tipo
   const esVeda = tipo === 'VEDA';
   document.getElementById('seccion-veda').style.display  = esVeda ? '' : 'none';
   document.getElementById('seccion-colon').style.display = esVeda ? 'none' : '';
 
-  // Fecha hoy
+  // Fecha hoy por defecto
   document.getElementById('endo-fecha').value = todayInputDMY();
+
+  // Intentar cargar borrador previo para este paciente/tipo
+  const draftKey = _ENDO_DRAFT_KEY + 'new_' + pac.id + '_' + tipo;
+  const teniaBorrador = _endoAutoguardadoCargar(draftKey);
+
+  // Si no había borrador, auto-llenar antecedentes y motivo desde HC
+  if (!teniaBorrador && App.hcActual) {
+    document.getElementById('endo-antec').value  = App.hcActual.antecGrales || '';
+    document.getElementById('endo-motivo').value = App.hcActual.motivoConsulta || '';
+  }
 
   // Cargar datalist anestesistas
   actualizarDatalistAnestesistas();
@@ -4179,12 +4183,22 @@ function editarEndoscopia(endoId) {
 // ── AUTOGUARDADO DE ENDOSCOPÍA ────────────────────────────────
 const _ENDO_DRAFT_KEY = 'gastro_endo_draft_';
 
-function _endoAutoguardadoGuardar() {
+// Genera la clave del borrador: usa ID si existe, sino pacienteId+tipo
+function _endoDraftKey() {
   const id = document.getElementById('endo-id').value;
-  if (!id) return; // solo en modo edición
+  if (id) return _ENDO_DRAFT_KEY + id;
+  const pacId = document.getElementById('endo-paciente-id').value;
+  const tipo  = document.getElementById('endo-tipo').value || 'VEDA';
+  return _ENDO_DRAFT_KEY + 'new_' + pacId + '_' + tipo;
+}
+
+function _endoAutoguardadoGuardar() {
+  const pacId = document.getElementById('endo-paciente-id').value;
+  if (!pacId) return; // necesita al menos paciente
   const tipo   = document.getElementById('endo-tipo').value || 'VEDA';
   const esVeda = !tipo.toUpperCase().includes('COLON');
   const draft  = {
+    tipo:       tipo,
     fecha:      (document.getElementById('endo-fecha')||{}).value || '',
     lugar:      (document.getElementById('endo-lugar')||{}).value || '',
     pedidopor:  (document.getElementById('endo-pedidopor')||{}).value || '',
@@ -4193,22 +4207,33 @@ function _endoAutoguardadoGuardar() {
     impresion:  (document.getElementById('endo-impresion')||{}).value || '',
     analgesia:  (document.getElementById('endo-analgesia')||{}).value || '',
     anestesista:(document.getElementById('endo-anestesista')||{}).value || '',
+    regionAlcanzada: (document.getElementById('endo-region')||{}).value || '',
+    bostonCD:   (document.getElementById('endo-boston-cd')||{}).value || '',
+    bostonCT:   (document.getElementById('endo-boston-ct')||{}).value || '',
+    bostonCI:   (document.getElementById('endo-boston-ci')||{}).value || '',
     informe:    esVeda
       ? (document.getElementById('endo-esofago')||{}).value || ''
       : (document.getElementById('endo-colon-informe')||{}).value || '',
     ts: Date.now()
   };
-  try { localStorage.setItem(_ENDO_DRAFT_KEY + id, JSON.stringify(draft)); } catch(e) {}
+  const key = _endoDraftKey();
+  try { localStorage.setItem(key, JSON.stringify(draft)); } catch(e) {}
 }
 
-function _endoAutoguardadoCargar(endoId) {
+function _endoAutoguardadoCargar(endoIdOrKey) {
   try {
-    const raw = localStorage.getItem(_ENDO_DRAFT_KEY + endoId);
-    if (!raw) return;
+    // Primero intenta con el key directo, sino con el prefijo
+    let raw = localStorage.getItem(endoIdOrKey);
+    if (!raw) raw = localStorage.getItem(_ENDO_DRAFT_KEY + endoIdOrKey);
+    if (!raw) return false;
     const d = JSON.parse(raw);
-    // Solo restaurar si el borrador es de menos de 24h
-    if (Date.now() - d.ts > 86400000) { localStorage.removeItem(_ENDO_DRAFT_KEY + endoId); return; }
-    const tipo   = document.getElementById('endo-tipo').value || 'VEDA';
+    // Solo restaurar si el borrador es de menos de 48h
+    if (Date.now() - d.ts > 172800000) { 
+      localStorage.removeItem(endoIdOrKey); 
+      localStorage.removeItem(_ENDO_DRAFT_KEY + endoIdOrKey);
+      return false; 
+    }
+    const tipo   = d.tipo || document.getElementById('endo-tipo').value || 'VEDA';
     const esVeda = !tipo.toUpperCase().includes('COLON');
     const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
     set('endo-fecha',      d.fecha);
@@ -4219,14 +4244,26 @@ function _endoAutoguardadoCargar(endoId) {
     set('endo-impresion',  d.impresion);
     set('endo-analgesia',  d.analgesia);
     set('endo-anestesista',d.anestesista);
+    set('endo-region',     d.regionAlcanzada);
+    set('endo-boston-cd',  d.bostonCD);
+    set('endo-boston-ct',  d.bostonCT);
+    set('endo-boston-ci',  d.bostonCI);
     if (esVeda) set('endo-esofago', d.informe);
     else        set('endo-colon-informe', d.informe);
     toast('Borrador restaurado. Guardá para confirmar.', 'info');
-  } catch(e) {}
+    return true;
+  } catch(e) { return false; }
 }
 
-function _endoAutoguardadoBorrar(endoId) {
-  try { localStorage.removeItem(_ENDO_DRAFT_KEY + endoId); } catch(e) {}
+function _endoAutoguardadoBorrar(endoIdOrKey) {
+  try { 
+    localStorage.removeItem(endoIdOrKey); 
+    localStorage.removeItem(_ENDO_DRAFT_KEY + endoIdOrKey);
+    // También borrar el de "new_" si existe
+    const pacId = document.getElementById('endo-paciente-id').value;
+    const tipo  = document.getElementById('endo-tipo').value || 'VEDA';
+    if (pacId) localStorage.removeItem(_ENDO_DRAFT_KEY + 'new_' + pacId + '_' + tipo);
+  } catch(e) {}
 }
 
 function nuevaEndoscopiaDesdeNav() {
@@ -4490,8 +4527,11 @@ async function submitEndoscopia(generarPDF = false) {
       const rEndo = await serverCall('getEndoscopias', pac.id);
       renderEndoscopias(rEndo.ok ? rEndo.data : []);
 
-      // Listo
-      _endoAutoguardadoBorrar(endoId || savedId); // borrar draft
+      // Listo - borrar todos los borradores relacionados
+      _endoAutoguardadoBorrar(endoId || savedId);
+      // También borrar borrador de "nuevo" si existía
+      const draftKeyNew = _ENDO_DRAFT_KEY + 'new_' + pac.id + '_' + tipo;
+      try { localStorage.removeItem(draftKeyNew); } catch(e) {}
       SaveBanner.success('Estudio guardado' + (tieneFotos ? ' con fotos' : ''));
 
       // PDF si se pidió
@@ -4896,7 +4936,6 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
     <div class="pac-row">
       <div class="pac-cell"><div class="pac-lbl">DNI</div><div class="pac-val">${pac.dni||'—'}</div></div>
       <div class="pac-cell"><div class="pac-lbl">Edad</div><div class="pac-val">${(()=>{ const e=calcEdadFiliatorios(pac.fechaNac)||pac.edad; return e?(String(e).includes('años')?e:e+' años'):'—'; })()}</div></div>
-      <div class="pac-cell"><div class="pac-lbl">Sexo</div><div class="pac-val">${pac.sexo||inferirSexo(pac.apellidoNombre)||'—'}</div></div>
       <div class="pac-cell"><div class="pac-lbl">Fecha del Estudio</div><div class="pac-val">${fecha}</div></div>
     </div>
     <div class="pac-row">
