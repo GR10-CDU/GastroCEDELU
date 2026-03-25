@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-25 10:25 ARG -->
+<!-- GastroCDELU index.html · 2026-03-25 10:30 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -6837,45 +6837,44 @@ function abrirModalBloque(iso, hora) {
     document.body.appendChild(modal);
   }
 
-  var estudios = [
-    { val:'VEDA',     label:'VEDA',       sub:'Videoendoscop\u00eda digestiva alta', bloques:1, color:'#0277bd' },
-    { val:'VCC',      label:'VCC',        sub:'Videocolonoscop\u00eda',              bloques:1, color:'#2e7d32' },
-    { val:'VEDA/VCC', label:'VEDA / VCC', sub:'Ambos \u00b7 ocupa 2 bloques',        bloques:2, color:'#6a1b9a' },
-    { val:'Otro',     label:'Otro',       sub:'Estudio sin especificar',             bloques:1, color:'#e65100' }
-  ];
-
   var sigHora = _siguienteSlot(hora);
   var diaNum  = d ? d.getDay() : 0;
   var cfg     = _BLOQUES_CONFIG[diaNum];
   var sigLibre = cfg && sigHora <= cfg.fin && !citas.some(function(c){ return c.fecha===iso && c.hora===sigHora; });
 
-  // Crear estructura del modal
-  modal.innerHTML = '<div id="modal-bloque-content" style="background:#0f1f0f;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px;width:min(400px,92vw);box-shadow:0 24px 64px rgba(0,0,0,.7)">'
+  // Guardar en window para acceso desde onclick inline
+  window._bloqueIso = iso;
+  window._bloqueHora = hora;
+
+  var cardVEDA = '<div onclick="confirmarBloqueEstudio(window._bloqueIso, window._bloqueHora, \'VEDA\')" style="cursor:pointer;background:#1a2e1a;border:2px solid #0277bd;border-radius:14px;padding:16px 18px;user-select:none;transition:transform .1s">'
+    + '<div style="font-size:22px;font-weight:900;color:#fff">VEDA</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">Videoendoscopía digestiva alta</div></div>';
+
+  var cardVCC = '<div onclick="confirmarBloqueEstudio(window._bloqueIso, window._bloqueHora, \'VCC\')" style="cursor:pointer;background:#1a2e1a;border:2px solid #2e7d32;border-radius:14px;padding:16px 18px;user-select:none;transition:transform .1s">'
+    + '<div style="font-size:22px;font-weight:900;color:#fff">VCC</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">Videocolonoscopía</div></div>';
+
+  var cardVEDAVCC = sigLibre
+    ? '<div onclick="confirmarBloqueEstudio(window._bloqueIso, window._bloqueHora, \'VEDA/VCC\')" style="cursor:pointer;background:#1a2e1a;border:2px solid #6a1b9a;border-radius:14px;padding:16px 18px;user-select:none;transition:transform .1s">'
+      + '<div style="font-size:22px;font-weight:900;color:#fff">VEDA / VCC</div>'
+      + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">Ambos · ocupa 2 bloques</div></div>'
+    : '<div style="opacity:.4;cursor:not-allowed;background:#1a2e1a;border:2px solid #6a1b9a;border-radius:14px;padding:16px 18px;user-select:none">'
+      + '<div style="font-size:22px;font-weight:900;color:#fff">VEDA / VCC</div>'
+      + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">Ambos · ocupa 2 bloques</div>'
+      + '<div style="font-size:11px;color:#f44336;margin-top:5px;font-weight:600">Siguiente bloque ocupado</div></div>';
+
+  var cardOtro = '<div onclick="confirmarBloqueEstudio(window._bloqueIso, window._bloqueHora, \'Otro\')" style="cursor:pointer;background:#1a2e1a;border:2px solid #e65100;border-radius:14px;padding:16px 18px;user-select:none;transition:transform .1s">'
+    + '<div style="font-size:22px;font-weight:900;color:#fff">Otro</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">Estudio sin especificar</div></div>';
+
+  modal.innerHTML = '<div style="background:#0f1f0f;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:28px;width:min(400px,92vw);box-shadow:0 24px 64px rgba(0,0,0,.7)">'
     + '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px">'
-    + '<div><div style="font-size:18px;font-weight:900;color:#fff">\u00bfQu\u00e9 estudio?</div>'
-    + '<div style="font-size:13px;color:rgba(255,255,255,.45);margin-top:4px">' + fechaLabel + ' \u00b7 <strong style="color:rgba(255,255,255,.7)">' + hora + ' hs</strong></div></div>'
-    + '<button id="btn-cerrar-bloque-est" style="background:rgba(255,255,255,.08);border:none;border-radius:8px;padding:6px 12px;color:rgba(255,255,255,.45);cursor:pointer;font-size:20px;line-height:1">\u2715</button>'
+    + '<div><div style="font-size:18px;font-weight:900;color:#fff">¿Qué estudio?</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,.45);margin-top:4px">' + fechaLabel + ' · <strong style="color:rgba(255,255,255,.7)">' + hora + ' hs</strong></div></div>'
+    + '<button onclick="cerrarModalBloqueEstudio()" style="background:rgba(255,255,255,.08);border:none;border-radius:8px;padding:6px 12px;color:rgba(255,255,255,.45);cursor:pointer;font-size:20px;line-height:1">✕</button>'
     + '</div>'
-    + '<div id="grid-estudios" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' + cardVEDA + cardVCC + cardVEDAVCC + cardOtro + '</div>'
     + '</div>';
-
-  document.getElementById('btn-cerrar-bloque-est').onclick = cerrarModalBloqueEstudio;
-
-  var grid = document.getElementById('grid-estudios');
-  estudios.forEach(function(e) {
-    var disabled = (e.bloques===2 && !sigLibre);
-    var div = document.createElement('div');
-    div.style.cssText = (disabled?'opacity:.4;cursor:not-allowed':'cursor:pointer') + ';background:#1a2e1a;border:2px solid ' + e.color + ';border-radius:14px;padding:16px 18px;user-select:none;transition:transform .1s';
-    div.innerHTML = '<div style="font-size:22px;font-weight:900;color:#fff">' + e.label + '</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">' + e.sub + '</div>'
-      + (disabled ? '<div style="font-size:11px;color:#f44336;margin-top:5px;font-weight:600">Siguiente bloque ocupado</div>' : '');
-    if (!disabled) {
-      div.onmouseenter = function(){ div.style.transform='scale(1.02)'; };
-      div.onmouseleave = function(){ div.style.transform=''; };
-      (function(v){ div.onclick = function(){ confirmarBloqueEstudio(iso, hora, v); }; })(e.val);
-    }
-    grid.appendChild(div);
-  });
 
   modal.style.display = 'flex';
 }
@@ -6887,22 +6886,18 @@ function cerrarModalBloqueEstudio() {
 
 function confirmarBloqueEstudio(iso, hora, estudio) {
   try {
-    console.log('confirmarBloqueEstudio:', {iso, hora, estudio});
     cerrarModalBloqueEstudio();
+    cerrarPanelBloques(); // Cerrar también el panel de bloques
     var c = { nombre:'', fecha:iso, hora:hora, estudio:estudio, obraSocial:'', telefono:'', nota:'' };
     var titulo = document.getElementById('modal-cita-titulo');
     var body = document.getElementById('modal-cita-body');
     var modal = document.getElementById('modal-cita');
-    console.log('Elementos:', {titulo: !!titulo, body: !!body, modal: !!modal});
     if (!titulo || !body || !modal) {
-      console.error('Faltan elementos del modal-cita');
       toast('Error: modal no encontrado', 'error');
       return;
     }
     titulo.textContent = 'Nueva Cita';
-    var formHtml = _bodyFormCita(c);
-    console.log('Form HTML generado:', formHtml ? formHtml.substring(0,100) + '...' : 'NULL');
-    body.innerHTML = formHtml;
+    body.innerHTML = _bodyFormCita(c);
     var footer = document.createElement('div');
     footer.style.cssText = 'display:flex;gap:10px;padding-top:4px;margin-top:4px';
     var btnC = document.createElement('button');
@@ -6912,12 +6907,14 @@ function confirmarBloqueEstudio(iso, hora, estudio) {
     var btnG = document.createElement('button');
     btnG.textContent = '\u2713 Guardar Cita';
     btnG.style.cssText = 'flex:2;background:linear-gradient(135deg,#1b5e20,#2e7d32);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(46,125,50,.4)';
-    btnG.onclick = function(){ _guardarCitaBloqueDoble(iso, hora, estudio); };
+    // Guardar iso/hora/estudio en closure para el guardado
+    (function(i, h, e) {
+      btnG.onclick = function(){ _guardarCitaBloqueDoble(i, h, e); };
+    })(iso, hora, estudio);
     footer.appendChild(btnC);
     footer.appendChild(btnG);
     body.appendChild(footer);
     modal.style.display = 'flex';
-    console.log('Modal abierto OK');
     setTimeout(function(){ var el=document.getElementById('nc-nombre'); if(el) el.focus(); }, 80);
   } catch(err) {
     console.error('Error en confirmarBloqueEstudio:', err);
