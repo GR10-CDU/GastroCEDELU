@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-25 10:30 ARG -->
+<!-- GastroCDELU index.html · 2026-03-25 10:40 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -5383,8 +5383,14 @@ function _msgCargar() {
 }
 
 // ── Init ─────────────────────────────────────────────────────────
-function initCitas() {
-  // setTimeout(_wspRecordatorioAuto, 2000); // automático 19hs — deshabilitado
+async function initCitas() {
+  // Cargar pacientes si no están cargados (para autocompletar en citas)
+  if (!App.pacientes || App.pacientes.length === 0) {
+    try {
+      const res = await serverCall('getPacientes', App.session.medicoId, App.session.rol, '');
+      if (res.ok) App.pacientes = res.data;
+    } catch(e) { console.error('Error cargando pacientes para citas:', e); }
+  }
   _citasSemana = _lunesDeHoy();
   _citasMesRef = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   renderPanelProximas();
@@ -5819,13 +5825,21 @@ function _bodyFormCita(c) {
     + '<em>"telefono: 3442123456"</em> → campo explícito'
     + '</div>';
 
+  // Generar datalist de pacientes
+  var datalistHTML = '<datalist id="nc-pacientes-dl">';
+  (App.pacientes || []).forEach(function(p) {
+    datalistHTML += '<option value="' + (p.apellidoNombre || '').replace(/"/g,'&quot;') + '" data-id="' + p.id + '">';
+  });
+  datalistHTML += '</datalist>';
+
   return '<div style="display:flex;flex-direction:column;gap:16px">'
 
     + '<div style="display:flex;gap:8px;align-items:flex-end">'
     + '<div style="flex:1"><label style="' + LBL + '">NOMBRE PACIENTE *</label>'
-    + '<input id="nc-nombre" type="text" placeholder="Apellido, Nombre" value="' + nombre.replace(/"/g,'&quot;') + '"'
+    + '<input id="nc-nombre" type="text" list="nc-pacientes-dl" placeholder="Apellido, Nombre" value="' + nombre.replace(/"/g,'&quot;') + '"'
     + ' style="' + INP + 'padding:11px 14px;font-size:15px;font-weight:600"'
-    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '"></div>'
+    + ' onfocus="' + focusIn + '" onblur="' + focusOut + '" oninput="_autocompletarPacienteCita(this.value)">'
+    + datalistHTML + '</div>'
     + speechBtnHTML
     + '</div>'
 
@@ -5869,6 +5883,35 @@ function _bodyFormCita(c) {
     + ' onfocus="' + focusIn + '" onblur="' + focusOut + '">' + (nota||'').replace(/</g,'&lt;') + '</textarea></div>'
 
     + '</div>';
+}
+
+// ── Autocompletar datos del paciente en cita ────────────────────
+function _autocompletarPacienteCita(nombreIngresado) {
+  if (!nombreIngresado || nombreIngresado.length < 3) return;
+  var pacientes = App.pacientes || [];
+  var normalizar = function(s) { return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+  var nombreNorm = normalizar(nombreIngresado);
+  
+  // Buscar coincidencia exacta o muy cercana
+  var encontrado = pacientes.find(function(p) {
+    return normalizar(p.apellidoNombre) === nombreNorm;
+  });
+  
+  if (encontrado) {
+    // Autocompletar campos
+    var osEl = document.getElementById('nc-os');
+    var telEl = document.getElementById('nc-tel');
+    if (osEl && !osEl.value && encontrado.obraSocial) {
+      osEl.value = encontrado.obraSocial;
+      osEl.style.borderColor = 'rgba(100,220,140,.5)';
+      setTimeout(function(){ osEl.style.borderColor = 'rgba(255,255,255,.12)'; }, 1500);
+    }
+    if (telEl && !telEl.value && encontrado.telefono) {
+      telEl.value = encontrado.telefono;
+      telEl.style.borderColor = 'rgba(100,220,140,.5)';
+      setTimeout(function(){ telEl.style.borderColor = 'rgba(255,255,255,.12)'; }, 1500);
+    }
+  }
 }
 
 function abrirModalNuevaCita(fechaISO) {
