@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-26 09:25 ARG -->
+<!-- GastroCDELU index.html · 2026-03-26 09:22 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -5645,18 +5645,18 @@ function enviarAgendaWhatsApp(iso) {
   var fechaLabel = DIAS[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
   
   // Construir mensaje
-  var msg = '📅 *AGENDA ' + fechaLabel.toUpperCase() + '*\n';
+  var msg = '*AGENDA ' + fechaLabel.toUpperCase() + '*\n';
   msg += '━━━━━━━━━━━━━━━━━━\n\n';
   
   citasDia.forEach(function(c, i) {
-    msg += '🕐 *' + (c.hora || 'S/H') + '* — ' + (c.estudio || 'Consulta') + '\n';
-    msg += '👤 ' + (c.nombre || 'Sin nombre') + '\n';
-    if (c.obraSocial) msg += '🏥 ' + c.obraSocial + '\n';
+    msg += '*' + (c.hora || 'S/H') + '* - ' + (c.estudio || 'Consulta') + '\n';
+    msg += (c.nombre || 'Sin nombre') + '\n';
+    if (c.obraSocial) msg += c.obraSocial + '\n';
     if (i < citasDia.length - 1) msg += '\n';
   });
   
   msg += '\n━━━━━━━━━━━━━━━━━━\n';
-  msg += '📊 Total: ' + citasDia.length + ' turno' + (citasDia.length > 1 ? 's' : '');
+  msg += 'Total: ' + citasDia.length + ' turno' + (citasDia.length > 1 ? 's' : '');
   
   // Abrir WhatsApp
   var url = 'https://wa.me/?text=' + encodeURIComponent(msg);
