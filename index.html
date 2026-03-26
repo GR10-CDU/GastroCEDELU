@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-25 10:40 ARG -->
+<!-- GastroCDELU index.html · 2026-03-26 09:25 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -5593,6 +5593,12 @@ function renderCalSemana(el) {
       btnBloquesHTML = '<button onclick="toggleBloquesCol(\'' + iso + '\')" style="background:' + btnBloquesBg + ';border:1px solid ' + btnBloquesBorder + ';border-radius:6px;width:100%;padding:5px 4px;font-size:9px;font-weight:800;color:' + btnBloquesColor + ';cursor:pointer;letter-spacing:.03em;margin-bottom:6px">' + lblBloques + '</button>';
     }
 
+    // Botón WhatsApp para días con citas
+    var btnWhatsAppHTML = '';
+    if (tieneCitas) {
+      btnWhatsAppHTML = '<button onclick="event.stopPropagation();enviarAgendaWhatsApp(\'' + iso + '\')" style="background:#25d366;border:none;border-radius:5px;width:100%;padding:4px;font-size:10px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:4px" title="Enviar agenda por WhatsApp">📲 WhatsApp</button>';
+    }
+
     return '<div style="flex:1;min-width:80px;background:' + colBg + ';border-radius:12px;border:1px solid ' + colBorder + ';padding:10px 8px;display:flex;flex-direction:column">'
       + '<div style="text-align:center;margin-bottom:8px">'
       +   '<div style="font-size:11px;font-weight:800;color:' + lblColor + ';letter-spacing:.1em">' + _DIAS_CORTO[diaNum].toUpperCase() + '</div>'
@@ -5602,6 +5608,7 @@ function renderCalSemana(el) {
       + btnBloquesHTML
       + chips
       + '<div style="margin-top:auto;padding-top:6px">'
+      +   btnWhatsAppHTML
       +   '<button onclick="abrirModalNuevaCita(\'' + iso + '\')" style="background:' + btnBg + ';border:1px dashed ' + btnBorder + ';border-radius:5px;width:100%;padding:4px;font-size:10px;font-weight:700;color:' + btnColor + ';cursor:pointer">+ cita</button>'
       + '</div>'
       + '</div>';
@@ -5619,6 +5626,41 @@ function renderCalSemana(el) {
     + '<button onclick="irHoyCitas()" style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;color:#1b5e20">Hoy</button>'
     + '</div>'
     + '<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;align-items:flex-start">' + cols + '</div>';
+}
+
+// ── Enviar agenda del día por WhatsApp ────────────────────────────
+function enviarAgendaWhatsApp(iso) {
+  var citas = _citasCargar();
+  var citasDia = citas.filter(function(c){ return c.fecha === iso; })
+                      .sort(function(a,b){ return (a.hora||'').localeCompare(b.hora||''); });
+  
+  if (citasDia.length === 0) {
+    toast('No hay citas para ese día', 'info');
+    return;
+  }
+  
+  // Formatear fecha
+  var d = _parseFechaISO(iso);
+  var DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  var fechaLabel = DIAS[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+  
+  // Construir mensaje
+  var msg = '📅 *AGENDA ' + fechaLabel.toUpperCase() + '*\n';
+  msg += '━━━━━━━━━━━━━━━━━━\n\n';
+  
+  citasDia.forEach(function(c, i) {
+    msg += '🕐 *' + (c.hora || 'S/H') + '* — ' + (c.estudio || 'Consulta') + '\n';
+    msg += '👤 ' + (c.nombre || 'Sin nombre') + '\n';
+    if (c.obraSocial) msg += '🏥 ' + c.obraSocial + '\n';
+    if (i < citasDia.length - 1) msg += '\n';
+  });
+  
+  msg += '\n━━━━━━━━━━━━━━━━━━\n';
+  msg += '📊 Total: ' + citasDia.length + ' turno' + (citasDia.length > 1 ? 's' : '');
+  
+  // Abrir WhatsApp
+  var url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
 }
 
 function renderCalMes(el) {
