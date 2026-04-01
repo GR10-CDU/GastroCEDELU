@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-03-26 09:22 ARG -->
+<!-- GastroCDELU index.html · 2026-04-01 13:15 ARG -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -2539,6 +2539,17 @@ function showModal(id) {
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('show');
+  // ── Resetear botones de guardado para evitar estado "Guardando..." persistente ──
+  if (id === 'modal-consulta') {
+    ['btn-guardar-consulta','btn-guardar-consulta-bottom'].forEach(btnId => {
+      const b = document.getElementById(btnId); if (b) { b.disabled = false; b.innerHTML = 'Guardar Consulta'; }
+    });
+  }
+  if (id === 'modal-hc') {
+    ['btn-guardar-hc','btn-guardar-hc-bottom'].forEach(btnId => {
+      const b = document.getElementById(btnId); if (b) { b.disabled = false; b.innerHTML = 'Guardar Historia Clínica'; }
+    });
+  }
 }
 
 function confirm_(msg, onOk) {
@@ -3166,14 +3177,11 @@ async function submitPaciente() {
   const dni    = document.getElementById('pac-dni').value.trim();
   if (!nombre) { toast('El nombre del paciente es obligatorio', 'error'); return; }
 
-  const spinnerSVG = `<svg style="width:14px;height:14px;vertical-align:-2px;animation:spin 0.8s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-  const btns = ['btn-guardar-pac','btn-guardar-pac-bottom'].map(id => document.getElementById(id)).filter(Boolean);
-  btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
-  const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = 'Guardar Paciente'; });
+  const pacIdVal = document.getElementById('pac-id').value;
+  const esEdicion = !!pacIdVal;
 
-  showLoading('Guardando paciente...');
   const data = {
-    id:             document.getElementById('pac-id').value,
+    id:             pacIdVal,
     dni:            dni,
     apellidoNombre: nombre,
     sexo:           document.getElementById('pac-sexo').value,
@@ -3189,23 +3197,28 @@ async function submitPaciente() {
     derivadoPor:    document.getElementById('pac-derivado').value
   };
 
-  try {
-    const res = await serverCall('savePaciente', data, App.session.medicoId);
-    if (res.ok) {
-      toast('Paciente guardado correctamente', 'success');
-      resetFormPaciente();
+  // ── Volver a lista y dejar trabajar libremente ──────────────
+  resetFormPaciente();
+  showPage('pacientes');
+
+  // ── Mostrar banner no-bloqueante ──────────────────────────
+  SaveBanner.show(esEdicion ? 'Actualizando paciente...' : 'Guardando paciente...', 'Enviando datos al servidor', 1);
+
+  // ── Guardado asíncrono en 2do plano ──────────────────────
+  (async () => {
+    try {
+      const res = await serverCall('savePaciente', data, App.session.medicoId);
+      if (!res.ok) { SaveBanner.error(res.error); return; }
+
+      // Recargar lista
+      SaveBanner.setStep(2, 'Actualizando listado...');
       await loadPacientes();
-      showPage('pacientes');
-    } else {
-      toast('Error: ' + res.error, 'error');
-      restore();
+
+      SaveBanner.success(esEdicion ? 'Paciente actualizado' : 'Paciente guardado');
+    } catch (e) {
+      SaveBanner.error('Error de conexión: ' + e.message);
     }
-  } catch (e) {
-    toast('Error de conexión', 'error');
-    restore();
-  } finally {
-    hideLoading();
-  }
+  })();
 }
 
 // ─── DETALLE PACIENTE ────────────────────────────────────────
@@ -3533,15 +3546,11 @@ async function submitHC() {
   const pac = App.pacienteActual;
   if (!pac) { toast('No hay paciente activo', 'error'); return; }
 
-  const spinnerSVG = `<svg style="width:14px;height:14px;vertical-align:-2px;animation:spin 0.8s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-  const btns = ['btn-guardar-hc','btn-guardar-hc-bottom'].map(id => document.getElementById(id)).filter(Boolean);
-  btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
-  const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = 'Guardar Historia Clínica'; });
-
-  showLoading('Guardando Historia Clínica...');
+  const hcIdVal = document.getElementById('hc-id').value;
+  const esNueva = !hcIdVal;
 
   const data = {
-    id:               document.getElementById('hc-id').value,
+    id:               hcIdVal,
     pacienteId:       pac.id,
     apellidoNombre:   pac.apellidoNombre,
     fechaConsulta:    document.getElementById('hc-fecha').value,
@@ -3560,22 +3569,34 @@ async function submitHC() {
     data['med'+i] = document.getElementById('med'+i).value;
     data['dos'+i] = document.getElementById('dos'+i).value;
   }
-  try {
-    const res = await serverCall('saveHC', data, App.session.medicoId);
-    if (res.ok) {
-      // Actualizar el id en el form por si era nueva (para futuros guardados en la misma sesión)
+
+  // ── Cerrar modal y dejar trabajar libremente ──────────────
+  closeModal('modal-hc');
+  showTab('hc');
+
+  // ── Mostrar banner no-bloqueante ──────────────────────────
+  SaveBanner.show('Guardando Historia Clínica...', 'Enviando datos al servidor', 1);
+
+  // ── Guardado asíncrono en 2do plano ──────────────────────
+  (async () => {
+    try {
+      const res = await serverCall('saveHC', data, App.session.medicoId);
+      if (!res.ok) { SaveBanner.error(res.error); return; }
+
+      // Actualizar el id en el form por si era nueva
       if (res.id) document.getElementById('hc-id').value = res.id;
-      toast('Historia Clínica guardada', 'success');
-      closeModal('modal-hc');
+
+      // Recargar HC
+      SaveBanner.setStep(2, 'Actualizando vista...');
       const r = await serverCall('getHC', pac.id);
       App.hcActual = r.ok ? r.data : null;
       renderHC(App.hcActual);
-    } else {
-      toast('Error: ' + res.error, 'error');
-      restore();
+
+      SaveBanner.success('Historia Clínica guardada');
+    } catch (e) {
+      SaveBanner.error('Error de conexión: ' + e.message);
     }
-  } catch (e) { toast('Error de conexión: ' + e.message, 'error'); restore(); }
-  finally { hideLoading(); }
+  })();
 }
 
 // ─── CONSULTAS ───────────────────────────────────────────────
@@ -3819,12 +3840,6 @@ async function submitConsulta() {
   const pac = App.pacienteActual;
   if (!pac) { toast('No hay paciente activo', 'error'); return; }
 
-  const spinnerSVG = `<svg style="width:14px;height:14px;vertical-align:-2px;animation:spin 0.8s linear infinite" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-  const btns = ['btn-guardar-consulta','btn-guardar-consulta-bottom'].map(id => document.getElementById(id)).filter(Boolean);
-  btns.forEach(b => { b.disabled = true; b.innerHTML = `${spinnerSVG} Guardando...`; });
-  const restore = () => btns.forEach(b => { b.disabled = false; b.innerHTML = 'Guardar Consulta'; });
-
-  showLoading('Guardando consulta...');
   const consId = document.getElementById('cons-id') ? document.getElementById('cons-id').value : '';
   const esEdicion = !!consId;
   const data = {
@@ -3839,19 +3854,32 @@ async function submitConsulta() {
     pendiente:           document.getElementById('cons-pendiente').value
   };
   if (esEdicion) data.id = consId;
-  try {
-    const accion = esEdicion ? 'updateConsulta' : 'saveConsulta';
-    showLoading(esEdicion ? 'Actualizando consulta...' : 'Guardando consulta...');
-    const res = await serverCall(accion, data, App.session.medicoId);
-    if (res.ok) {
-      toast(esEdicion ? 'Consulta actualizada' : 'Consulta guardada', 'success');
-      App.consultaDraft = null;
-      closeModal('modal-consulta');
+
+  // ── Cerrar modal y dejar trabajar libremente ──────────────
+  App.consultaDraft = null;
+  closeModal('modal-consulta');
+  showTab('consultas');
+
+  // ── Mostrar banner no-bloqueante ──────────────────────────
+  SaveBanner.show(esEdicion ? 'Actualizando consulta...' : 'Guardando consulta...', 'Enviando datos al servidor', 1);
+
+  // ── Guardado asíncrono en 2do plano ──────────────────────
+  (async () => {
+    try {
+      const accion = esEdicion ? 'updateConsulta' : 'saveConsulta';
+      const res = await serverCall(accion, data, App.session.medicoId);
+      if (!res.ok) { SaveBanner.error(res.error); return; }
+
+      // Recargar lista
+      SaveBanner.setStep(2, 'Actualizando listado...');
       const r = await serverCall('getConsultas', pac.id);
       renderConsultas(r.ok ? r.data : []);
-    } else { toast('Error: ' + res.error, 'error'); restore(); }
-  } catch (e) { toast('Error de conexión: ' + e.message, 'error'); restore(); }
-  finally { hideLoading(); }
+
+      SaveBanner.success(esEdicion ? 'Consulta actualizada' : 'Consulta guardada');
+    } catch (e) {
+      SaveBanner.error('Error de conexión: ' + e.message);
+    }
+  })();
 }
 
 // prepModalConsulta() se llama directo desde el onclick del botón (ver HTML)
