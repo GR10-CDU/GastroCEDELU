@@ -4207,15 +4207,16 @@ function editarEndoscopia(endoId) {
 
   if (esVeda) {
     set('endo-esofago',         e.esofago);
-    set('endo-endoscopia-tipo', e.Endoscopia);
+    set('endo-endoscopia-tipo', e.endoscopia || e.Endoscopia);
   } else {
     set('endo-colon-informe',     e.esofago || e.colonInforme);
-    set('endo-region-alcanzada',  e.RegionAlcanzada || e.regionAlcanzada);
+    set('endo-region-alcanzada',  e.regionAlcanzada || e.RegionAlcanzada);
     const rh = document.getElementById('endo-region');
-    if (rh) rh.value = e.RegionAlcanzada || e.regionAlcanzada || '';
-    ['CD','CT','CI'].forEach(seg => {
-      const el = document.getElementById('endo-boston-' + seg.toLowerCase());
-      if (el && e['boston'+seg] !== undefined && e['boston'+seg] !== '') el.value = e['boston'+seg];
+    if (rh) rh.value = e.regionAlcanzada || e.RegionAlcanzada || '';
+    ['cd','ct','ci'].forEach(seg => {
+      const el = document.getElementById('endo-boston-' + seg);
+      const val = e['boston' + seg.charAt(0).toUpperCase() + seg.slice(1)] || e['boston' + seg.toUpperCase()];
+      if (el && val !== undefined && val !== '') el.value = val;
     });
   }
 
@@ -4537,11 +4538,11 @@ async function submitEndoscopia(generarPDF = false) {
     antecedentes:    document.getElementById('endo-antec').value,
     motivoExamen:    document.getElementById('endo-motivo').value,
     esofago:         informeTexto,
-    Endoscopia:      document.getElementById('endo-endoscopia-tipo').value,
-    RegionAlcanzada: document.getElementById('endo-region').value,
-    bostonCD: (document.getElementById('endo-boston-cd')||{}).value||'',
-    bostonCT: (document.getElementById('endo-boston-ct')||{}).value||'',
-    bostonCI: (document.getElementById('endo-boston-ci')||{}).value||'',
+    endoscopia:      document.getElementById('endo-endoscopia-tipo').value,
+    regionAlcanzada: document.getElementById('endo-region').value,
+    bostonCd: (document.getElementById('endo-boston-cd')||{}).value||'',
+    bostonCt: (document.getElementById('endo-boston-ct')||{}).value||'',
+    bostonCi: (document.getElementById('endo-boston-ci')||{}).value||'',
     impresionDiagnostica: document.getElementById('endo-impresion').value,
     analgesia:       document.getElementById('endo-analgesia').value,
     anestesista:     document.getElementById('endo-anestesista').value,
@@ -4843,11 +4844,11 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   ).join('');
 
   const informe         = e.esofago || e.colonInforme || '';
-  const regionAlcanzada = e.RegionAlcanzada || e.regionAlcanzada || e.region || '';
-  const tipoEndo = e.Endoscopia || e.estomago || '—';
-  const _bCD=(e.bostonCD!==undefined&&e.bostonCD!=='')?parseInt(e.bostonCD):null;
-  const _bCT=(e.bostonCT!==undefined&&e.bostonCT!=='')?parseInt(e.bostonCT):null;
-  const _bCI=(e.bostonCI!==undefined&&e.bostonCI!=='')?parseInt(e.bostonCI):null;
+  const regionAlcanzada = e.regionAlcanzada || e.RegionAlcanzada || e.region || '';
+  const tipoEndo = e.endoscopia || e.Endoscopia || e.estomago || '—';
+  const _bCD=(e.bostonCd!==undefined&&e.bostonCd!=='')?parseInt(e.bostonCd):(e.bostonCD!==undefined&&e.bostonCD!=='')?parseInt(e.bostonCD):null;
+  const _bCT=(e.bostonCt!==undefined&&e.bostonCt!=='')?parseInt(e.bostonCt):(e.bostonCT!==undefined&&e.bostonCT!=='')?parseInt(e.bostonCT):null;
+  const _bCI=(e.bostonCi!==undefined&&e.bostonCi!=='')?parseInt(e.bostonCi):(e.bostonCI!==undefined&&e.bostonCI!=='')?parseInt(e.bostonCI):null;
   const bostonHtml=(_bCD!==null||_bCT!==null||_bCI!==null)
     ?(()=>{const tot=(_bCD||0)+(_bCT||0)+(_bCI||0);
       return `<span style="display:inline-block;background:#d4f5e4;color:#155a32;font-size:10px;font-weight:800;padding:2px 12px;border-radius:20px;text-transform:uppercase;border:1px solid #a8e6c6;margin-left:4px">BOSTON: ${tot}/9 &nbsp;&middot;&nbsp; CD: ${_bCD!==null?_bCD:'—'}/3 &nbsp;&middot;&nbsp; CT: ${_bCT!==null?_bCT:'—'}/3 &nbsp;&middot;&nbsp; CI: ${_bCI!==null?_bCI:'—'}/3</span>`;})():'';
