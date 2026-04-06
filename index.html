@@ -5414,14 +5414,78 @@ let _citasVista    = 'semana';   // 'semana' | 'mes'
 let _citasSemana   = (() => { const h=new Date(); h.setHours(0,0,0,0); const d=h.getDay(); h.setDate(h.getDate()+(d===0?-6:1-d)); return h; })(); // lunes de la semana actual
 let _citasMesRef   = new Date(new Date().getFullYear(), new Date().getMonth(), 1); // primer día del mes visible
 let _pdfCitasTemp  = [];         // citas parseadas del PDF, pendientes de confirmar
+let _citasCargadas = false;      // flag para saber si ya cargamos de Supabase
 
-// ── Storage helpers ─────────────────────────────────────────────
+// ── Storage helpers (híbrido: cache local + Supabase) ─────────────
 function _citasGuardar(citas) {
   try { localStorage.setItem('gastro_citas', JSON.stringify(citas)); } catch(e){}
+  // Sync a Supabase en background
+  _syncCitasToSupabase(citas);
 }
 function _citasCargar() {
   try { return JSON.parse(localStorage.getItem('gastro_citas') || '[]'); } catch(e){ return []; }
 }
+
+// Sincronizar citas a Supabase (en background, no bloqueante)
+async function _syncCitasToSupabase(citas) {
+  if (!App.session || !App.session.medicoId) return;
+  for (const c of citas) {
+    if (!c.id) c.id = Date.now().toString(36) + Math.random().toString(36).substr(2,4);
+    try {
+      await serverCall('saveCita', {
+        id: c.id,
+        fecha: c.fecha,
+        hora: c.hora,
+        pacienteNombre: c.nombre || '',
+        pacienteId: c.pacienteId || '',
+        motivo: c.estudio || '',
+        notas: c.notas || '',
+        estado: c.estado || 'pendiente'
+      }, App.session.medicoId);
+    } catch(e) { console.error('Error sincronizando cita:', e); }
+  }
+}
+
+// Cargar citas desde Supabase (una sola vez al entrar)
+async function _cargarCitasDesdeSupabase() {
+  if (_citasCargadas || !App.session || !App.session.medicoId) return;
+  try {
+    const hoy = new Date();
+    const hace6Meses = new Date(hoy.getFullYear(), hoy.getMonth() - 6, 1);
+    const en6Meses = new Date(hoy.getFullYear(), hoy.getMonth() + 6, 28);
+    const desde = hace6Meses.toISOString().split('T')[0];
+    const hasta = en6Meses.toISOString().split('T')[0];
+    
+    const res = await serverCall('getCitas', App.session.medicoId, desde, hasta);
+    if (res.ok && res.data && res.data.length > 0) {
+      const citasSupabase = res.data.map(c => ({
+        id: c.id,
+        fecha: c.fecha,
+        hora: c.hora,
+        nombre: c.pacienteNombre,
+        pacienteId: c.pacienteId,
+        estudio: c.motivo,
+        notas: c.notas,
+        estado: c.estado
+      }));
+      // Merge con citas locales (Supabase tiene prioridad)
+      const citasLocales = _citasCargar();
+      const idsSupabase = new Set(citasSupabase.map(c => c.id));
+      const citasNuevasLocales = citasLocales.filter(c => !idsSupabase.has(c.id));
+      const citasMerged = [...citasSupabase, ...citasNuevasLocales];
+      localStorage.setItem('gastro_citas', JSON.stringify(citasMerged));
+    }
+    _citasCargadas = true;
+  } catch(e) { console.error('Error cargando citas de Supabase:', e); }
+}
+
+// Eliminar cita (local + Supabase)
+async function _citaEliminarDeSupabase(citaId) {
+  try {
+    await serverCall('deleteCita', citaId);
+  } catch(e) { console.error('Error eliminando cita de Supabase:', e); }
+}
+
 function _msgGuardar(msgs) {
   try { localStorage.setItem('gastro_citas_msgs', JSON.stringify(msgs)); } catch(e){}
 }
@@ -5446,6 +5510,9 @@ async function initCitas() {
       if (res.ok) App.pacientes = res.data;
     } catch(e) { console.error('Error cargando pacientes para citas:', e); }
   }
+  // Cargar citas desde Supabase (merge con locales)
+  await _cargarCitasDesdeSupabase();
+  
   _citasSemana = _lunesDeHoy();
   _citasMesRef = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   renderPanelProximas();
@@ -5846,6 +5913,10 @@ function eliminarSeleccionadas() {
   if (_citasSeleccionadas.size === 0) return;
   var n = _citasSeleccionadas.size;
   if (!confirm('¿Eliminar ' + n + ' cita' + (n !== 1 ? 's' : '') + '?')) return;
+  // Eliminar de Supabase
+  _citasSeleccionadas.forEach(function(id) {
+    _citaEliminarDeSupabase(id);
+  });
   var citas = _citasCargar().filter(function(c){ return !_citasSeleccionadas.has(c.id); });
   _citasGuardar(citas);
   _citasSeleccionadas.clear();
@@ -6165,6 +6236,8 @@ function verCita(id) {
 function eliminarCita(id) {
   var citas = _citasCargar().filter(function(c){ return c.id !== id; });
   _citasGuardar(citas);
+  // Eliminar también de Supabase
+  _citaEliminarDeSupabase(id);
   cerrarModalCita();
   toast('Cita eliminada', 'ok');
   renderPanelProximas();
