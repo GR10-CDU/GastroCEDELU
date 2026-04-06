@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GastroCDELU index.html · 2026-04-01 13:15 ARG -->
+<!-- GastroCDELU index.html · 2026-04-06 15:00 ARG · Supabase -->
 <!-- ============================================================ -->
 <!-- Gastro CDELU — 2026-03-12 02:00 ARG - index.html (Frontend SPA)                    -->
 <!-- 2026-03-07 16:00 ARG                                         -->
@@ -2477,24 +2477,28 @@ function initials(name) {
   return name[0].toUpperCase();
 }
 
-// ─── URL DEL APPS SCRIPT ── CAMBIAR POR TU URL ──────────────
-const API_URL = 'https://script.google.com/macros/s/AKfycbyFfrgfodWGzNVSRxU39X4zdyq_s6Qpm_CglMgADSxjW9umjrFHQsRjF6KcwkuBbzI/exec';
+// ─── SUPABASE CONFIG ─────────────────────────────────────────
+const SUPABASE_URL = 'https://wisdsikrmlvpppiaract.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_JafUbH2XU9UghpSlSIgZWw_G5Bhd6Lc';
+const API_URL = SUPABASE_URL + '/functions/v1/api';
 // ─── ICONOS ENDOSCOPIA (texto, sin imágenes) ─────────────────
 const ICON_VEDA  = null;
 const ICON_COLON = null;
 
 
 async function serverCall(fn, ...args) {
-  // Siempre POST: evita límites de URL, problemas de encoding y CORS con redirect
   const body = JSON.stringify({ action: fn, params: args });
   let lastErr = null;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: body,
-        redirect: 'follow'
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'apikey': SUPABASE_ANON_KEY
+        },
+        body: body
       });
       const text = await res.text();
       try {
@@ -5384,8 +5388,8 @@ function insertarPlantillaColon(idx) {
 
 // ── Estado ──────────────────────────────────────────────────────
 let _citasVista    = 'semana';   // 'semana' | 'mes'
-let _citasSemana   = new Date(); // lunes de la semana visible
-let _citasMesRef   = new Date(); // primer día del mes visible
+let _citasSemana   = (() => { const h=new Date(); h.setHours(0,0,0,0); const d=h.getDay(); h.setDate(h.getDate()+(d===0?-6:1-d)); return h; })(); // lunes de la semana actual
+let _citasMesRef   = new Date(new Date().getFullYear(), new Date().getMonth(), 1); // primer día del mes visible
 let _pdfCitasTemp  = [];         // citas parseadas del PDF, pendientes de confirmar
 
 // ── Storage helpers ─────────────────────────────────────────────
