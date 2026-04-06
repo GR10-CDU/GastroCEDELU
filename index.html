@@ -2518,6 +2518,28 @@ async function serverCall(fn, ...args) {
   throw lastErr || new Error('Error de conexión');
 }
 
+// ─── UPLOAD FOTOS A GOOGLE DRIVE (via Apps Script) ───────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyFfrgfodWGzNVSRxU39X4zdyq_s6Qpm_CglMgADSxjW9umjrFHQsRjF6KcwkuBbzI/exec';
+
+async function uploadFotoToDrive(base64, mimeType, nombre, pacienteId, endoscopiaId) {
+  const body = JSON.stringify({
+    action: 'uploadFoto',
+    params: [base64, mimeType, nombre, pacienteId, endoscopiaId]
+  });
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: body
+    });
+    const text = await res.text();
+    return JSON.parse(text);
+  } catch (e) {
+    console.error('uploadFotoToDrive error:', e);
+    return { ok: false, error: e.message };
+  }
+}
+
 // ─── UI HELPERS ─────────────────────────────────────────────
 function showLoading(msg, sub) {
   document.getElementById('loading-msg').textContent = msg || 'Procesando...';
@@ -4426,7 +4448,7 @@ async function uploadFotosADrive(pacienteId, endoscopiaId) {
     if (f.fileId) continue; // ya subida
     status.textContent = `Subiendo foto ${i+1} de ${fotosData.length}...`;
     try {
-      const res = await serverCall('uploadFoto',
+      const res = await uploadFotoToDrive(
         f.base64, f.mimeType, f.nombre, pacienteId, endoscopiaId
       );
       if (res.ok) {
