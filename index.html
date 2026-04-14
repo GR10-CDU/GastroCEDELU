@@ -4252,6 +4252,16 @@ function _endoAutoguardadoGuardar() {
   if (!pacId) return; // necesita al menos paciente
   const tipo   = document.getElementById('endo-tipo').value || 'VEDA';
   const esVeda = !tipo.toUpperCase().includes('COLON');
+  
+  // Guardar fotos (solo base64 de las que aún no se subieron)
+  const fotosParaGuardar = fotosData.map(f => ({
+    base64: f.base64 || '',
+    mimeType: f.mimeType || '',
+    nombre: f.nombre || '',
+    url: f.url || '',
+    fileId: f.fileId || ''
+  }));
+  
   const draft  = {
     tipo:       tipo,
     fecha:      (document.getElementById('endo-fecha')||{}).value || '',
@@ -4269,10 +4279,15 @@ function _endoAutoguardadoGuardar() {
     informe:    esVeda
       ? (document.getElementById('endo-esofago')||{}).value || ''
       : (document.getElementById('endo-colon-informe')||{}).value || '',
+    fotos:      fotosParaGuardar,
     ts: Date.now()
   };
   const key = _endoDraftKey();
-  try { localStorage.setItem(key, JSON.stringify(draft)); } catch(e) {}
+  try { localStorage.setItem(key, JSON.stringify(draft)); } catch(e) { 
+    // Si falla por tamaño (fotos muy grandes), guardar sin fotos
+    delete draft.fotos;
+    try { localStorage.setItem(key, JSON.stringify(draft)); } catch(e2) {}
+  }
 }
 
 function _endoAutoguardadoCargar(endoIdOrKey) {
@@ -4305,6 +4320,16 @@ function _endoAutoguardadoCargar(endoIdOrKey) {
     set('endo-boston-ci',  d.bostonCI);
     if (esVeda) set('endo-esofago', d.informe);
     else        set('endo-colon-informe', d.informe);
+    
+    // Restaurar fotos
+    if (d.fotos && d.fotos.length > 0) {
+      fotosData = d.fotos.map(f => ({
+        ...f,
+        preview: f.base64 ? 'data:' + (f.mimeType || 'image/jpeg') + ';base64,' + f.base64 : (f.url || '')
+      }));
+      renderFotosPreviews();
+    }
+    
     toast('Borrador restaurado. Guardá para confirmar.', 'info');
     return true;
   } catch(e) { return false; }
@@ -4389,6 +4414,7 @@ function previewFotos(input) {
         preview: e.target.result
       });
       renderFotosPreviews();
+      _endoAutoguardadoGuardar(); // Autoguardar al agregar foto
     };
     reader.readAsDataURL(file);
   });
@@ -4400,7 +4426,7 @@ function renderFotosPreviews() {
   const status = document.getElementById('fotos-status');
   grid.innerHTML = fotosData.map((f, i) => `
     <div class="foto-preview-item" id="foto-item-${i}">
-      <img src="${f.preview}" alt="Foto ${i+1}" onclick="openFotoViewer('${f.preview}')">
+      <img src="${f.preview || f.url || ''}" alt="Foto ${i+1}" onclick="openFotoViewer('${f.preview || f.url || ''}')">
       ${f.url ? '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,128,0,0.7);color:white;font-size:10px;text-align:center;padding:2px">✓ Guardada</div>' : ''}
       <button class="remove-foto" onclick="removeFoto(${i})">✕</button>
     </div>
@@ -4411,6 +4437,7 @@ function renderFotosPreviews() {
 function removeFoto(idx) {
   fotosData.splice(idx, 1);
   renderFotosPreviews();
+  _endoAutoguardadoGuardar(); // Autoguardar al quitar foto
 }
 
 function openFotoViewer(src, isPdf) {
