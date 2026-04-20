@@ -1574,7 +1574,7 @@ body.theme-blue .login-card {
   box-shadow: 0 20px 60px rgba(30, 64, 175, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.1);
 }
 body.theme-blue .login-logo-icon {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
 }
 body.theme-blue .login-logo p {
   color: #2563eb;
@@ -1592,9 +1592,13 @@ body.theme-blue .btn-primary {
 body.theme-blue .btn-primary:hover {
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
+/* Sidebar azul con textos blancos */
 body.theme-blue .sidebar {
   background: #1e3a5f;
   border-color: #153050;
+}
+body.theme-blue .sidebar-brand h2 {
+  color: #ffffff;
 }
 body.theme-blue .sidebar-brand p {
   color: #93c5fd;
@@ -1603,57 +1607,129 @@ body.theme-blue .sidebar-brand-logo {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
 body.theme-blue .nav-section {
-  color: #7dd3fc;
+  color: #93c5fd;
 }
 body.theme-blue .nav-item {
-  color: #bfdbfe;
+  color: #e0f2fe;
 }
 body.theme-blue .nav-item:hover {
-  background: rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.25);
   color: #ffffff;
 }
 body.theme-blue .nav-item.active {
-  background: rgba(59, 130, 246, 0.3);
-  color: #bfdbfe;
+  background: rgba(59, 130, 246, 0.35);
+  color: #ffffff;
+}
+body.theme-blue .sidebar-user {
+  border-color: rgba(255,255,255,0.1);
 }
 body.theme-blue .user-avatar {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
+body.theme-blue .user-meta strong {
+  color: #ffffff;
+}
 body.theme-blue .user-meta span {
   color: #93c5fd;
+}
+body.theme-blue .btn-logout {
+  color: #93c5fd;
+}
+body.theme-blue .btn-logout:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: #ffffff;
 }
 body.theme-blue .theme-label {
   color: #93c5fd;
 }
+body.theme-blue .theme-btn {
+  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  color: #bfdbfe;
+}
+body.theme-blue .theme-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: #ffffff;
+}
 body.theme-blue .theme-btn.active {
-  background: rgba(59, 130, 246, 0.3);
-  border-color: rgba(59, 130, 246, 0.5);
-  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.4);
+  border-color: rgba(147, 197, 253, 0.5);
+  color: #ffffff;
+}
+/* Contenido principal */
+body.theme-blue .main-content {
+  background: #f0f5fa;
 }
 body.theme-blue .page-header {
   background: #ffffff;
   border-color: #d0dcea;
 }
+body.theme-blue .page-header h1 {
+  color: #1e293b;
+}
 body.theme-blue .stat-chip {
   background: #eff6ff;
   border-color: #bfdbfe;
 }
+body.theme-blue .search-bar input {
+  border-color: #d0dcea;
+}
+body.theme-blue .search-bar input:focus {
+  border-color: #2563eb;
+}
+body.theme-blue table {
+  background: #ffffff;
+}
 body.theme-blue table th {
   background: #f0f5fa;
   color: #475569;
+  border-color: #d0dcea;
+}
+body.theme-blue table td {
+  border-color: #e2e8f0;
+  color: #1e293b;
 }
 body.theme-blue table tbody tr:hover {
   background: #f5f8fc;
+}
+body.theme-blue .card,
+body.theme-blue .paciente-detalle-card {
+  background: #ffffff;
+  border-color: #d0dcea;
+}
+body.theme-blue .paciente-detalle-header h2 {
+  color: #1e293b;
+}
+body.theme-blue .tab-btn {
+  color: #64748b;
+}
+body.theme-blue .tab-btn:hover {
+  color: #1e293b;
 }
 body.theme-blue .tab-btn.active {
   color: #2563eb;
   border-color: #2563eb;
 }
+body.theme-blue .modal {
+  background: #ffffff;
+  border-color: #d0dcea;
+}
+body.theme-blue .modal h2 {
+  color: #1e293b;
+}
 body.theme-blue .section-divider span {
+  background: #ffffff;
   color: #2563eb;
+}
+body.theme-blue .section-divider::before {
+  background: #d0dcea;
 }
 body.theme-blue .toast {
   background: #1e3a5f;
+  color: #ffffff;
+}
+body.theme-blue ::-webkit-scrollbar-track {
+  background: #f0f5fa;
 }
 body.theme-blue ::-webkit-scrollbar-thumb {
   background: #a8c0d8;
@@ -1661,6 +1737,9 @@ body.theme-blue ::-webkit-scrollbar-thumb {
 body.theme-blue .badge-historico {
   background: #1d4ed8;
   color: #fff;
+}
+body.theme-blue a {
+  color: #2563eb;
 }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
