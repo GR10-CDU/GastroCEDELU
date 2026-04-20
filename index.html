@@ -1301,176 +1301,366 @@ color:#555;
   border-color: rgba(100,220,140,0.5);
   color: #a8f0be;
 }
+/* Colores de los botones de tema */
+.theme-btn[data-theme="default"] { color: #4ade80; }
+.theme-btn[data-theme="dark"] { color: #a78bfa; }
+.theme-btn[data-theme="blue"] { color: #60a5fa; }
 
 /* ═══════════════════════════════════════════════════════════════
-   TEMA: GLASSMORPHISM
+   TEMA: OSCURO (Dark Mode)
 ═══════════════════════════════════════════════════════════════ */
-body.theme-glass {
-  --bg: linear-gradient(135deg, #c8ead6 0%, #edf7f0 50%, #d4e8f0 100%);
+body.theme-dark {
+  --bg: #0f1419;
+  --surface: #1a1f2e;
+  --card: #1e2433;
+  --card2: #252b3b;
+  --border: #2d3548;
+  --border2: #3d4663;
+  --accent: #8b5cf6;
+  --accent2: #a78bfa;
+  --text: #e8eaed;
+  --muted: #9ca3af;
+  --muted2: #d1d5db;
+  --danger: #f87171;
+  --warn: #fbbf24;
+  --success: #4ade80;
 }
-body.theme-glass #screen-app {
-  background: linear-gradient(135deg, #c8ead6 0%, #edf7f0 50%, #d4e8f0 100%);
+body.theme-dark {
+  background: var(--bg);
+  color: var(--text);
 }
-body.theme-glass .main-content {
-  background: transparent;
+body.theme-dark #screen-login {
+  background: radial-gradient(ellipse at 60% 40%, #1e1b4b 0%, #0f1419 70%);
 }
-body.theme-glass .sidebar {
-  background: rgba(21,90,50,0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+body.theme-dark #screen-login::before {
+  border-color: rgba(139, 92, 246, 0.15);
 }
-body.theme-glass .card,
-body.theme-glass .page-body,
-body.theme-glass .login-card,
-body.theme-glass .modal-content,
-body.theme-glass .paciente-detalle-card,
-body.theme-glass .stat-chip,
-body.theme-glass table {
-  background: rgba(255,255,255,0.75) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(26,156,91,0.2) !important;
-  box-shadow: 0 8px 32px rgba(21,90,50,0.1) !important;
+body.theme-dark #screen-login::after {
+  border-color: rgba(167, 139, 250, 0.12);
 }
-body.theme-glass .btn-primary {
-  background: linear-gradient(135deg, rgba(26,156,91,0.9), rgba(21,101,192,0.9));
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 20px rgba(26,156,91,0.3);
+body.theme-dark .login-card {
+  background: #1a1f2e;
+  border-color: #2d3548;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(139,92,246,0.15);
 }
-body.theme-glass .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(26,156,91,0.4);
+body.theme-dark .login-logo-icon {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
 }
-body.theme-glass .page-header {
-  background: transparent;
+body.theme-dark .login-logo h1 {
+  color: #e8eaed;
+}
+body.theme-dark .login-logo p {
+  color: #a78bfa;
+}
+body.theme-dark .login-card h2 {
+  color: #9ca3af;
+}
+body.theme-dark .field input,
+body.theme-dark .field textarea,
+body.theme-dark .field select {
+  background: #252b3b;
+  border-color: #3d4663;
+  color: #e8eaed;
+}
+body.theme-dark .field input:focus,
+body.theme-dark .field textarea:focus,
+body.theme-dark .field select:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+body.theme-dark .field input::placeholder,
+body.theme-dark .field textarea::placeholder {
+  color: #6b7280;
+}
+body.theme-dark .btn-primary {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+body.theme-dark .btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
+}
+body.theme-dark .btn-secondary {
+  background: #252b3b;
+  border-color: #3d4663;
+  color: #d1d5db;
+}
+body.theme-dark .btn-secondary:hover {
+  background: #2d3548;
+}
+body.theme-dark .btn-ghost {
+  border-color: #3d4663;
+  color: #9ca3af;
+}
+body.theme-dark .btn-ghost:hover {
+  background: #252b3b;
+  color: #e8eaed;
+}
+body.theme-dark .sidebar {
+  background: #12141c;
+  border-color: #1e2433;
+}
+body.theme-dark .sidebar-brand h2 {
+  color: #e8eaed;
+}
+body.theme-dark .sidebar-brand p {
+  color: #a78bfa;
+}
+body.theme-dark .sidebar-brand-logo {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+}
+body.theme-dark .nav-section {
+  color: #6b7280;
+}
+body.theme-dark .nav-item {
+  color: #9ca3af;
+}
+body.theme-dark .nav-item:hover {
+  background: rgba(139, 92, 246, 0.15);
+  color: #e8eaed;
+}
+body.theme-dark .nav-item.active {
+  background: rgba(139, 92, 246, 0.25);
+  color: #c4b5fd;
+}
+body.theme-dark .sidebar-user {
+  border-color: #2d3548;
+}
+body.theme-dark .user-avatar {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+}
+body.theme-dark .user-meta strong {
+  color: #e8eaed;
+}
+body.theme-dark .user-meta span {
+  color: #9ca3af;
+}
+body.theme-dark .theme-label {
+  color: #9ca3af;
+}
+body.theme-dark .theme-btn {
+  border-color: #3d4663;
+  background: #252b3b;
+}
+body.theme-dark .theme-btn.active {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #c4b5fd;
+}
+body.theme-dark .main-content {
+  background: #0f1419;
+}
+body.theme-dark .page-header {
+  background: #1a1f2e;
+  border-color: #2d3548;
+}
+body.theme-dark .page-header h1 {
+  color: #e8eaed;
+}
+body.theme-dark .page-body {
+  background: #0f1419;
+}
+body.theme-dark .stat-chip {
+  background: #1e2433;
+  border-color: #2d3548;
+}
+body.theme-dark .search-bar input {
+  background: #1e2433;
+  border-color: #2d3548;
+  color: #e8eaed;
+}
+body.theme-dark table {
+  background: #1a1f2e;
+}
+body.theme-dark table th {
+  background: #252b3b;
+  color: #9ca3af;
+  border-color: #2d3548;
+}
+body.theme-dark table td {
+  border-color: #2d3548;
+  color: #d1d5db;
+}
+body.theme-dark table tbody tr:hover {
+  background: #252b3b;
+}
+body.theme-dark .card,
+body.theme-dark .paciente-detalle-card {
+  background: #1e2433;
+  border-color: #2d3548;
+}
+body.theme-dark .paciente-detalle-header {
+  border-color: #2d3548;
+}
+body.theme-dark .paciente-detalle-header h2 {
+  color: #e8eaed;
+}
+body.theme-dark .tab-btn {
+  color: #9ca3af;
+  border-color: transparent;
+}
+body.theme-dark .tab-btn:hover {
+  color: #e8eaed;
+}
+body.theme-dark .tab-btn.active {
+  color: #a78bfa;
+  border-color: #8b5cf6;
+}
+body.theme-dark .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+body.theme-dark .modal {
+  background: #1a1f2e;
+  border-color: #2d3548;
+}
+body.theme-dark .modal h2 {
+  color: #e8eaed;
+}
+body.theme-dark .section-divider span {
+  background: #1a1f2e;
+  color: #9ca3af;
+}
+body.theme-dark .section-divider::before {
+  background: #2d3548;
+}
+body.theme-dark .toast {
+  background: #1e2433;
+  border-color: #3d4663;
+  color: #e8eaed;
+}
+body.theme-dark ::-webkit-scrollbar-track {
+  background: #1a1f2e;
+}
+body.theme-dark ::-webkit-scrollbar-thumb {
+  background: #3d4663;
+}
+body.theme-dark .badge-historico {
+  background: #7c3aed;
+  color: #fff;
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   TEMA: MICRO-INTERACCIONES
+   TEMA: AZUL CLÍNICO
 ═══════════════════════════════════════════════════════════════ */
-body.theme-micro .card,
-body.theme-micro .paciente-detalle-card,
-body.theme-micro .stat-chip {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+body.theme-blue {
+  --bg: #f0f5fa;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card2: #f5f8fc;
+  --border: #d0dcea;
+  --border2: #a8c0d8;
+  --accent: #2563eb;
+  --accent2: #1d4ed8;
+  --text: #1e293b;
+  --muted: #64748b;
+  --muted2: #475569;
+  --danger: #dc2626;
+  --warn: #d97706;
+  --success: #16a34a;
 }
-body.theme-micro .card:hover,
-body.theme-micro .paciente-detalle-card:hover,
-body.theme-micro .stat-chip:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(26,156,91,0.15);
-  border-color: var(--accent);
+body.theme-blue {
+  background: var(--bg);
 }
-body.theme-micro table tbody tr {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+body.theme-blue #screen-login {
+  background: radial-gradient(ellipse at 60% 40%, #dbeafe 0%, #f0f5fa 70%);
 }
-body.theme-micro table tbody tr:hover {
-  background: var(--card2);
-  transform: translateX(6px);
+body.theme-blue #screen-login::before {
+  border-color: rgba(37, 99, 235, 0.15);
 }
-body.theme-micro table tbody tr:hover td:first-child {
-  color: var(--accent);
-  font-weight: 600;
+body.theme-blue #screen-login::after {
+  border-color: rgba(59, 130, 246, 0.12);
 }
-body.theme-micro .btn {
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+body.theme-blue .login-card {
+  border-color: #d0dcea;
+  box-shadow: 0 20px 60px rgba(30, 64, 175, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.1);
 }
-body.theme-micro .btn:active {
-  transform: scale(0.96);
+body.theme-blue .login-logo-icon {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
-body.theme-micro .btn-primary:hover {
-  filter: brightness(1.1);
+body.theme-blue .login-logo p {
+  color: #2563eb;
 }
-body.theme-micro .badge {
-  animation: badgePop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+body.theme-blue .field input:focus,
+body.theme-blue .field textarea:focus,
+body.theme-blue .field select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
-@keyframes badgePop {
-  0% { transform: scale(0.5); opacity: 0; }
-  70% { transform: scale(1.1); }
-  100% { transform: scale(1); opacity: 1; }
+body.theme-blue .btn-primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
 }
-body.theme-micro .nav-item {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+body.theme-blue .btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
-body.theme-micro .nav-item:hover {
-  transform: translateX(4px);
+body.theme-blue .sidebar {
+  background: #1e3a5f;
+  border-color: #153050;
 }
-body.theme-micro .toast {
-  animation: slideInToast 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+body.theme-blue .sidebar-brand p {
+  color: #93c5fd;
 }
-@keyframes slideInToast {
-  0% { transform: translateY(-20px) translateX(-50%); opacity: 0; }
-  100% { transform: translateY(0) translateX(-50%); opacity: 1; }
+body.theme-blue .sidebar-brand-logo {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   TEMA: TIPOGRAFÍA PREMIUM
-═══════════════════════════════════════════════════════════════ */
-body.theme-typo {
-  font-size: 16px;
-  line-height: 1.65;
+body.theme-blue .nav-section {
+  color: #7dd3fc;
 }
-body.theme-typo h1,
-body.theme-typo .page-header h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 2.4rem;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+body.theme-blue .nav-item {
+  color: #bfdbfe;
 }
-body.theme-typo h2,
-body.theme-typo .modal-title,
-body.theme-typo .section-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.6rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+body.theme-blue .nav-item:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: #ffffff;
 }
-body.theme-typo h3 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.3rem;
-  font-weight: 500;
+body.theme-blue .nav-item.active {
+  background: rgba(59, 130, 246, 0.3);
+  color: #bfdbfe;
 }
-body.theme-typo .subtitle,
-body.theme-typo .page-header .subtitle {
-  font-weight: 300;
-  font-size: 1rem;
-  letter-spacing: 0.01em;
+body.theme-blue .user-avatar {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
-body.theme-typo .field label {
-  font-size: 0.7rem;
-  letter-spacing: 1.8px;
-  color: var(--accent);
-  font-weight: 600;
+body.theme-blue .user-meta span {
+  color: #93c5fd;
 }
-body.theme-typo table th {
-  font-size: 0.65rem;
-  letter-spacing: 1.5px;
+body.theme-blue .theme-label {
+  color: #93c5fd;
 }
-body.theme-typo .stat-chip strong,
-body.theme-typo .data-number {
-  font-family: 'IBM Plex Mono', monospace;
-  font-variant-numeric: tabular-nums;
+body.theme-blue .theme-btn.active {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #93c5fd;
 }
-body.theme-typo table td {
-  font-variant-numeric: tabular-nums;
+body.theme-blue .page-header {
+  background: #ffffff;
+  border-color: #d0dcea;
 }
-body.theme-typo .page-body {
-  padding: 28px 32px;
+body.theme-blue .stat-chip {
+  background: #eff6ff;
+  border-color: #bfdbfe;
 }
-body.theme-typo .card,
-body.theme-typo .paciente-detalle-card {
-  padding: 24px 28px;
-  border-radius: 12px;
+body.theme-blue table th {
+  background: #f0f5fa;
+  color: #475569;
 }
-body.theme-typo .modal-content {
-  padding: 32px;
+body.theme-blue table tbody tr:hover {
+  background: #f5f8fc;
 }
-body.theme-typo .paciente-detalle-header h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 2rem;
-  font-weight: 500;
+body.theme-blue .tab-btn.active {
+  color: #2563eb;
+  border-color: #2563eb;
+}
+body.theme-blue .section-divider span {
+  color: #2563eb;
+}
+body.theme-blue .toast {
+  background: #1e3a5f;
+}
+body.theme-blue ::-webkit-scrollbar-thumb {
+  background: #a8c0d8;
+}
+body.theme-blue .badge-historico {
+  background: #1d4ed8;
+  color: #fff;
 }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -1545,10 +1735,9 @@ body.theme-typo .paciente-detalle-header h2 {
         <div class="theme-selector">
           <span class="theme-label">Tema</span>
           <div class="theme-buttons">
-            <button class="theme-btn active" data-theme="default" onclick="setTheme('default')" title="Clásico">◐</button>
-            <button class="theme-btn" data-theme="glass" onclick="setTheme('glass')" title="Glassmorphism">◈</button>
-            <button class="theme-btn" data-theme="micro" onclick="setTheme('micro')" title="Micro-interacciones">◉</button>
-            <button class="theme-btn" data-theme="typo" onclick="setTheme('typo')" title="Tipografía Premium">T</button>
+            <button class="theme-btn active" data-theme="default" onclick="setTheme('default')" title="Clásico Verde">☘</button>
+            <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')" title="Oscuro">☾</button>
+            <button class="theme-btn" data-theme="blue" onclick="setTheme('blue')" title="Azul Clínico">✚</button>
           </div>
         </div>
         <div class="sidebar-user-info">
@@ -2660,7 +2849,7 @@ body.theme-typo .paciente-detalle-header h2 {
 // ─── SELECTOR DE TEMAS ───────────────────────────────────────
 function setTheme(theme) {
   // Quitar todas las clases de tema
-  document.body.classList.remove('theme-glass', 'theme-micro', 'theme-typo');
+  document.body.classList.remove('theme-dark', 'theme-blue');
   
   // Aplicar el tema seleccionado (excepto 'default' que no tiene clase)
   if (theme !== 'default') {
