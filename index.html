@@ -458,6 +458,52 @@ button { cursor: pointer; border: none; }
   transform: translateY(-1px);
 }
 
+/* Sidebar Settings Dropdown */
+.sidebar-settings-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.sidebar-settings-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: #ffffff;
+  transform: rotate(30deg);
+}
+.sidebar-settings-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 10px;
+  right: 10px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.25);
+  padding: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1001;
+  margin-bottom: 10px;
+}
+.sidebar-settings-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.sidebar-user {
+  position: relative;
+}
+
 /* ─── MAIN CONTENT ──────────────────────────────────────────── */
 .main-content {
   flex: 1;
@@ -1959,63 +2005,49 @@ body.layout-compact .page-header {
 .topbar-nav {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 4px;
   flex: 1;
+  background: rgba(0,0,0,0.2);
+  border-radius: 14px;
+  padding: 6px;
+  margin: 0 30px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 .topbar-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-radius: 10px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255,255,255,0.55);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-}
-.topbar-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  border-radius: 10px;
-}
-.topbar-item:hover::before {
-  opacity: 1;
+  background: transparent;
 }
 .topbar-item:hover {
-  color: #ffffff;
-  transform: translateY(-2px);
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.1);
 }
 .topbar-item:active {
-  transform: translateY(-2px) scale(0.98);
+  transform: scale(0.98);
 }
 .topbar-item.active {
-  background: linear-gradient(135deg, rgba(100,220,140,0.3) 0%, rgba(100,220,140,0.15) 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(100,220,140,0.2);
+  background: rgba(255,255,255,0.95);
+  color: #155a32;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }
-.topbar-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 3px;
-  background: linear-gradient(90deg, #4ade80, #22c55e);
-  border-radius: 3px 3px 0 0;
+.topbar-item.active .icon {
+  transform: scale(1.1);
 }
 .topbar-item .icon {
-  font-size: 18px;
+  font-size: 17px;
+  transition: transform 0.2s ease;
 }
 .topbar-item .top-badge {
   position: absolute;
@@ -2187,12 +2219,20 @@ body.theme-dark .topbar-logo {
   background: linear-gradient(135deg, #8b5cf6, #6366f1);
   box-shadow: 0 4px 12px rgba(139,92,246,0.3);
 }
-body.theme-dark .topbar-item.active {
-  background: linear-gradient(135deg, rgba(139,92,246,0.35) 0%, rgba(139,92,246,0.2) 100%);
-  box-shadow: 0 4px 12px rgba(139,92,246,0.2);
+body.theme-dark .topbar-nav {
+  background: rgba(0,0,0,0.3);
 }
-body.theme-dark .topbar-item.active::after {
-  background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+body.theme-dark .topbar-item {
+  color: rgba(255,255,255,0.5);
+}
+body.theme-dark .topbar-item:hover {
+  color: rgba(255,255,255,0.85);
+  background: rgba(139,92,246,0.2);
+}
+body.theme-dark .topbar-item.active {
+  background: rgba(139,92,246,0.9);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(139,92,246,0.3);
 }
 body.theme-dark .topbar-avatar {
   background: linear-gradient(135deg, #8b5cf6, #6366f1);
@@ -2221,6 +2261,10 @@ body.theme-dark .settings-option .check {
 body.theme-dark .settings-section {
   border-color: #2d3548;
 }
+body.theme-dark .sidebar-settings-dropdown {
+  background: #1e2433;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+}
 
 /* Topbar para tema azul */
 body.theme-blue .topbar {
@@ -2230,12 +2274,20 @@ body.theme-blue .topbar-logo {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   box-shadow: 0 4px 12px rgba(37,99,235,0.3);
 }
-body.theme-blue .topbar-item.active {
-  background: linear-gradient(135deg, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0.2) 100%);
-  box-shadow: 0 4px 12px rgba(59,130,246,0.2);
+body.theme-blue .topbar-nav {
+  background: rgba(0,0,0,0.25);
 }
-body.theme-blue .topbar-item.active::after {
-  background: linear-gradient(90deg, #60a5fa, #3b82f6);
+body.theme-blue .topbar-item {
+  color: rgba(255,255,255,0.5);
+}
+body.theme-blue .topbar-item:hover {
+  color: rgba(255,255,255,0.85);
+  background: rgba(59,130,246,0.25);
+}
+body.theme-blue .topbar-item.active {
+  background: rgba(255,255,255,0.95);
+  color: #1e3a5f;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }
 body.theme-blue .topbar-avatar {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
@@ -2392,28 +2444,47 @@ body.theme-blue .topbar-avatar {
         </div>
       </nav>
       <div class="sidebar-user">
-        <!-- Selector de Layout -->
-        <div class="theme-selector">
-          <span class="theme-label">Layout</span>
-          <div class="theme-buttons">
-            <button class="theme-btn active" data-layout="sidebar" onclick="setLayout('sidebar')" title="Sidebar">☰</button>
-            <button class="theme-btn" data-layout="compact" onclick="setLayout('compact')" title="Compacto">▭</button>
-          </div>
-        </div>
-        <!-- Selector de Tema -->
-        <div class="theme-selector">
-          <span class="theme-label">Tema</span>
-          <div class="theme-buttons">
-            <button class="theme-btn active" data-theme="default" onclick="setTheme('default')" title="Clásico Verde">☘</button>
-            <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')" title="Oscuro">☾</button>
-            <button class="theme-btn" data-theme="blue" onclick="setTheme('blue')" title="Azul Clínico">✚</button>
-          </div>
-        </div>
         <div class="sidebar-user-info">
           <div class="user-avatar" id="user-avatar-sidebar">M</div>
           <div class="user-meta">
             <strong id="user-nombre-sidebar">Médico</strong>
             <span id="user-rol-sidebar">doctor</span>
+          </div>
+          <!-- Botón de Settings en Sidebar -->
+          <button class="sidebar-settings-btn" onclick="toggleSidebarSettings(event)" title="Configuración">⚙️</button>
+        </div>
+        <!-- Dropdown de Settings en Sidebar -->
+        <div class="sidebar-settings-dropdown" id="sidebar-settings-dropdown">
+          <div class="settings-section">
+            <div class="settings-label">Layout</div>
+            <div class="settings-option active" data-layout="sidebar" onclick="setLayout('sidebar')">
+              <span class="settings-option-icon sidebar">☰</span>
+              <span>Sidebar</span>
+              <span class="check">✓</span>
+            </div>
+            <div class="settings-option" data-layout="compact" onclick="setLayout('compact')">
+              <span class="settings-option-icon compact">▭</span>
+              <span>Compacto</span>
+              <span class="check">✓</span>
+            </div>
+          </div>
+          <div class="settings-section">
+            <div class="settings-label">Tema</div>
+            <div class="settings-option active" data-theme="default" onclick="setThemeFromDropdown('default')">
+              <span class="settings-option-icon green">☘</span>
+              <span>Verde Clásico</span>
+              <span class="check">✓</span>
+            </div>
+            <div class="settings-option" data-theme="dark" onclick="setThemeFromDropdown('dark')">
+              <span class="settings-option-icon dark">☾</span>
+              <span>Oscuro</span>
+              <span class="check">✓</span>
+            </div>
+            <div class="settings-option" data-theme="blue" onclick="setThemeFromDropdown('blue')">
+              <span class="settings-option-icon blue">✚</span>
+              <span>Azul Clínico</span>
+              <span class="check">✓</span>
+            </div>
           </div>
         </div>
         <button class="btn-logout" onclick="doLogout()">
@@ -3586,14 +3657,30 @@ function toggleSettingsDropdown(event) {
   event.stopPropagation();
   const dropdown = document.getElementById('settings-dropdown');
   dropdown.classList.toggle('show');
+  // Cerrar el otro dropdown si está abierto
+  document.getElementById('sidebar-settings-dropdown')?.classList.remove('show');
+}
+
+function toggleSidebarSettings(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('sidebar-settings-dropdown');
+  dropdown.classList.toggle('show');
+  // Cerrar el otro dropdown si está abierto
+  document.getElementById('settings-dropdown')?.classList.remove('show');
 }
 
 // Cerrar dropdown al hacer click afuera
 document.addEventListener('click', function(e) {
   const dropdown = document.getElementById('settings-dropdown');
+  const sidebarDropdown = document.getElementById('sidebar-settings-dropdown');
   const settingsBtn = document.querySelector('.topbar-settings-btn');
+  const sidebarSettingsBtn = document.querySelector('.sidebar-settings-btn');
+  
   if (dropdown && !dropdown.contains(e.target) && e.target !== settingsBtn) {
     dropdown.classList.remove('show');
+  }
+  if (sidebarDropdown && !sidebarDropdown.contains(e.target) && e.target !== sidebarSettingsBtn) {
+    sidebarDropdown.classList.remove('show');
   }
 });
 
