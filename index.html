@@ -1888,6 +1888,359 @@ body.theme-blue .badge-historico {
 body.theme-blue a {
   color: #2563eb;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT COMPACTO (SIN SIDEBAR)
+═══════════════════════════════════════════════════════════════ */
+body.layout-compact .sidebar {
+  display: none;
+}
+body.layout-compact .topbar {
+  display: flex;
+}
+body.layout-compact .main-content {
+  margin-left: 0;
+  padding-top: 70px;
+}
+body.layout-compact .page-body {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+body.layout-compact .page-header {
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+/* ─── TOPBAR ─────────────────────────────────────────────────── */
+.topbar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: linear-gradient(135deg, #155a32 0%, #1a7a45 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  z-index: 1000;
+  align-items: center;
+  padding: 0 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-right: 40px;
+}
+.topbar-logo {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #1a9c5b, #1565c0);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(26,156,91,0.3);
+  transition: all 0.3s ease;
+}
+.topbar-logo:hover {
+  transform: scale(1.05) rotate(-3deg);
+  box-shadow: 0 6px 16px rgba(26,156,91,0.4);
+}
+.topbar-brand h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+.topbar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.75);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+.topbar-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  border-radius: 10px;
+}
+.topbar-item:hover::before {
+  opacity: 1;
+}
+.topbar-item:hover {
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+.topbar-item:active {
+  transform: translateY(-2px) scale(0.98);
+}
+.topbar-item.active {
+  background: linear-gradient(135deg, rgba(100,220,140,0.3) 0%, rgba(100,220,140,0.15) 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(100,220,140,0.2);
+}
+.topbar-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  border-radius: 3px 3px 0 0;
+}
+.topbar-item .icon {
+  font-size: 18px;
+}
+.topbar-item .top-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  min-width: 16px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(239,68,68,0.5);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+.topbar-item .top-badge.info {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 2px 6px rgba(59,130,246,0.5);
+  animation: none;
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.topbar-user:hover {
+  background: rgba(255,255,255,0.18);
+}
+.topbar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a9c5b, #1565c0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 2px 8px rgba(26,156,91,0.3);
+}
+.topbar-username {
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+}
+.topbar-settings {
+  position: relative;
+}
+.topbar-settings-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.8);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.topbar-settings-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: #ffffff;
+  transform: rotate(30deg);
+}
+.settings-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  min-width: 220px;
+  padding: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1001;
+}
+.settings-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.settings-section {
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+.settings-section:last-child {
+  border-bottom: none;
+}
+.settings-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #9ca3af;
+  padding: 4px 8px;
+  font-weight: 600;
+}
+.settings-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #374151;
+  font-size: 14px;
+}
+.settings-option:hover {
+  background: #f3f4f6;
+}
+.settings-option.active {
+  background: linear-gradient(135deg, rgba(26,156,91,0.1), rgba(26,156,91,0.05));
+  color: #1a9c5b;
+}
+.settings-option .check {
+  margin-left: auto;
+  color: #1a9c5b;
+  opacity: 0;
+}
+.settings-option.active .check {
+  opacity: 1;
+}
+.settings-option-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+.settings-option-icon.green { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+.settings-option-icon.dark { background: linear-gradient(135deg, #374151, #1f2937); color: white; }
+.settings-option-icon.blue { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+.settings-option-icon.sidebar { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+.settings-option-icon.compact { background: linear-gradient(135deg, #e0e7ff, #c7d2fe); }
+.settings-logout {
+  color: #ef4444;
+}
+.settings-logout:hover {
+  background: #fef2f2;
+}
+
+/* Topbar para tema oscuro */
+body.theme-dark .topbar {
+  background: linear-gradient(135deg, #12141c 0%, #1a1f2e 100%);
+  border-color: #2d3548;
+}
+body.theme-dark .topbar-logo {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+}
+body.theme-dark .topbar-item.active {
+  background: linear-gradient(135deg, rgba(139,92,246,0.35) 0%, rgba(139,92,246,0.2) 100%);
+  box-shadow: 0 4px 12px rgba(139,92,246,0.2);
+}
+body.theme-dark .topbar-item.active::after {
+  background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+}
+body.theme-dark .topbar-avatar {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+}
+body.theme-dark .settings-dropdown {
+  background: #1e2433;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+body.theme-dark .settings-label {
+  color: #6b7280;
+}
+body.theme-dark .settings-option {
+  color: #d1d5db;
+}
+body.theme-dark .settings-option:hover {
+  background: #252b3b;
+}
+body.theme-dark .settings-option.active {
+  background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(139,92,246,0.1));
+  color: #a78bfa;
+}
+body.theme-dark .settings-option .check {
+  color: #a78bfa;
+}
+body.theme-dark .settings-section {
+  border-color: #2d3548;
+}
+
+/* Topbar para tema azul */
+body.theme-blue .topbar {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2c4a6e 100%);
+}
+body.theme-blue .topbar-logo {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+}
+body.theme-blue .topbar-item.active {
+  background: linear-gradient(135deg, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0.2) 100%);
+  box-shadow: 0 4px 12px rgba(59,130,246,0.2);
+}
+body.theme-blue .topbar-item.active::after {
+  background: linear-gradient(90deg, #60a5fa, #3b82f6);
+}
+body.theme-blue .topbar-avatar {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+}
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -1921,6 +2274,88 @@ body.theme-blue a {
 
   <!-- ════════════════════════════════ APP ════════════════════════════════ -->
   <div id="screen-app" class="screen">
+
+    <!-- TOPBAR (Layout Compacto) -->
+    <header class="topbar" id="topbar">
+      <div class="topbar-brand" onclick="showPage('pacientes')">
+        <div class="topbar-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="20" viewBox="0 0 70 52" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 28 C2 16, 8 4, 20 2 C28 0.5, 34 6, 37 13 C40 6, 50 2, 58 6 C65 10, 67 20, 64 28 C61 36, 52 42, 42 45 C34 47, 28 46, 22 44 C14 41, 6 38, 4 28Z"/><path d="M37 13 C36 22, 34 32, 30 40"/><path d="M22 30 C26 27, 30 27, 34 29"/><ellipse cx="44" cy="40" rx="5" ry="3.5" stroke="white" stroke-width="1.5" fill="none"/><path d="M39 40 C37 42, 35 43, 33 42"/></svg>
+        </div>
+        <h1>Gastro CDELU</h1>
+      </div>
+      <nav class="topbar-nav">
+        <div class="topbar-item active" onclick="showPage('pacientes')" id="top-pacientes">
+          <span class="icon">👥</span>
+          <span>Pacientes</span>
+        </div>
+        <div class="topbar-item" onclick="showPage('nuevo-paciente')" id="top-nuevo">
+          <span class="icon">➕</span>
+          <span>Nuevo</span>
+        </div>
+        <div class="topbar-item" onclick="showPage('mis-endoscopias')" id="top-mis-endoscopias">
+          <span class="icon">🔬</span>
+          <span>Endoscopías</span>
+          <span class="top-badge info" id="top-badge-endoscopias" style="display:none">0</span>
+        </div>
+        <div class="topbar-item" onclick="showPage('citas')" id="top-citas">
+          <span class="icon">📅</span>
+          <span>Citas</span>
+          <span class="top-badge" id="top-badge-citas" style="display:none">0</span>
+        </div>
+        <div class="topbar-item" onclick="showPage('estadisticas')" id="top-estadisticas">
+          <span class="icon">📊</span>
+          <span>Estadísticas</span>
+        </div>
+      </nav>
+      <div class="topbar-actions">
+        <div class="topbar-user" onclick="showModal('modal-pass')">
+          <div class="topbar-avatar" id="top-avatar">M</div>
+          <span class="topbar-username" id="top-username">Médico</span>
+        </div>
+        <div class="topbar-settings">
+          <button class="topbar-settings-btn" onclick="toggleSettingsDropdown(event)">⚙️</button>
+          <div class="settings-dropdown" id="settings-dropdown">
+            <div class="settings-section">
+              <div class="settings-label">Layout</div>
+              <div class="settings-option" data-layout="sidebar" onclick="setLayout('sidebar')">
+                <span class="settings-option-icon sidebar">☰</span>
+                <span>Sidebar</span>
+                <span class="check">✓</span>
+              </div>
+              <div class="settings-option active" data-layout="compact" onclick="setLayout('compact')">
+                <span class="settings-option-icon compact">▭</span>
+                <span>Compacto</span>
+                <span class="check">✓</span>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-label">Tema</div>
+              <div class="settings-option" data-theme="default" onclick="setThemeFromDropdown('default')">
+                <span class="settings-option-icon green">☘</span>
+                <span>Verde Clásico</span>
+                <span class="check">✓</span>
+              </div>
+              <div class="settings-option" data-theme="dark" onclick="setThemeFromDropdown('dark')">
+                <span class="settings-option-icon dark">☾</span>
+                <span>Oscuro</span>
+                <span class="check">✓</span>
+              </div>
+              <div class="settings-option" data-theme="blue" onclick="setThemeFromDropdown('blue')">
+                <span class="settings-option-icon blue">✚</span>
+                <span>Azul Clínico</span>
+                <span class="check">✓</span>
+              </div>
+            </div>
+            <div class="settings-section">
+              <div class="settings-option settings-logout" onclick="doLogout()">
+                <span>🚪</span>
+                <span>Cerrar Sesión</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
@@ -3082,11 +3517,19 @@ function setTheme(theme) {
     document.body.classList.add('theme-' + theme);
   }
   
-  // Actualizar botones activos
+  // Actualizar botones activos en sidebar
   document.querySelectorAll('.theme-btn').forEach(btn => {
     btn.classList.remove('active');
     if (btn.dataset.theme === theme) {
       btn.classList.add('active');
+    }
+  });
+  
+  // Actualizar opciones en dropdown
+  document.querySelectorAll('.settings-option[data-theme]').forEach(opt => {
+    opt.classList.remove('active');
+    if (opt.dataset.theme === theme) {
+      opt.classList.add('active');
     }
   });
   
@@ -3096,11 +3539,57 @@ function setTheme(theme) {
   } catch(e) {}
 }
 
+function setThemeFromDropdown(theme) {
+  setTheme(theme);
+}
+
+// ─── SELECTOR DE LAYOUT ───────────────────────────────────────
+function setLayout(layout) {
+  document.body.classList.remove('layout-compact');
+  
+  if (layout === 'compact') {
+    document.body.classList.add('layout-compact');
+  }
+  
+  // Actualizar opciones activas
+  document.querySelectorAll('.settings-option[data-layout]').forEach(opt => {
+    opt.classList.remove('active');
+    if (opt.dataset.layout === layout) {
+      opt.classList.add('active');
+    }
+  });
+  
+  // Guardar preferencia
+  try {
+    localStorage.setItem('gastro_layout', layout);
+  } catch(e) {}
+}
+
+// ─── DROPDOWN DE SETTINGS ─────────────────────────────────────
+function toggleSettingsDropdown(event) {
+  event.stopPropagation();
+  const dropdown = document.getElementById('settings-dropdown');
+  dropdown.classList.toggle('show');
+}
+
+// Cerrar dropdown al hacer click afuera
+document.addEventListener('click', function(e) {
+  const dropdown = document.getElementById('settings-dropdown');
+  const settingsBtn = document.querySelector('.topbar-settings-btn');
+  if (dropdown && !dropdown.contains(e.target) && e.target !== settingsBtn) {
+    dropdown.classList.remove('show');
+  }
+});
+
 function loadSavedTheme() {
   try {
-    const saved = localStorage.getItem('gastro_theme');
-    if (saved) {
-      setTheme(saved);
+    const savedTheme = localStorage.getItem('gastro_theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+    const savedLayout = localStorage.getItem('gastro_layout');
+    if (savedLayout) {
+      setLayout(savedLayout);
     }
   } catch(e) {}
 }
@@ -3265,8 +3754,10 @@ function confirm_(msg, onOk) {
 function showPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.topbar-item').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + page)?.classList.add('active');
   document.getElementById('nav-' + page)?.classList.add('active');
+  document.getElementById('top-' + page)?.classList.add('active');
   if (page === 'admin') loadUsuarios();
   if (page === 'mis-endoscopias') { _misEndoFiltro = null; _misEndoAllData = []; loadMisEndoscopias(); }
   if (page === 'citas') { initCitas(); }
@@ -3712,9 +4203,16 @@ async function initApp() {
   document.getElementById('screen-login').classList.remove('active');
   document.getElementById('screen-app').classList.add('active');
 
+  // Actualizar sidebar
   document.getElementById('user-nombre-sidebar').textContent = s.nombre;
   document.getElementById('user-rol-sidebar').textContent = s.rol;
   document.getElementById('user-avatar-sidebar').textContent = initials(s.nombre);
+
+  // Actualizar topbar
+  const topUsername = document.getElementById('top-username');
+  const topAvatar = document.getElementById('top-avatar');
+  if (topUsername) topUsername.textContent = s.nombre;
+  if (topAvatar) topAvatar.textContent = initials(s.nombre);
 
   if (s.rol === 'admin') {
     document.getElementById('nav-admin').style.display = 'flex';
