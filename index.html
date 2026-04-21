@@ -2392,6 +2392,14 @@ body.theme-blue .topbar-avatar {
         </div>
       </nav>
       <div class="sidebar-user">
+        <!-- Selector de Layout -->
+        <div class="theme-selector">
+          <span class="theme-label">Layout</span>
+          <div class="theme-buttons">
+            <button class="theme-btn active" data-layout="sidebar" onclick="setLayout('sidebar')" title="Sidebar">☰</button>
+            <button class="theme-btn" data-layout="compact" onclick="setLayout('compact')" title="Compacto">▭</button>
+          </div>
+        </div>
         <!-- Selector de Tema -->
         <div class="theme-selector">
           <span class="theme-label">Tema</span>
@@ -3551,11 +3559,19 @@ function setLayout(layout) {
     document.body.classList.add('layout-compact');
   }
   
-  // Actualizar opciones activas
+  // Actualizar opciones activas en dropdown
   document.querySelectorAll('.settings-option[data-layout]').forEach(opt => {
     opt.classList.remove('active');
     if (opt.dataset.layout === layout) {
       opt.classList.add('active');
+    }
+  });
+  
+  // Actualizar botones en sidebar
+  document.querySelectorAll('.theme-btn[data-layout]').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.layout === layout) {
+      btn.classList.add('active');
     }
   });
   
