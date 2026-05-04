@@ -7643,28 +7643,17 @@ async function generarResumenIA() {
   document.getElementById('resumen-content').style.display = 'none';
   
   try {
-    // Obtener datos del paciente
-    const res = await serverCall('getDatosParaResumen', [pacienteId]);
-    if (!res.ok) {
-      toast('Error obteniendo datos del paciente', 'error');
-      document.getElementById('resumen-empty').style.display = 'block';
-      document.getElementById('resumen-loading').style.display = 'none';
-      return;
-    }
+    // Llamar a la Edge Function que llama a Claude
+    const res = await serverCall('generarResumenConIA', [pacienteId]);
     
-    const datos = res.data;
-    
-    // Llamar a Claude API para generar resumen
-    const resumen = await llamarClaudeParaResumen(datos);
-    
-    if (resumen) {
+    if (res.ok && res.resumen) {
       document.getElementById('resumen-loading').style.display = 'none';
       document.getElementById('resumen-content').style.display = 'block';
-      document.getElementById('resumen-textarea').value = resumen;
+      document.getElementById('resumen-textarea').value = res.resumen;
       document.getElementById('resumen-fecha-info').textContent = 'Generado ahora - Sin guardar';
       toast('Resumen generado. Revisalo y guardalo.', 'success');
     } else {
-      toast('Error generando resumen', 'error');
+      toast('Error: ' + (res.error || 'Error generando resumen'), 'error');
       document.getElementById('resumen-empty').style.display = 'block';
       document.getElementById('resumen-loading').style.display = 'none';
     }
@@ -7679,69 +7668,6 @@ async function generarResumenIA() {
 async function regenerarResumenIA() {
   if (!confirm('¿Regenerar el resumen? Se perderán los cambios no guardados.')) return;
   await generarResumenIA();
-}
-
-async function llamarClaudeParaResumen(datos) {
-  const { paciente, hc, consultas, endoscopias } = datos;
-  
-  // Construir el prompt
-  let contenido = `Generá un resumen narrativo de la historia clínica de este paciente. El texto debe ser fluido, sin títulos, sin negritas, sin bullet points. Todo de corrido como un texto médico profesional. Incluí antecedentes, consultas y estudios en orden cronológico. Mejorá la redacción pero mantené la información médica precisa.\n\n`;
-  
-  contenido += `DATOS DEL PACIENTE:\n`;
-  contenido += `Nombre: ${paciente?.apellidoNombre || 'Sin nombre'}\n`;
-  contenido += `Fecha nacimiento: ${paciente?.fechaNacimiento || 'No registrada'}\n`;
-  contenido += `Obra social: ${paciente?.obraSocial || 'No registrada'}\n\n`;
-  
-  if (hc) {
-    contenido += `HISTORIA CLÍNICA (${hc.fechaConsulta || ''}):\n`;
-    contenido += `Motivo consulta: ${hc.motivoConsulta || 'No registrado'}\n`;
-    contenido += `Antecedentes: ${hc.antecGrales || 'No registrados'}\n`;
-    contenido += `Examen físico: ${hc.exFisico || 'No registrado'}\n`;
-    contenido += `Diagnóstico presuntivo: ${hc.diagPresuntivo || 'No registrado'}\n`;
-    contenido += `Tratamiento: ${hc.tratamiento || 'No registrado'}\n\n`;
-  }
-  
-  if (consultas && consultas.length > 0) {
-    contenido += `CONSULTAS:\n`;
-    consultas.forEach(c => {
-      contenido += `- ${c.fechaConsulta || 'Sin fecha'}: ${c.motivoConsulta || ''} ${c.impresionDiagnostica ? '| Impresión: ' + c.impresionDiagnostica : ''} ${c.tratamiento ? '| Tratamiento: ' + c.tratamiento : ''}\n`;
-    });
-    contenido += '\n';
-  }
-  
-  if (endoscopias && endoscopias.length > 0) {
-    contenido += `ENDOSCOPIAS:\n`;
-    endoscopias.forEach(e => {
-      contenido += `- ${e.fecha || 'Sin fecha'} ${e.tipoEstudio || ''}: ${e.impresionDiagnostica || e.esofago || 'Sin descripción'}\n`;
-    });
-  }
-  
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [{
-          role: 'user',
-          content: contenido
-        }]
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data.content && data.content[0] && data.content[0].text) {
-      return data.content[0].text;
-    }
-    return null;
-  } catch(e) {
-    console.error('Error llamando a Claude:', e);
-    return null;
-  }
 }
 
 async function guardarResumenHC() {
