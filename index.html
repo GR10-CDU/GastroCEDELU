@@ -2777,6 +2777,7 @@ body.theme-blue .topbar-avatar {
             </div>
             <div class="tab-item" onclick="showTab('resumen')" id="tab-resumen">
               Resumen HC <span class="badge" style="margin-left:4px;font-size:9px;padding:2px 5px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff">IA</span>
+              <span class="badge" id="badge-resumenes" style="display:none;margin-left:4px"></span>
             </div>
           </div>
 
@@ -7707,14 +7708,29 @@ async function cargarResumenHC(pacienteId) {
     const res = await serverCall('getResumenHC', pacienteId);
     if (res.ok && res.data && res.data.length > 0) {
       _resumenesLista = res.data;
+      actualizarBadgeResumenes(res.data.length);
       mostrarHistorialResumenes(res.data);
     } else {
       _resumenesLista = [];
+      actualizarBadgeResumenes(0);
       document.getElementById('resumen-empty').style.display = 'block';
     }
   } catch(e) {
     console.error('Error cargando resumen:', e);
+    actualizarBadgeResumenes(0);
     document.getElementById('resumen-empty').style.display = 'block';
+  }
+}
+
+function actualizarBadgeResumenes(cantidad) {
+  const badge = document.getElementById('badge-resumenes');
+  if (badge) {
+    if (cantidad > 0) {
+      badge.textContent = cantidad;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
   }
 }
 
