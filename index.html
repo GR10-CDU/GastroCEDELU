@@ -2837,14 +2837,25 @@ body.theme-blue .topbar-avatar {
                 <p style="color:var(--muted)">Analizando historia clínica, consultas y estudios</p>
               </div>
               
-              <!-- Estado: Con resumen -->
-              <div id="resumen-content" style="display:none">
+              <!-- Historial de resúmenes (aparece arriba) -->
+              <div id="resumen-historial-container" style="display:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                  <h3 style="margin:0;font-size:16px">📋 Historial de Resúmenes</h3>
+                  <button class="btn btn-primary btn-sm" onclick="generarResumenIA()" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)">
+                    ✨ Generar nuevo
+                  </button>
+                </div>
+                <div id="resumen-historial-list"></div>
+              </div>
+              
+              <!-- Editor (solo cuando se edita) -->
+              <div id="resumen-editor" style="display:none">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-                  <div style="font-size:12px;color:var(--muted)">
-                    <span id="resumen-fecha-info"></span>
+                  <div>
+                    <button class="btn btn-ghost btn-sm" onclick="cerrarEditorResumen()">← Volver al historial</button>
+                    <span id="resumen-fecha-info" style="font-size:12px;color:var(--muted);margin-left:12px"></span>
                   </div>
                   <div style="display:flex;gap:8px">
-                    <button class="btn btn-ghost btn-sm" onclick="regenerarResumenIA()" title="Regenerar">🔄 Regenerar</button>
                     <button class="btn btn-primary btn-sm" onclick="guardarResumenHC()" id="btn-guardar-resumen">💾 Guardar</button>
                   </div>
                 </div>
@@ -7686,50 +7697,56 @@ function eliminarCita(id) {
 let _resumenCargado = null;
 
 async function cargarResumenHC(pacienteId) {
-  // Mostrar estado vacío mientras carga
-  document.getElementById('resumen-empty').style.display = 'block';
+  // Ocultar todo mientras carga
+  document.getElementById('resumen-empty').style.display = 'none';
   document.getElementById('resumen-loading').style.display = 'none';
-  document.getElementById('resumen-content').style.display = 'none';
+  document.getElementById('resumen-historial-container').style.display = 'none';
+  document.getElementById('resumen-editor').style.display = 'none';
   
   try {
     const res = await serverCall('getResumenHC', pacienteId);
     if (res.ok && res.data && res.data.length > 0) {
       _resumenesLista = res.data;
-      mostrarListaResumenes(res.data);
+      mostrarHistorialResumenes(res.data);
     } else {
       _resumenesLista = [];
-      resetearResumenEmpty();
+      document.getElementById('resumen-empty').style.display = 'block';
     }
   } catch(e) {
     console.error('Error cargando resumen:', e);
-    resetearResumenEmpty();
+    document.getElementById('resumen-empty').style.display = 'block';
   }
 }
 
 let _resumenesLista = [];
+let _resumenEditandoIndex = -1;
 
-function mostrarListaResumenes(resumenes) {
+function mostrarHistorialResumenes(resumenes) {
   document.getElementById('resumen-empty').style.display = 'none';
   document.getElementById('resumen-loading').style.display = 'none';
-  document.getElementById('resumen-content').style.display = 'block';
+  document.getElementById('resumen-editor').style.display = 'none';
+  document.getElementById('resumen-historial-container').style.display = 'block';
   
-  // Mostrar el más reciente en el textarea
-  const masReciente = resumenes[0];
-  document.getElementById('resumen-textarea').value = masReciente.contenido || '';
-  
-  const fechaGen = masReciente.fechaGeneracion ? formatearFechaHora(masReciente.fechaGeneracion) : '';
-  document.getElementById('resumen-fecha-info').innerHTML = `
-    <span>Generado: ${fechaGen}</span>
-    ${resumenes.length > 1 ? `<span style="margin-left:12px;color:var(--primary);cursor:pointer" onclick="toggleHistorialResumenes()">📋 Ver historial (${resumenes.length})</span>` : ''}
-  `;
-  
-  // Crear/actualizar el historial
-  renderHistorialResumenes(resumenes);
+  const listDiv = document.getElementById('resumen-historial-list');
+  listDiv.innerHTML = resumenes.map((r, i) => `
+    <div class="resumen-card" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.2s;${i === 0 ? 'border-left:3px solid #8b5cf6;' : ''}" 
+         onclick="abrirEditorResumen(${i})"
+         onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" 
+         onmouseout="this.style.boxShadow='none'">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-weight:600;font-size:14px;color:var(--text)">${formatearFechaHora(r.fechaGeneracion)}</span>
+        ${i === 0 ? '<span style="background:#8b5cf6;color:white;font-size:10px;padding:3px 8px;border-radius:4px;font-weight:500">Más reciente</span>' : ''}
+      </div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">
+        ${(r.contenido || '').substring(0, 200)}...
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--primary)">Click para ver/editar →</div>
+    </div>
+  `).join('');
 }
 
 function formatearFechaHora(isoString) {
   const fecha = new Date(isoString);
-  // Ajustar a Argentina (UTC-3)
   const opciones = { 
     day: '2-digit', 
     month: '2-digit', 
@@ -7742,66 +7759,38 @@ function formatearFechaHora(isoString) {
   return fecha.toLocaleString('es-AR', opciones).replace(',', '');
 }
 
-function renderHistorialResumenes(resumenes) {
-  // Remover historial anterior si existe
-  const oldHistorial = document.getElementById('resumen-historial');
-  if (oldHistorial) oldHistorial.remove();
+function abrirEditorResumen(index) {
+  if (!_resumenesLista[index]) return;
   
-  if (resumenes.length <= 1) return; // No mostrar historial si solo hay 1
+  _resumenEditandoIndex = index;
+  const r = _resumenesLista[index];
   
-  const historialDiv = document.createElement('div');
-  historialDiv.id = 'resumen-historial';
-  historialDiv.style.cssText = 'display:none;margin-top:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card);';
+  document.getElementById('resumen-historial-container').style.display = 'none';
+  document.getElementById('resumen-editor').style.display = 'block';
+  document.getElementById('resumen-textarea').value = r.contenido || '';
+  document.getElementById('resumen-fecha-info').textContent = formatearFechaHora(r.fechaGeneracion);
+}
+
+function cerrarEditorResumen() {
+  _resumenEditandoIndex = -1;
+  document.getElementById('resumen-editor').style.display = 'none';
   
-  historialDiv.innerHTML = `
-    <div style="background:var(--bg2);padding:10px 14px;font-weight:600;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <span>📋 Historial de Resúmenes</span>
-      <button onclick="toggleHistorialResumenes()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text)">✕</button>
-    </div>
-    <div style="max-height:300px;overflow-y:auto">
-      ${resumenes.map((r, i) => `
-        <div class="historial-item" style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.2s;${i === 0 ? 'background:rgba(139,92,246,0.1);' : ''}" 
-             onclick="seleccionarResumen(${i})">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <span style="font-weight:500;font-size:13px">${formatearFechaHora(r.fechaGeneracion)}</span>
-            ${i === 0 ? '<span style="background:#8b5cf6;color:white;font-size:10px;padding:2px 6px;border-radius:4px">Actual</span>' : ''}
-          </div>
-          <div style="font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-            ${(r.contenido || '').substring(0, 80)}...
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
-  
-  const container = document.getElementById('resumen-content');
-  if (container) {
-    container.appendChild(historialDiv);
+  if (_resumenesLista.length > 0) {
+    document.getElementById('resumen-historial-container').style.display = 'block';
+  } else {
+    document.getElementById('resumen-empty').style.display = 'block';
   }
 }
 
-function toggleHistorialResumenes() {
-  const historial = document.getElementById('resumen-historial');
-  if (historial) {
-    const isHidden = historial.style.display === 'none';
-    historial.style.display = isHidden ? 'block' : 'none';
-  }
-}
-
-function seleccionarResumen(index) {
-  if (_resumenesLista[index]) {
-    const r = _resumenesLista[index];
-    document.getElementById('resumen-textarea').value = r.contenido || '';
-    document.getElementById('resumen-fecha-info').innerHTML = `
-      <span>Generado: ${formatearFechaHora(r.fechaGeneracion)}</span>
-      ${_resumenesLista.length > 1 ? `<span style="margin-left:12px;color:var(--primary);cursor:pointer" onclick="toggleHistorialResumenes()">📋 Ver historial (${_resumenesLista.length})</span>` : ''}
-    `;
-    toggleHistorialResumenes();
-  }
-}
-
-function mostrarResumenExistente(resumen) {
-  mostrarListaResumenes([resumen]);
+function mostrarEditorNuevoResumen(resumen) {
+  _resumenEditandoIndex = -1; // -1 significa nuevo
+  
+  document.getElementById('resumen-empty').style.display = 'none';
+  document.getElementById('resumen-loading').style.display = 'none';
+  document.getElementById('resumen-historial-container').style.display = 'none';
+  document.getElementById('resumen-editor').style.display = 'block';
+  document.getElementById('resumen-textarea').value = resumen;
+  document.getElementById('resumen-fecha-info').innerHTML = '<span style="color:#f59e0b;font-weight:500">⚠ Nuevo - Sin guardar</span>';
 }
 
 async function generarResumenIA() {
@@ -7812,17 +7801,16 @@ async function generarResumenIA() {
   // Mostrar popup flotante
   mostrarIAPopup('Generando resumen...', pacienteNombre);
   
-  // Ocultar el botón de generar y mostrar un estado de "en proceso"
-  document.getElementById('resumen-empty').innerHTML = `
-    <div style="text-align:center;padding:40px">
-      <div style="font-size:32px;margin-bottom:12px">🧠</div>
-      <h3 style="margin-bottom:8px">Generando resumen con IA...</h3>
-      <p style="color:var(--muted)">Podés seguir trabajando, te avisamos cuando esté listo.</p>
-    </div>
-  `;
+  // Ocultar todo y mostrar estado de proceso
+  document.getElementById('resumen-empty').style.display = 'none';
+  document.getElementById('resumen-historial-container').style.display = 'none';
+  document.getElementById('resumen-editor').style.display = 'none';
+  document.getElementById('resumen-loading').style.display = 'block';
   
   try {
     const res = await serverCall('generarResumenConIA', pacienteId);
+    
+    document.getElementById('resumen-loading').style.display = 'none';
     
     if (res.ok && res.resumen) {
       // Guardar el resumen para cuando el usuario vuelva a la pestaña
@@ -7831,49 +7819,34 @@ async function generarResumenIA() {
       // Actualizar popup a éxito
       actualizarIAPopup('success', '¡Resumen listo!', 'Click para ver');
       
-      // Si todavía está en la pestaña de resumen de este paciente, mostrar
+      // Si todavía está en la pestaña de resumen de este paciente, mostrar editor
       if (App.pacienteActual?.id === pacienteId && document.getElementById('tab-content-resumen')?.classList.contains('active')) {
-        mostrarResumenGenerado(res.resumen);
+        mostrarEditorNuevoResumen(res.resumen);
       }
     } else {
       cerrarIAPopup();
       toast('Error: ' + (res.error || 'Error generando resumen'), 'error');
-      resetearResumenEmpty();
+      // Volver al estado anterior
+      if (_resumenesLista.length > 0) {
+        mostrarHistorialResumenes(_resumenesLista);
+      } else {
+        document.getElementById('resumen-empty').style.display = 'block';
+      }
     }
   } catch(e) {
     console.error('Error generando resumen:', e);
+    document.getElementById('resumen-loading').style.display = 'none';
     cerrarIAPopup();
     toast('Error generando resumen: ' + e.message, 'error');
-    resetearResumenEmpty();
+    if (_resumenesLista.length > 0) {
+      mostrarHistorialResumenes(_resumenesLista);
+    } else {
+      document.getElementById('resumen-empty').style.display = 'block';
+    }
   }
 }
 
 let _resumenGenerado = null;
-
-function mostrarResumenGenerado(resumen) {
-  document.getElementById('resumen-empty').style.display = 'none';
-  document.getElementById('resumen-loading').style.display = 'none';
-  document.getElementById('resumen-content').style.display = 'block';
-  document.getElementById('resumen-textarea').value = resumen;
-  document.getElementById('resumen-fecha-info').innerHTML = `<span style="color:#f59e0b;font-weight:500">⚠ Generado ahora - Sin guardar</span>`;
-  
-  // Ocultar historial si existe
-  const historial = document.getElementById('resumen-historial');
-  if (historial) historial.style.display = 'none';
-}
-
-function resetearResumenEmpty() {
-  document.getElementById('resumen-empty').innerHTML = `
-    <div class="icon" style="font-size:40px;margin-bottom:12px">🤖</div>
-    <h3>Resumen con IA</h3>
-    <p style="max-width:400px;margin:0 auto 20px">Generá un resumen narrativo de la historia clínica, consultas y estudios del paciente usando inteligencia artificial.</p>
-    <button class="btn btn-primary" onclick="generarResumenIA()" id="btn-generar-resumen" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)">
-      ✨ Generar Resumen con IA
-    </button>
-  `;
-  document.getElementById('resumen-empty').style.display = 'block';
-  document.getElementById('resumen-content').style.display = 'none';
-}
 
 function mostrarIAPopup(titulo, subtitulo) {
   // Remover popup anterior si existe
@@ -7920,24 +7893,6 @@ function cerrarIAPopup() {
   if (overlay) overlay.remove();
 }
 
-function verResumenGenerado() {
-  cerrarIAPopup();
-  if (_resumenGenerado) {
-    // Ir al paciente y pestaña de resumen
-    if (App.pacienteActual?.id !== _resumenGenerado.pacienteId) {
-      // Cargar el paciente
-      verPaciente(_resumenGenerado.pacienteId);
-    }
-    showTab('resumen');
-    mostrarResumenGenerado(_resumenGenerado.resumen);
-  }
-}
-
-async function regenerarResumenIA() {
-  if (!confirm('¿Regenerar el resumen? Se perderán los cambios no guardados.')) return;
-  await generarResumenIA();
-}
-
 async function guardarResumenHC() {
   const pacienteId = App.pacienteActual?.id;
   if (!pacienteId) return;
@@ -7956,7 +7911,8 @@ async function guardarResumenHC() {
     const res = await serverCall('saveResumenHC', pacienteId, contenido, App.session.medicoId);
     if (res.ok) {
       toast('Resumen guardado', 'success');
-      _resumenGenerado = null; // Limpiar el resumen pendiente
+      _resumenGenerado = null;
+      _resumenEditandoIndex = -1;
       // Recargar la lista de resúmenes
       await cargarResumenHC(pacienteId);
     } else {
@@ -7968,6 +7924,22 @@ async function guardarResumenHC() {
     btn.disabled = false;
     btn.textContent = '💾 Guardar';
   }
+}
+
+function verResumenGenerado() {
+  cerrarIAPopup();
+  if (_resumenGenerado) {
+    // Ir al paciente y pestaña de resumen
+    if (App.pacienteActual?.id !== _resumenGenerado.pacienteId) {
+      verPaciente(_resumenGenerado.pacienteId);
+    }
+    showTab('resumen');
+    mostrarEditorNuevoResumen(_resumenGenerado.resumen);
+  }
+}
+
+async function regenerarResumenIA() {
+  await generarResumenIA();
 }
 
 // ═══════════════════════════════════════════════════════════════
