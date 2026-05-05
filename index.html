@@ -394,6 +394,91 @@ button { cursor: pointer; border: none; }
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
+
+/* ═══ POPUP GENERANDO RESUMEN IA ═══ */
+.ia-popup-overlay {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  pointer-events: none;
+}
+.ia-popup {
+  background: linear-gradient(135deg, #1a1f2e 0%, #252b3b 100%);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(139,92,246,0.3);
+  pointer-events: auto;
+  animation: slideInPopup 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes slideInPopup {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.ia-popup-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(139,92,246,0.2);
+  border-top-color: #8b5cf6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.ia-popup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ia-popup-title {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+}
+.ia-popup-subtitle {
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+}
+.ia-popup-close {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: rgba(255,255,255,0.6);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  margin-left: 8px;
+}
+.ia-popup-close:hover {
+  background: rgba(255,255,255,0.2);
+  color: #ffffff;
+}
+.ia-popup.success {
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(16,185,129,0.3);
+}
+.ia-popup.success .ia-popup-spinner {
+  display: none;
+}
+.ia-popup.success::before {
+  content: '✓';
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+}
+
 .sidebar-user {
   border-top: 1px solid rgba(255,255,255,0.1);
   padding: 14px 16px;
@@ -7635,34 +7720,126 @@ function mostrarResumenExistente(resumen) {
 
 async function generarResumenIA() {
   const pacienteId = App.pacienteActual?.id;
+  const pacienteNombre = App.pacienteActual?.apellidoNombre || 'paciente';
   if (!pacienteId) return;
   
-  // Mostrar loading
-  document.getElementById('resumen-empty').style.display = 'none';
-  document.getElementById('resumen-loading').style.display = 'block';
-  document.getElementById('resumen-content').style.display = 'none';
+  // Mostrar popup flotante
+  mostrarIAPopup('Generando resumen...', pacienteNombre);
+  
+  // Ocultar el botón de generar y mostrar un estado de "en proceso"
+  document.getElementById('resumen-empty').innerHTML = `
+    <div style="text-align:center;padding:40px">
+      <div style="font-size:32px;margin-bottom:12px">🧠</div>
+      <h3 style="margin-bottom:8px">Generando resumen con IA...</h3>
+      <p style="color:var(--muted)">Podés seguir trabajando, te avisamos cuando esté listo.</p>
+    </div>
+  `;
   
   try {
-    // Llamar a la Edge Function
     const res = await serverCall('generarResumenConIA', pacienteId);
     
     if (res.ok && res.resumen) {
-      document.getElementById('resumen-loading').style.display = 'none';
-      document.getElementById('resumen-content').style.display = 'block';
-      document.getElementById('resumen-textarea').value = res.resumen;
-      document.getElementById('resumen-fecha-info').textContent = 'Generado ahora - Sin guardar';
-      toast('Resumen generado. Revisalo y guardalo.', 'success');
+      // Guardar el resumen para cuando el usuario vuelva a la pestaña
+      _resumenGenerado = { pacienteId, resumen: res.resumen };
+      
+      // Actualizar popup a éxito
+      actualizarIAPopup('success', '¡Resumen listo!', 'Click para ver');
+      
+      // Si todavía está en la pestaña de resumen de este paciente, mostrar
+      if (App.pacienteActual?.id === pacienteId && document.getElementById('tab-content-resumen')?.classList.contains('active')) {
+        mostrarResumenGenerado(res.resumen);
+      }
     } else {
-      const errorMsg = res.error || 'Error generando resumen';
-      toast('Error: ' + errorMsg, 'error');
-      document.getElementById('resumen-empty').style.display = 'block';
-      document.getElementById('resumen-loading').style.display = 'none';
+      cerrarIAPopup();
+      toast('Error: ' + (res.error || 'Error generando resumen'), 'error');
+      resetearResumenEmpty();
     }
   } catch(e) {
     console.error('Error generando resumen:', e);
+    cerrarIAPopup();
     toast('Error generando resumen: ' + e.message, 'error');
-    document.getElementById('resumen-empty').style.display = 'block';
-    document.getElementById('resumen-loading').style.display = 'none';
+    resetearResumenEmpty();
+  }
+}
+
+let _resumenGenerado = null;
+
+function mostrarResumenGenerado(resumen) {
+  document.getElementById('resumen-empty').style.display = 'none';
+  document.getElementById('resumen-loading').style.display = 'none';
+  document.getElementById('resumen-content').style.display = 'block';
+  document.getElementById('resumen-textarea').value = resumen;
+  document.getElementById('resumen-fecha-info').textContent = 'Generado ahora - Sin guardar';
+}
+
+function resetearResumenEmpty() {
+  document.getElementById('resumen-empty').innerHTML = `
+    <div class="icon" style="font-size:40px;margin-bottom:12px">🤖</div>
+    <h3>Resumen con IA</h3>
+    <p style="max-width:400px;margin:0 auto 20px">Generá un resumen narrativo de la historia clínica, consultas y estudios del paciente usando inteligencia artificial.</p>
+    <button class="btn btn-primary" onclick="generarResumenIA()" id="btn-generar-resumen" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)">
+      ✨ Generar Resumen con IA
+    </button>
+  `;
+  document.getElementById('resumen-empty').style.display = 'block';
+  document.getElementById('resumen-content').style.display = 'none';
+}
+
+function mostrarIAPopup(titulo, subtitulo) {
+  // Remover popup anterior si existe
+  cerrarIAPopup();
+  
+  const overlay = document.createElement('div');
+  overlay.className = 'ia-popup-overlay';
+  overlay.id = 'ia-popup-overlay';
+  overlay.innerHTML = `
+    <div class="ia-popup" id="ia-popup">
+      <div class="ia-popup-spinner"></div>
+      <div class="ia-popup-content">
+        <div class="ia-popup-title">${titulo}</div>
+        <div class="ia-popup-subtitle">${subtitulo}</div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function actualizarIAPopup(estado, titulo, subtitulo) {
+  const popup = document.getElementById('ia-popup');
+  if (!popup) return;
+  
+  if (estado === 'success') {
+    popup.classList.add('success');
+    popup.innerHTML = `
+      <div class="ia-popup-content">
+        <div class="ia-popup-title">${titulo}</div>
+        <div class="ia-popup-subtitle">${subtitulo}</div>
+      </div>
+      <button class="ia-popup-close" onclick="verResumenGenerado()">→</button>
+    `;
+    
+    // Auto-cerrar después de 10 segundos
+    setTimeout(() => {
+      cerrarIAPopup();
+    }, 10000);
+  }
+}
+
+function cerrarIAPopup() {
+  const overlay = document.getElementById('ia-popup-overlay');
+  if (overlay) overlay.remove();
+}
+
+function verResumenGenerado() {
+  cerrarIAPopup();
+  if (_resumenGenerado) {
+    // Ir al paciente y pestaña de resumen
+    if (App.pacienteActual?.id !== _resumenGenerado.pacienteId) {
+      // Cargar el paciente
+      verPaciente(_resumenGenerado.pacienteId);
+    }
+    showTab('resumen');
+    mostrarResumenGenerado(_resumenGenerado.resumen);
   }
 }
 
