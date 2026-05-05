@@ -7693,29 +7693,101 @@ async function cargarResumenHC(pacienteId) {
   
   try {
     const res = await serverCall('getResumenHC', pacienteId);
-    if (res.ok && res.data) {
-      _resumenCargado = res.data;
-      mostrarResumenExistente(res.data);
+    if (res.ok && res.data && res.data.length > 0) {
+      _resumenesLista = res.data;
+      mostrarListaResumenes(res.data);
     } else {
-      _resumenCargado = null;
-      document.getElementById('resumen-empty').style.display = 'block';
-      document.getElementById('resumen-content').style.display = 'none';
+      _resumenesLista = [];
+      resetearResumenEmpty();
     }
   } catch(e) {
     console.error('Error cargando resumen:', e);
+    resetearResumenEmpty();
+  }
+}
+
+let _resumenesLista = [];
+
+function mostrarListaResumenes(resumenes) {
+  document.getElementById('resumen-empty').style.display = 'none';
+  document.getElementById('resumen-loading').style.display = 'none';
+  document.getElementById('resumen-content').style.display = 'block';
+  
+  // Mostrar el más reciente en el textarea
+  const masReciente = resumenes[0];
+  document.getElementById('resumen-textarea').value = masReciente.contenido || '';
+  
+  const fechaGen = masReciente.fechaGeneracion ? formatearFechaHora(masReciente.fechaGeneracion) : '';
+  document.getElementById('resumen-fecha-info').innerHTML = `
+    <span>Generado: ${fechaGen}</span>
+    ${resumenes.length > 1 ? `<span style="margin-left:12px;color:var(--primary);cursor:pointer" onclick="toggleHistorialResumenes()">📋 Ver historial (${resumenes.length})</span>` : ''}
+  `;
+  
+  // Crear/actualizar el historial
+  renderHistorialResumenes(resumenes);
+}
+
+function formatearFechaHora(isoString) {
+  const fecha = new Date(isoString);
+  const dia = fecha.toLocaleDateString('es-AR');
+  const hora = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  return `${dia} ${hora}`;
+}
+
+function renderHistorialResumenes(resumenes) {
+  let historialDiv = document.getElementById('resumen-historial');
+  if (!historialDiv) {
+    historialDiv = document.createElement('div');
+    historialDiv.id = 'resumen-historial';
+    historialDiv.style.cssText = 'display:none;margin-top:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden;';
+    document.getElementById('resumen-content').appendChild(historialDiv);
+  }
+  
+  historialDiv.innerHTML = `
+    <div style="background:var(--bg2);padding:10px 14px;font-weight:600;font-size:13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <span>📋 Historial de Resúmenes</span>
+      <button onclick="toggleHistorialResumenes()" style="background:none;border:none;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div style="max-height:300px;overflow-y:auto">
+      ${resumenes.map((r, i) => `
+        <div style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.2s;${i === 0 ? 'background:rgba(139,92,246,0.1);' : ''}" 
+             onclick="seleccionarResumen(${i})" 
+             onmouseover="this.style.background='var(--bg2)'" 
+             onmouseout="this.style.background='${i === 0 ? 'rgba(139,92,246,0.1)' : 'transparent'}'">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-weight:500;font-size:13px">${formatearFechaHora(r.fechaGeneracion)}</span>
+            ${i === 0 ? '<span style="background:#8b5cf6;color:white;font-size:10px;padding:2px 6px;border-radius:4px">Actual</span>' : ''}
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            ${(r.contenido || '').substring(0, 80)}...
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function toggleHistorialResumenes() {
+  const historial = document.getElementById('resumen-historial');
+  if (historial) {
+    historial.style.display = historial.style.display === 'none' ? 'block' : 'none';
+  }
+}
+
+function seleccionarResumen(index) {
+  if (_resumenesLista[index]) {
+    const r = _resumenesLista[index];
+    document.getElementById('resumen-textarea').value = r.contenido || '';
+    document.getElementById('resumen-fecha-info').innerHTML = `
+      <span>Generado: ${formatearFechaHora(r.fechaGeneracion)}</span>
+      ${_resumenesLista.length > 1 ? `<span style="margin-left:12px;color:var(--primary);cursor:pointer" onclick="toggleHistorialResumenes()">📋 Ver historial (${_resumenesLista.length})</span>` : ''}
+    `;
+    toggleHistorialResumenes();
   }
 }
 
 function mostrarResumenExistente(resumen) {
-  document.getElementById('resumen-empty').style.display = 'none';
-  document.getElementById('resumen-loading').style.display = 'none';
-  document.getElementById('resumen-content').style.display = 'block';
-  document.getElementById('resumen-textarea').value = resumen.contenido || '';
-  
-  const fechaGen = resumen.fechaGeneracion ? new Date(resumen.fechaGeneracion).toLocaleDateString('es-AR') : '';
-  const fechaMod = resumen.fechaModificacion ? new Date(resumen.fechaModificacion).toLocaleDateString('es-AR') : '';
-  document.getElementById('resumen-fecha-info').textContent = 
-    fechaMod ? `Última modificación: ${fechaMod}` : (fechaGen ? `Generado: ${fechaGen}` : '');
+  mostrarListaResumenes([resumen]);
 }
 
 async function generarResumenIA() {
@@ -7769,7 +7841,11 @@ function mostrarResumenGenerado(resumen) {
   document.getElementById('resumen-loading').style.display = 'none';
   document.getElementById('resumen-content').style.display = 'block';
   document.getElementById('resumen-textarea').value = resumen;
-  document.getElementById('resumen-fecha-info').textContent = 'Generado ahora - Sin guardar';
+  document.getElementById('resumen-fecha-info').innerHTML = `<span style="color:#f59e0b;font-weight:500">⚠ Generado ahora - Sin guardar</span>`;
+  
+  // Ocultar historial si existe
+  const historial = document.getElementById('resumen-historial');
+  if (historial) historial.style.display = 'none';
 }
 
 function resetearResumenEmpty() {
@@ -7866,7 +7942,9 @@ async function guardarResumenHC() {
     const res = await serverCall('saveResumenHC', pacienteId, contenido, App.session.medicoId);
     if (res.ok) {
       toast('Resumen guardado', 'success');
-      document.getElementById('resumen-fecha-info').textContent = 'Guardado: ' + new Date().toLocaleDateString('es-AR');
+      _resumenGenerado = null; // Limpiar el resumen pendiente
+      // Recargar la lista de resúmenes
+      await cargarResumenHC(pacienteId);
     } else {
       toast('Error guardando: ' + (res.error || 'Error desconocido'), 'error');
     }
