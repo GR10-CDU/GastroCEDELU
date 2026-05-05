@@ -7607,7 +7607,7 @@ async function cargarResumenHC(pacienteId) {
   document.getElementById('resumen-content').style.display = 'none';
   
   try {
-    const res = await serverCall('getResumenHC', [pacienteId]);
+    const res = await serverCall('getResumenHC', pacienteId);
     if (res.ok && res.data) {
       _resumenCargado = res.data;
       mostrarResumenExistente(res.data);
@@ -7644,7 +7644,7 @@ async function generarResumenIA() {
   
   try {
     // Llamar a la Edge Function
-    const res = await serverCall('generarResumenConIA', [pacienteId]);
+    const res = await serverCall('generarResumenConIA', pacienteId);
     
     if (res.ok && res.resumen) {
       document.getElementById('resumen-loading').style.display = 'none';
@@ -7686,7 +7686,7 @@ async function guardarResumenHC() {
   btn.textContent = 'Guardando...';
   
   try {
-    const res = await serverCall('saveResumenHC', [pacienteId, contenido, App.session.medicoId]);
+    const res = await serverCall('saveResumenHC', pacienteId, contenido, App.session.medicoId);
     if (res.ok) {
       toast('Resumen guardado', 'success');
       document.getElementById('resumen-fecha-info').textContent = 'Guardado: ' + new Date().toLocaleDateString('es-AR');
