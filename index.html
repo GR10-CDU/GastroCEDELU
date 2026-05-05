@@ -733,6 +733,7 @@ button { cursor: pointer; border: none; }
 .badge-green { background: rgba(72,187,120,0.15); color: #68d391; border: 1px solid rgba(72,187,120,0.2); }
 .badge-blue  { background: rgba(0,150,199,0.15);  color: #63b3ed; border: 1px solid rgba(0,150,199,0.2); }
 .badge-gold  { background: rgba(226,185,111,0.15); color: #f6d06e; border: 1px solid rgba(226,185,111,0.2); }
+.badge-purple { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
 
 .empty-state {
   text-align: center;
@@ -2776,7 +2777,7 @@ body.theme-blue .topbar-avatar {
               Endoscopias <span id="tab-endo-count" class="badge badge-gold" style="margin-left:4px;font-size:10px;padding:2px 6px;"></span>
             </div>
             <div class="tab-item" onclick="showTab('resumen')" id="tab-resumen">
-              Resumen HC <span class="badge" id="badge-resumenes" style="display:none"></span>
+              Resumen HC <span id="tab-resumen-count" class="badge badge-purple" style="margin-left:4px;font-size:10px;padding:2px 6px;"></span>
             </div>
           </div>
 
@@ -4725,6 +4726,9 @@ async function abrirPaciente(id) {
     try { renderHC(hc); }             catch(ex) { console.error('renderHC:', ex); }
     try { renderConsultas(cons); }    catch(ex) { console.error('renderConsultas:', ex); }
     try { renderEndoscopias(endos); } catch(ex) { console.error('renderEndoscopias:', ex); }
+    
+    // Actualizar badge de resúmenes
+    actualizarBadgeResumenes(res.resumenesCount || 0);
 
     if (!pacLocal) {
       showPage('detalle');
@@ -7722,14 +7726,9 @@ async function cargarResumenHC(pacienteId) {
 }
 
 function actualizarBadgeResumenes(cantidad) {
-  const badge = document.getElementById('badge-resumenes');
+  const badge = document.getElementById('tab-resumen-count');
   if (badge) {
-    if (cantidad > 0) {
-      badge.textContent = cantidad;
-      badge.style.display = 'inline-block';
-    } else {
-      badge.style.display = 'none';
-    }
+    badge.textContent = cantidad > 0 ? cantidad : '';
   }
 }
 
