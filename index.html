@@ -7747,8 +7747,12 @@ function mostrarHistorialResumenes(resumenes) {
 
 function formatearFechaHoraArg(isoString) {
   if (!isoString) return '';
-  // Crear fecha desde ISO (UTC)
-  const fecha = new Date(isoString);
+  // Asegurar que la fecha tenga Z al final para que se interprete como UTC
+  let fechaStr = isoString;
+  if (!fechaStr.endsWith('Z') && !fechaStr.includes('+') && !fechaStr.includes('-', 10)) {
+    fechaStr += 'Z';
+  }
+  const fecha = new Date(fechaStr);
   // Formatear en zona horaria de Argentina
   return fecha.toLocaleString('es-AR', { 
     day: '2-digit', 
