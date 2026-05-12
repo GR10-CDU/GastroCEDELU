@@ -6390,8 +6390,8 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   /* ── FOTOS: fila1=3 fotos, fila2=2 fotos+firma al lado ── */
   .fotos-bloque { padding:6px 12px 4px; }
   .fotos-fila   { display:flex; gap:7px; margin-bottom:7px; }
-  .fotos-fila img { width:5.5cm; height:5.5cm; object-fit:cover; border-radius:6px;
-                    border:1px solid #d0e8d8; display:block; flex-shrink:0; }
+  .fotos-fila img { width:5.5cm; height:5.5cm; object-fit:contain; border-radius:6px;
+                    border:1px solid #d0e8d8; display:block; flex-shrink:0; background:#f8fdf9; }
   /* firma al costado de la fila 2 */
   .firma-lado { display:flex; align-items:center; justify-content:center; flex:1;
                 background:#fff; border-radius:6px; }
