@@ -3325,12 +3325,12 @@ body.theme-blue .topbar-avatar {
         </div>
         <div class="field">
           <label>Lugar de Realización</label>
-          <input type="text" id="endo-lugar" placeholder="Clínica / Salutia" list="endo-lugares" oninput="_endoAutoguardadoGuardar()">
+          <input type="text" id="endo-lugar" placeholder="Clínica / Salutias" list="endo-lugares" oninput="_endoAutoguardadoGuardar()">
           <datalist id="endo-lugares">
             <option value="Clínica Uruguay SRL">
             <option value="Consultorio">
             <option value="Hospital San Martín">
-            <option value="Salutia">
+            <option value="Salutias">
           </datalist>
         </div>
         <div class="field">
@@ -3595,7 +3595,7 @@ body.theme-blue .topbar-avatar {
         <select id="cons-lugar" onchange="toggleConsLugarOtro(this.value)">
           <option value="">— Seleccionar —</option>
           <option value="Clínica Uruguay">Clínica Uruguay</option>
-          <option value="Salutia">Salutia</option>
+          <option value="Salutias">Salutias</option>
           <option value="TELEmedicina">TELEmedicina</option>
           <option value="__otro__">Otro...</option>
         </select>
@@ -5270,7 +5270,7 @@ function editConsulta(consultaId) {
   // Lugar
   const lugarEl = document.getElementById('cons-lugar');
   const lugarVal = c.lugarAtencion || '';
-  const opcionesLugar = ['Clínica Uruguay','Salutia','TELEmedicina'];
+  const opcionesLugar = ['Clínica Uruguay','Salutias','TELEmedicina'];
   if (lugarEl) {
     if (opcionesLugar.includes(lugarVal)) {
       lugarEl.value = lugarVal;
