@@ -6333,17 +6333,19 @@ async function subirInformeADrive(endoId) {
       fotos: [1,2,3,4,5,6,7,8].map(n => e['foto'+n]).filter(Boolean).filter(url => !url.includes('/file/d/'))
     };
     
-    // Enviar al Apps Script para generar PDF
+    // Enviar al Apps Script para generar PDF (usando text/plain para evitar CORS preflight)
     const res = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'generarYSubirInforme',
         params: [datosInforme]
       })
     });
     
-    const result = await res.json();
+    const text = await res.text();
+    const result = JSON.parse(text);
+    
     if (result.ok) {
       toast('✅ Informe subido: ' + result.fileName, 'success');
       console.log('PDF subido:', result);
