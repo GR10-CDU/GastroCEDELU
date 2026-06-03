@@ -6897,10 +6897,12 @@ async function _syncCitasToSupabase(citas) {
         id: c.id,
         fecha: c.fecha,
         hora: c.hora,
-        pacienteNombre: c.nombre || '',
+        pacienteNombre: c.nombre || c.pacienteNombre || '',
         pacienteId: c.pacienteId || '',
-        motivo: c.estudio || '',
-        notas: c.notas || '',
+        telefono: c.telefono || '',
+        obraSocial: c.obraSocial || '',
+        estudio: c.estudio || '',
+        notas: c.nota || c.notas || '',
         estado: c.estado || 'pendiente'
       }, App.session.medicoId);
     } catch(e) { console.error('Error sincronizando cita:', e); }
@@ -6925,8 +6927,10 @@ async function _cargarCitasDesdeSupabase() {
         hora: c.hora,
         nombre: c.pacienteNombre,
         pacienteId: c.pacienteId,
-        estudio: c.motivo,
-        notas: c.notas,
+        telefono: c.telefono || '',
+        obraSocial: c.obraSocial || '',
+        estudio: c.estudio || c.motivo || '',
+        nota: c.notas || '',
         estado: c.estado
       }));
       // Merge con citas locales (Supabase tiene prioridad)
@@ -6956,9 +6960,77 @@ function _msgCargar() {
     if (d) return d;
   } catch(e){}
   return [
-    { id: 'preparacion',  nombre: 'Enviar Preparación', texto: 'Hola {nombre}, le recordamos que tiene turno con la Dra. Notari el {fecha} a las {hora}. Por favor, llegue en ayunas de 8 horas.' },
-    { id: 'informe',      nombre: 'Enviar Informe',     texto: 'Hola {nombre}, le enviamos el informe de su estudio realizado el {fecha}. Ante cualquier consulta, no dude en comunicarse.' },
-    { id: 'recordatorio', nombre: 'Recordatorio turno', texto: 'Hola {nombre}, le recordamos que mañana {fecha} a las {hora} tiene turno para {estudio}. Ante cualquier consulta comuníquese al consultorio.' }
+    { id: 'vcc_lunes',  nombre: 'Preparación VCC LUNES', texto: `Paciente: {nombre}
+Turno de Endoscopía
+Fecha: {fecha} – Hora: {hora}
+
+Se solicita presentarse 30 minutos antes para realizar la admisión.
+
+*Preparación*
+Domingo:
+Almuerzo liviano: pechuga de pollo con puré de zapallo.
+
+17:00hs: merienda sin lácteos.
+
+18:00hs: tomar el primer sobre de laxante, diluido en un vaso de agua fría (puede ser con hielo). Luego ingerir 6 vasos de agua (1 vaso cada 20 minutos).
+
+21:00hs: cena líquida (caldo, té o gelatina).
+
+Lunes:
+01:00hs: tomar el segundo sobre de laxante, diluido en un vaso de agua fría (puede ser con hielo). Luego ingerir 8 vasos de agua (1 vaso cada 20 minutos).
+
+Puede tomar agua hasta las 05:00hs. Luego, realizar ayuno absoluto.
+
+*Indicaciones generales:*
+Confirmar asistencia.
+Debe concurrir acompañado.
+No puede retirarse manejando.
+
+Para verificar los requisitos de autorización del estudio, enviar fotos de la documentación al WhatsApp 3442 60-6028 (Admisión, Clínica Uruguay).
+
+Dra. Lorena Notari` },
+    { id: 'vcc_martes', nombre: 'Preparación VCC MARTES', texto: `Paciente: {nombre}
+Turno de endoscopías digestivas
+Fecha: {fecha} – Hora: {hora}
+
+Se solicita presentarse 30 minutos antes para admisión.
+
+*Preparación*
+
+Lunes:
+Almuerzo liviano: pechuga de pollo con puré de zapallo.
+
+17:00hs: merienda liviana sin lácteos.
+
+18:00hs: tomar el primer frasco de laxante, diluido en un vaso de agua fría (puede ser con hielo). Luego ingerir 8 vasos de agua (1 vaso cada 20 minutos).
+
+21:00hs: cena líquida (caldo, té o gelatina).
+
+23:00hs: tomar el segundo frasco de laxante, diluido en un vaso de agua fría (puede ser con hielo). Luego ingerir 8 vasos de agua (1 vaso cada 20 minutos).
+
+Martes:
+Puede tomar agua hasta las 03:00hs. Luego, realizar ayuno absoluto.
+
+*Indicaciones generales:*
+Confirmar asistencia.
+Debe concurrir acompañado.
+No puede retirarse manejando.
+
+Enviar la autorización del estudio a Admisión de Clínica Uruguay al WhatsApp 3442 60-6028 para su verificación y evitar contratiempos el día del estudio.
+
+Dra. Lorena Notari` },
+    { id: 'veda', nombre: 'Preparación VEDA', texto: `Paciente: {nombre}
+Turno de Endoscopía digestiva alta
+Fecha: {fecha} – Hora: {hora}
+
+Confirmar asistencia 
+Estar acompañado y presentarse 30 minutos antes para admisión.
+8hs de ayuno. 
+No puede regresar manejando.
+
+Enviar la autorización del estudio a Admisión de Clínica Uruguay al WhatsApp 3442 60-6028 para su verificación y evitar contratiempos el día del estudio.
+
+Dra. Lorena Notari` }
   ];
 }
 
@@ -8772,8 +8844,10 @@ function _abrirPanelBloques(iso) {
 
 function _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel) {
   var citas = _citasCargar();
+  // Normalizar hora a HH:MM para comparar
+  var normHora = function(h) { return (h||'').substring(0,5); };
   var ocupados = 0;
-  slots.forEach(function(h){ if(citas.some(function(c){return c.fecha===iso&&c.hora===h;})) ocupados++; });
+  slots.forEach(function(h){ if(citas.some(function(c){return c.fecha===iso && normHora(c.hora)===h;})) ocupados++; });
   var libres = slots.length - ocupados;
 
   var header = document.createElement('div');
@@ -8794,7 +8868,7 @@ function _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel) {
   body.style.cssText = 'overflow-y:auto;flex:1;padding:16px 20px';
 
   slots.forEach(function(hora) {
-    var cita = citas.find(function(c){ return c.fecha===iso && c.hora===hora; });
+    var cita = citas.find(function(c){ return c.fecha===iso && normHora(c.hora)===hora; });
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)';
 
@@ -8845,7 +8919,8 @@ function cerrarPanelBloques() {
 
 function abrirModalBloque(iso, hora) {
   var citas = _citasCargar();
-  if (citas.some(function(c){ return c.fecha===iso && c.hora===hora; })) { toast('Ese horario ya tiene un turno','error'); return; }
+  var normHora = function(h) { return (h||'').substring(0,5); };
+  if (citas.some(function(c){ return c.fecha===iso && normHora(c.hora)===hora; })) { toast('Ese horario ya tiene un turno','error'); return; }
   var d = _parseFechaISO(iso);
   var DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -8862,7 +8937,7 @@ function abrirModalBloque(iso, hora) {
   var sigHora = _siguienteSlot(hora);
   var diaNum  = d ? d.getDay() : 0;
   var cfg     = _BLOQUES_CONFIG[diaNum];
-  var sigLibre = cfg && sigHora <= cfg.fin && !citas.some(function(c){ return c.fecha===iso && c.hora===sigHora; });
+  var sigLibre = cfg && sigHora <= cfg.fin && !citas.some(function(c){ return c.fecha===iso && normHora(c.hora)===sigHora; });
 
   // Guardar en window para acceso desde onclick inline
   window._bloqueIso = iso;
