@@ -2381,8 +2381,6 @@ body.theme-blue .topbar-avatar {
 }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -3325,12 +3323,12 @@ body.theme-blue .topbar-avatar {
         </div>
         <div class="field">
           <label>Lugar de Realización</label>
-          <input type="text" id="endo-lugar" placeholder="Clínica / Salutias" list="endo-lugares" oninput="_endoAutoguardadoGuardar()">
+          <input type="text" id="endo-lugar" placeholder="Clínica / Sanatorio" list="endo-lugares" oninput="_endoAutoguardadoGuardar()">
           <datalist id="endo-lugares">
             <option value="Clínica Uruguay SRL">
             <option value="Consultorio">
             <option value="Hospital San Martín">
-            <option value="Salutias">
+            <option value="Sanatorio CEDELU">
           </datalist>
         </div>
         <div class="field">
@@ -3595,7 +3593,7 @@ body.theme-blue .topbar-avatar {
         <select id="cons-lugar" onchange="toggleConsLugarOtro(this.value)">
           <option value="">— Seleccionar —</option>
           <option value="Clínica Uruguay">Clínica Uruguay</option>
-          <option value="Salutias">Salutias</option>
+          <option value="Salutia">Salutia</option>
           <option value="TELEmedicina">TELEmedicina</option>
           <option value="__otro__">Otro...</option>
         </select>
@@ -3607,6 +3605,10 @@ body.theme-blue .topbar-avatar {
       <textarea id="cons-motivo" rows="3" placeholder="Motivo de la consulta..."></textarea>
     </div>
     <div class="section-divider" style="margin-top:20px"><span>Evolución y Conducta</span></div>
+    <div class="field">
+      <label>Impresión Diagnóstica</label>
+      <textarea id="cons-impresion" rows="3" placeholder="Diagnóstico, laboratorio, resultados de estudios..."></textarea>
+    </div>
     <div class="field">
       <label>Evolución</label>
       <textarea id="cons-exfisico" rows="4" placeholder="Evolución del cuadro clínico, examen físico, novedades..."></textarea>
@@ -5148,6 +5150,7 @@ function _consultaDraftRead() {
     lugarOtro:     f('cons-lugar-otro'),
     motivo:        f('cons-motivo'),
     exfisico:      f('cons-exfisico'),
+    impresion:     f('cons-impresion'),
     tratamiento:   f('cons-tratamiento'),
     pendiente:     f('cons-pendiente'),
   };
@@ -5168,12 +5171,13 @@ function _consultaDraftRestore(d) {
   }
   set('cons-motivo',      d.motivo);
   set('cons-exfisico',    d.exfisico);
+  set('cons-impresion',   d.impresion);
   set('cons-tratamiento', d.tratamiento);
   set('cons-pendiente',   d.pendiente);
 }
 
 function _consultaDraftHasContent(d) {
-  return !!(d && (d.motivo || d.exfisico || d.tratamiento || d.pendiente));
+  return !!(d && (d.motivo || d.exfisico || d.impresion || d.tratamiento || d.pendiente));
 }
 
 function cancelarConsulta() {
@@ -5198,7 +5202,7 @@ function prepModalConsulta() {
   if(anioEl&&anioEl.options.length<=1){for(let y=hoy.getFullYear();y>=hoy.getFullYear()-10;y--){const o=document.createElement('option');o.value=String(y);o.textContent=String(y);anioEl.appendChild(o);}}
   if(diaEl)diaEl.value=dd; if(mesEl)mesEl.value=mm; if(anioEl)anioEl.value=yyyy;
   syncConsFecha();
-  ['motivo','exfisico','tratamiento','pendiente'].forEach(f=>{document.getElementById('cons-'+f).value='';});
+  ['motivo','exfisico','impresion','tratamiento','pendiente'].forEach(f=>{document.getElementById('cons-'+f).value='';});
   // Nombre del paciente en el header del modal
   const pacNom = document.getElementById('cons-modal-paciente');
   if (pacNom) pacNom.textContent = App.pacienteActual ? App.pacienteActual.apellidoNombre : '';
@@ -5270,7 +5274,7 @@ function editConsulta(consultaId) {
   // Lugar
   const lugarEl = document.getElementById('cons-lugar');
   const lugarVal = c.lugarAtencion || '';
-  const opcionesLugar = ['Clínica Uruguay','Salutias','TELEmedicina'];
+  const opcionesLugar = ['Clínica Uruguay','Salutia','TELEmedicina'];
   if (lugarEl) {
     if (opcionesLugar.includes(lugarVal)) {
       lugarEl.value = lugarVal;
@@ -5283,6 +5287,7 @@ function editConsulta(consultaId) {
 
   set('cons-motivo',      c.motivoConsulta);
   set('cons-exfisico',    c.exFisico);
+  set('cons-impresion',   c.impresionDiagnostica);
   set('cons-tratamiento', c.tratamiento);
   set('cons-pendiente',   c.pendiente);
 
@@ -5309,7 +5314,7 @@ async function submitConsulta() {
     lugarAtencion:       (()=>{ const v=document.getElementById('cons-lugar').value; return v==='__otro__'?(document.getElementById('cons-lugar-otro').value||'Otro'):v; })(),
     motivoConsulta:      document.getElementById('cons-motivo').value,
     exFisico:            document.getElementById('cons-exfisico').value,
-    impresionDiagnostica:'',
+    impresionDiagnostica:document.getElementById('cons-impresion').value,
     tratamiento:         document.getElementById('cons-tratamiento').value,
     pendiente:           document.getElementById('cons-pendiente').value
   };
@@ -6392,8 +6397,8 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
   /* ── FOTOS: fila1=3 fotos, fila2=2 fotos+firma al lado ── */
   .fotos-bloque { padding:6px 12px 4px; }
   .fotos-fila   { display:flex; gap:7px; margin-bottom:7px; }
-  .fotos-fila img { width:5.5cm; height:5.5cm; object-fit:contain; border-radius:6px;
-                    border:1px solid #d0e8d8; display:block; flex-shrink:0; background:#f8fdf9; }
+  .fotos-fila img { width:5.5cm; height:5.5cm; object-fit:cover; border-radius:6px;
+                    border:1px solid #d0e8d8; display:block; flex-shrink:0; }
   /* firma al costado de la fila 2 */
   .firma-lado { display:flex; align-items:center; justify-content:center; flex:1;
                 background:#fff; border-radius:6px; }
@@ -6897,12 +6902,10 @@ async function _syncCitasToSupabase(citas) {
         id: c.id,
         fecha: c.fecha,
         hora: c.hora,
-        pacienteNombre: c.nombre || c.pacienteNombre || '',
+        pacienteNombre: c.nombre || '',
         pacienteId: c.pacienteId || '',
-        telefono: c.telefono || '',
-        obraSocial: c.obraSocial || '',
-        estudio: c.estudio || '',
-        notas: c.nota || c.notas || '',
+        motivo: c.estudio || '',
+        notas: c.notas || '',
         estado: c.estado || 'pendiente'
       }, App.session.medicoId);
     } catch(e) { console.error('Error sincronizando cita:', e); }
@@ -6927,10 +6930,8 @@ async function _cargarCitasDesdeSupabase() {
         hora: c.hora,
         nombre: c.pacienteNombre,
         pacienteId: c.pacienteId,
-        telefono: c.telefono || '',
-        obraSocial: c.obraSocial || '',
-        estudio: c.estudio || c.motivo || '',
-        nota: c.notas || '',
+        estudio: c.motivo,
+        notas: c.notas,
         estado: c.estado
       }));
       // Merge con citas locales (Supabase tiene prioridad)
@@ -6960,77 +6961,9 @@ function _msgCargar() {
     if (d) return d;
   } catch(e){}
   return [
-    { id: 'vcc_lunes',  nombre: 'Preparación VCC LUNES', texto: `Paciente: {nombre}
-Turno de Endoscopía
-Fecha: {fecha} – Hora: {hora}
-
-Se solicita presentarse 30 minutos antes para realizar la admisión.
-
-*Preparación*
-Domingo:
-Almuerzo liviano: pechuga de pollo con puré de zapallo.
-
-17:00hs: merienda sin lácteos.
-
-18:00hs: tomar el primer sobre de laxante, diluido en un vaso de agua fría (puede ser con hielo). Luego ingerir 6 vasos de agua (1 vaso cada 20 minutos).
-
-21:00hs: cena líquida (caldo, té o gelatina).
-
-Lunes:
-01:00hs: tomar el segundo sobre de laxante, diluido en un vaso de agua fría (puede ser con hielo). Luego ingerir 8 vasos de agua (1 vaso cada 20 minutos).
-
-Puede tomar agua hasta las 05:00hs. Luego, realizar ayuno absoluto.
-
-*Indicaciones generales:*
-Confirmar asistencia.
-Debe concurrir acompañado.
-No puede retirarse manejando.
-
-Para verificar los requisitos de autorización del estudio, enviar fotos de la documentación al WhatsApp 3442 60-6028 (Admisión, Clínica Uruguay).
-
-Dra. Lorena Notari` },
-    { id: 'vcc_martes', nombre: 'Preparación VCC MARTES', texto: `Paciente: {nombre}
-Turno de endoscopías digestivas
-Fecha: {fecha} – Hora: {hora}
-
-Se solicita presentarse 30 minutos antes para admisión.
-
-*Preparación*
-
-Lunes:
-Almuerzo liviano: pechuga de pollo con puré de zapallo.
-
-17:00hs: merienda liviana sin lácteos.
-
-18:00hs: tomar el primer frasco de laxante, diluido en un vaso de agua fría (puede ser con hielo). Luego ingerir 8 vasos de agua (1 vaso cada 20 minutos).
-
-21:00hs: cena líquida (caldo, té o gelatina).
-
-23:00hs: tomar el segundo frasco de laxante, diluido en un vaso de agua fría (puede ser con hielo). Luego ingerir 8 vasos de agua (1 vaso cada 20 minutos).
-
-Martes:
-Puede tomar agua hasta las 03:00hs. Luego, realizar ayuno absoluto.
-
-*Indicaciones generales:*
-Confirmar asistencia.
-Debe concurrir acompañado.
-No puede retirarse manejando.
-
-Enviar la autorización del estudio a Admisión de Clínica Uruguay al WhatsApp 3442 60-6028 para su verificación y evitar contratiempos el día del estudio.
-
-Dra. Lorena Notari` },
-    { id: 'veda', nombre: 'Preparación VEDA', texto: `Paciente: {nombre}
-Turno de Endoscopía digestiva alta
-Fecha: {fecha} – Hora: {hora}
-
-Confirmar asistencia 
-Estar acompañado y presentarse 30 minutos antes para admisión.
-8hs de ayuno. 
-No puede regresar manejando.
-
-Enviar la autorización del estudio a Admisión de Clínica Uruguay al WhatsApp 3442 60-6028 para su verificación y evitar contratiempos el día del estudio.
-
-Dra. Lorena Notari` }
+    { id: 'preparacion',  nombre: 'Enviar Preparación', texto: 'Hola {nombre}, le recordamos que tiene turno con la Dra. Notari el {fecha} a las {hora}. Por favor, llegue en ayunas de 8 horas.' },
+    { id: 'informe',      nombre: 'Enviar Informe',     texto: 'Hola {nombre}, le enviamos el informe de su estudio realizado el {fecha}. Ante cualquier consulta, no dude en comunicarse.' },
+    { id: 'recordatorio', nombre: 'Recordatorio turno', texto: 'Hola {nombre}, le recordamos que mañana {fecha} a las {hora} tiene turno para {estudio}. Ante cualquier consulta comuníquese al consultorio.' }
   ];
 }
 
@@ -8844,10 +8777,8 @@ function _abrirPanelBloques(iso) {
 
 function _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel) {
   var citas = _citasCargar();
-  // Normalizar hora a HH:MM para comparar
-  var normHora = function(h) { return (h||'').substring(0,5); };
   var ocupados = 0;
-  slots.forEach(function(h){ if(citas.some(function(c){return c.fecha===iso && normHora(c.hora)===h;})) ocupados++; });
+  slots.forEach(function(h){ if(citas.some(function(c){return c.fecha===iso&&c.hora===h;})) ocupados++; });
   var libres = slots.length - ocupados;
 
   var header = document.createElement('div');
@@ -8868,7 +8799,7 @@ function _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel) {
   body.style.cssText = 'overflow-y:auto;flex:1;padding:16px 20px';
 
   slots.forEach(function(hora) {
-    var cita = citas.find(function(c){ return c.fecha===iso && normHora(c.hora)===hora; });
+    var cita = citas.find(function(c){ return c.fecha===iso && c.hora===hora; });
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)';
 
@@ -8919,8 +8850,7 @@ function cerrarPanelBloques() {
 
 function abrirModalBloque(iso, hora) {
   var citas = _citasCargar();
-  var normHora = function(h) { return (h||'').substring(0,5); };
-  if (citas.some(function(c){ return c.fecha===iso && normHora(c.hora)===hora; })) { toast('Ese horario ya tiene un turno','error'); return; }
+  if (citas.some(function(c){ return c.fecha===iso && c.hora===hora; })) { toast('Ese horario ya tiene un turno','error'); return; }
   var d = _parseFechaISO(iso);
   var DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   var MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -8937,7 +8867,7 @@ function abrirModalBloque(iso, hora) {
   var sigHora = _siguienteSlot(hora);
   var diaNum  = d ? d.getDay() : 0;
   var cfg     = _BLOQUES_CONFIG[diaNum];
-  var sigLibre = cfg && sigHora <= cfg.fin && !citas.some(function(c){ return c.fecha===iso && normHora(c.hora)===sigHora; });
+  var sigLibre = cfg && sigHora <= cfg.fin && !citas.some(function(c){ return c.fecha===iso && c.hora===sigHora; });
 
   // Guardar en window para acceso desde onclick inline
   window._bloqueIso = iso;
