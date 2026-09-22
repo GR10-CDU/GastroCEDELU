@@ -3425,8 +3425,48 @@ body.theme-blue .topbar-avatar {
             <div id="boston-total-badge" style="display:none;background:#f0f9f4;border:1.5px solid #9fd4b2;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;color:#155a32;white-space:nowrap">BOSTON: <span id="boston-total-val">0</span>/9</div>
           </div>
         </div>
+        <!-- Tiempo de retirada -->
+        <div class="field-row cols-2" style="margin-bottom:10px">
+          <div class="field" style="max-width:280px">
+            <label>Tiempo de Retirada</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="endo-tiempo-retirada" onchange="toggleTiempoOtro(this.value);_endoAutoguardadoGuardar()" style="flex:1">
+                <option value="">— Seleccionar —</option>
+                <option value="8 minutos">8 minutos</option>
+                <option value="12 minutos">12 minutos</option>
+                <option value="__otro__">Otro...</option>
+              </select>
+              <input type="text" id="endo-tiempo-otro" placeholder="Ej: 10 minutos" style="display:none;width:120px" oninput="_endoAutoguardadoGuardar()">
+            </div>
+          </div>
+          <div class="field" style="max-width:320px">
+            <label>Complicaciones</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="endo-complicaciones" onchange="toggleComplicacionesDetalle(this.value);_endoAutoguardadoGuardar()" style="width:80px">
+                <option value="No">No</option>
+                <option value="Sí">Sí</option>
+              </select>
+              <input type="text" id="endo-complicaciones-detalle" placeholder="Especificar cuáles..." style="display:none;flex:1" oninput="_endoAutoguardadoGuardar()">
+            </div>
+          </div>
+        </div>
         <div class="field">
           <textarea id="endo-colon-informe" rows="14" oninput="_endoAutoguardadoGuardar()" placeholder="Completá el informe manualmente o seleccioná una plantilla..." style="font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.7"></textarea>
+        </div>
+        <!-- Recomendación VCC -->
+        <div class="field" style="margin-top:10px">
+          <label>Recomendación / Intervalo de Vigilancia</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="endo-recomendacion" onchange="toggleRecomendacionOtro(this.value);_endoAutoguardadoGuardar()" style="width:260px">
+              <option value="">— Seleccionar —</option>
+              <option value="Control en 5 años">Control en 5 años</option>
+              <option value="Control en 3 años">Control en 3 años</option>
+              <option value="Control en 1 año">Control en 1 año</option>
+              <option value="Según resultado de anatomía patológica">Según resultado de anatomía patológica</option>
+              <option value="__otro__">Otro...</option>
+            </select>
+            <input type="text" id="endo-recomendacion-otro" placeholder="Especificar recomendación..." style="display:none;flex:1" oninput="_endoAutoguardadoGuardar()">
+          </div>
         </div>
       </div>
 
@@ -4073,6 +4113,18 @@ function calcBoston(){
   if(!badge||!valEl)return;
   if(cdV!==''||ctV!==''||ciV!==''){valEl.textContent=(parseInt(cdV)||0)+(parseInt(ctV)||0)+(parseInt(ciV)||0);badge.style.display='inline-block';}
   else badge.style.display='none';
+}
+function toggleTiempoOtro(val){
+  const otro=document.getElementById('endo-tiempo-otro'); if(!otro)return;
+  otro.style.display=val==='__otro__'?'inline-block':'none'; if(val!=='__otro__')otro.value='';
+}
+function toggleComplicacionesDetalle(val){
+  const det=document.getElementById('endo-complicaciones-detalle'); if(!det)return;
+  det.style.display=val==='Sí'?'inline-block':'none'; if(val!=='Sí')det.value='';
+}
+function toggleRecomendacionOtro(val){
+  const otro=document.getElementById('endo-recomendacion-otro'); if(!otro)return;
+  otro.style.display=val==='__otro__'?'inline-block':'none'; if(val!=='__otro__')otro.value='';
 }
 function doLogout(){
   App.session = null;
@@ -5657,6 +5709,35 @@ function editarEndoscopia(endoId) {
       const val = e['boston' + seg.charAt(0).toUpperCase() + seg.slice(1)] || e['boston' + seg.toUpperCase()];
       if (el && val !== undefined && val !== '') el.value = val;
     });
+    // Campos nuevos VCC
+    const tiempoVal = e.tiempoRetirada || '';
+    const tiempoEl = document.getElementById('endo-tiempo-retirada');
+    if (tiempoEl) {
+      if (['8 minutos','12 minutos'].includes(tiempoVal)) {
+        tiempoEl.value = tiempoVal;
+      } else if (tiempoVal) {
+        tiempoEl.value = '__otro__';
+        toggleTiempoOtro('__otro__');
+        set('endo-tiempo-otro', tiempoVal);
+      }
+    }
+    set('endo-complicaciones', e.complicaciones || 'No');
+    if (e.complicaciones === 'Sí') {
+      toggleComplicacionesDetalle('Sí');
+      set('endo-complicaciones-detalle', e.complicacionesDetalle || '');
+    }
+    const recoVal = e.recomendacion || '';
+    const recoEl = document.getElementById('endo-recomendacion');
+    if (recoEl) {
+      const opcionesReco = ['Control en 5 años','Control en 3 años','Control en 1 año','Según resultado de anatomía patológica'];
+      if (opcionesReco.includes(recoVal)) {
+        recoEl.value = recoVal;
+      } else if (recoVal) {
+        recoEl.value = '__otro__';
+        toggleRecomendacionOtro('__otro__');
+        set('endo-recomendacion-otro', recoVal);
+      }
+    }
   }
 
   // Cambiar botones: ocultar "Guardar y PDF", cambiar texto de guardar
@@ -5715,6 +5796,12 @@ function _endoAutoguardadoGuardar() {
     bostonCD:   (document.getElementById('endo-boston-cd')||{}).value || '',
     bostonCT:   (document.getElementById('endo-boston-ct')||{}).value || '',
     bostonCI:   (document.getElementById('endo-boston-ci')||{}).value || '',
+    tiempoRetirada: (document.getElementById('endo-tiempo-retirada')||{}).value || '',
+    tiempoRetiradaOtro: (document.getElementById('endo-tiempo-otro')||{}).value || '',
+    complicaciones: (document.getElementById('endo-complicaciones')||{}).value || '',
+    complicacionesDetalle: (document.getElementById('endo-complicaciones-detalle')||{}).value || '',
+    recomendacion: (document.getElementById('endo-recomendacion')||{}).value || '',
+    recomendacionOtro: (document.getElementById('endo-recomendacion-otro')||{}).value || '',
     informe:    esVeda
       ? (document.getElementById('endo-esofago')||{}).value || ''
       : (document.getElementById('endo-colon-informe')||{}).value || '',
@@ -5757,6 +5844,15 @@ function _endoAutoguardadoCargar(endoIdOrKey) {
     set('endo-boston-cd',  d.bostonCD);
     set('endo-boston-ct',  d.bostonCT);
     set('endo-boston-ci',  d.bostonCI);
+    set('endo-tiempo-retirada', d.tiempoRetirada);
+    set('endo-tiempo-otro', d.tiempoRetiradaOtro);
+    if (d.tiempoRetirada === '__otro__') toggleTiempoOtro('__otro__');
+    set('endo-complicaciones', d.complicaciones);
+    set('endo-complicaciones-detalle', d.complicacionesDetalle);
+    if (d.complicaciones === 'Sí') toggleComplicacionesDetalle('Sí');
+    set('endo-recomendacion', d.recomendacion);
+    set('endo-recomendacion-otro', d.recomendacionOtro);
+    if (d.recomendacion === '__otro__') toggleRecomendacionOtro('__otro__');
     if (esVeda) set('endo-esofago', d.informe);
     else        set('endo-colon-informe', d.informe);
     
@@ -5816,6 +5912,13 @@ function resetFormEndoscopia() {
   });
   ['endo-boston-cd','endo-boston-ct','endo-boston-ci'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const bBadge=document.getElementById('boston-total-badge');if(bBadge)bBadge.style.display='none';
+  // Reset campos VCC nuevos
+  const tiempoRet=document.getElementById('endo-tiempo-retirada');if(tiempoRet)tiempoRet.value='';
+  const tiempoOtro=document.getElementById('endo-tiempo-otro');if(tiempoOtro){tiempoOtro.value='';tiempoOtro.style.display='none';}
+  const complic=document.getElementById('endo-complicaciones');if(complic)complic.value='No';
+  const complicDet=document.getElementById('endo-complicaciones-detalle');if(complicDet){complicDet.value='';complicDet.style.display='none';}
+  const reco=document.getElementById('endo-recomendacion');if(reco)reco.value='';
+  const recoOtro=document.getElementById('endo-recomendacion-otro');if(recoOtro){recoOtro.value='';recoOtro.style.display='none';}
   const anlg = document.getElementById('endo-analgesia');
   if (anlg) anlg.value = '';
   const regAlc = document.getElementById('endo-region-alcanzada');
@@ -6009,6 +6112,10 @@ async function submitEndoscopia(generarPDF = false) {
     bostonCd: (document.getElementById('endo-boston-cd')||{}).value||'',
     bostonCt: (document.getElementById('endo-boston-ct')||{}).value||'',
     bostonCi: (document.getElementById('endo-boston-ci')||{}).value||'',
+    tiempoRetirada: (()=>{const v=(document.getElementById('endo-tiempo-retirada')||{}).value||'';return v==='__otro__'?((document.getElementById('endo-tiempo-otro')||{}).value||''):v;})(),
+    complicaciones: (document.getElementById('endo-complicaciones')||{}).value||'',
+    complicacionesDetalle: (document.getElementById('endo-complicaciones-detalle')||{}).value||'',
+    recomendacion: (()=>{const v=(document.getElementById('endo-recomendacion')||{}).value||'';return v==='__otro__'?((document.getElementById('endo-recomendacion-otro')||{}).value||''):v;})(),
     impresionDiagnostica: document.getElementById('endo-impresion').value,
     analgesia:       document.getElementById('endo-analgesia').value,
     anestesista:     document.getElementById('endo-anestesista').value,
@@ -6493,6 +6600,8 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
         Región Alcanzada: ${regionAlcanzada}
       </span>` : ''}
     ${bostonHtml}
+    ${!(e.tipoEstudio||'').toUpperCase().includes('VEDA') && e.tiempoRetirada ? `<span style="display:inline-block;background:#e8f4fc;color:#1565c0;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.3px;border:1px solid #90caf9;margin-left:4px">Retirada: ${e.tiempoRetirada}</span>` : ''}
+    ${!(e.tipoEstudio||'').toUpperCase().includes('VEDA') && e.complicaciones === 'Sí' ? `<span style="display:inline-block;background:#ffebee;color:#c62828;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.3px;border:1px solid #ef9a9a;margin-left:4px">Complicaciones: ${e.complicacionesDetalle||'Sí'}</span>` : ''}
     </div>
     ${informe
       ? `<div class="informe-text">${informe}</div>`
@@ -6517,6 +6626,11 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
             ).join('')}
           </div>
         </div>
+        ${!(e.tipoEstudio||'').toUpperCase().includes('VEDA') && e.recomendacion ? `
+        <div style="margin-top:4px;padding-top:4px;border-top:1px dashed #c0ddc9">
+          <span style="font-size:9px;font-weight:800;color:#1a7a4a;text-transform:uppercase;letter-spacing:.5px">Recomendación: </span>
+          <span style="font-size:11px;color:#111;font-weight:600">${e.recomendacion}</span>
+        </div>` : ''}
       </div>
     </div>
   </div>
@@ -6557,7 +6671,7 @@ function _abrirInformeEndoscopia(endoId, autoPrint, fileName) {
     <span class="footer-dots">•</span>
     Gastroenterología – Interno 115
     <br>
-    Instrumental utilizado: Videoendoscopio Olympus XQ-140 <span class="footer-dots">•</span> Procesador Olympus CV-160
+    Instrumental utilizado: Videoendoscopio Olympus Exedra II CV180
   </div>
 
 </div>
