@@ -3477,10 +3477,6 @@ body.theme-blue .topbar-avatar {
           <textarea id="endo-impresion" rows="3" oninput="_endoAutoguardadoGuardar()" placeholder="Diagnóstico endoscópico final..."></textarea>
         </div>
       </div>
-      <div class="field">
-        <label>Comentarios / Recomendaciones</label>
-        <textarea id="endo-comentarios" rows="2" oninput="_endoAutoguardadoGuardar()" placeholder="Recomendaciones post-procedimiento..."></textarea>
-      </div>
 
       <!-- Fotos -->
       <div class="section-divider"><span>Fotografías del Estudio</span></div>
@@ -5906,7 +5902,7 @@ function resetFormEndoscopia() {
   document.getElementById('fotos-input').value = '';
   document.getElementById('endo-id').value = '';
   ['fecha','lugar','pedidopor','anestesista','antec','motivo',
-   'esofago','colon-informe','impresion','comentarios'].forEach(f => {
+   'esofago','colon-informe','impresion'].forEach(f => {
     const el = document.getElementById('endo-' + f);
     if (el) el.value = '';
   });
