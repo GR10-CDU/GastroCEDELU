@@ -2869,7 +2869,21 @@ body.theme-blue .topbar-avatar {
                     <button class="btn btn-primary btn-sm" onclick="guardarResumenHC()" id="btn-guardar-resumen">💾 Guardar</button>
                   </div>
                 </div>
-                <textarea id="resumen-textarea" style="width:100%;min-height:400px;padding:20px;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:15px;line-height:1.7;resize:vertical;background:var(--card)"></textarea>
+                <textarea id="resumen-textarea" style="width:100%;min-height:350px;padding:20px;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:15px;line-height:1.7;resize:vertical;background:var(--card)"></textarea>
+                
+                <!-- Indicaciones para regenerar -->
+                <div style="margin-top:16px;padding:16px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:10px;border:1px solid #c4b5fd">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                    <span style="font-size:18px">✨</span>
+                    <span style="font-weight:600;color:#6d28d9;font-size:14px">Regenerar con indicaciones</span>
+                  </div>
+                  <textarea id="resumen-indicaciones" rows="2" placeholder="Ej: Enfocá más en los antecedentes hepáticos, resumí la medicación, redactá más fluido..." style="width:100%;padding:12px;border:1px solid #c4b5fd;border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;background:white"></textarea>
+                  <div style="display:flex;justify-content:flex-end;margin-top:10px">
+                    <button class="btn btn-sm" onclick="regenerarResumenConIndicaciones()" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);color:white;border:none">
+                      🔄 Regenerar Resumen
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -7041,6 +7055,8 @@ async function _cargarCitasDesdeSupabase() {
         nombre: c.pacienteNombre,
         pacienteId: c.pacienteId,
         estudio: c.motivo,
+        obraSocial: c.obraSocial,
+        telefono: c.telefono,
         notas: c.notas,
         estado: c.estado
       }));
@@ -8017,6 +8033,44 @@ function mostrarEditorNuevoResumen(resumen) {
   document.getElementById('resumen-editor').style.display = 'block';
   document.getElementById('resumen-textarea').value = resumen;
   document.getElementById('resumen-fecha-info').innerHTML = '<span style="color:#f59e0b;font-weight:500">⚠ Nuevo - Sin guardar</span>';
+}
+
+async function regenerarResumenConIndicaciones() {
+  const indicaciones = document.getElementById('resumen-indicaciones')?.value || '';
+  if (!indicaciones.trim()) {
+    toast('Escribí alguna indicación para regenerar', 'warning');
+    return;
+  }
+  const pacienteId = App.pacienteActual?.id;
+  const pacienteNombre = App.pacienteActual?.apellidoNombre || 'paciente';
+  if (!pacienteId) return;
+  
+  mostrarIAPopup('Regenerando resumen...', pacienteNombre);
+  document.getElementById('resumen-editor').style.display = 'none';
+  document.getElementById('resumen-loading').style.display = 'block';
+  
+  try {
+    const res = await serverCall('generarResumenConIA', pacienteId, indicaciones);
+    document.getElementById('resumen-loading').style.display = 'none';
+    
+    if (res.ok && res.resumen) {
+      _resumenGenerado = { pacienteId, resumen: res.resumen };
+      actualizarIAPopup('success', '¡Resumen regenerado!', 'Click para ver');
+      if (App.pacienteActual?.id === pacienteId) {
+        mostrarEditorNuevoResumen(res.resumen);
+        document.getElementById('resumen-indicaciones').value = ''; // Limpiar indicaciones
+      }
+    } else {
+      cerrarIAPopup();
+      toast('Error: ' + (res.error || 'Error regenerando'), 'error');
+      document.getElementById('resumen-editor').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('resumen-loading').style.display = 'none';
+    cerrarIAPopup();
+    toast('Error: ' + e.message, 'error');
+    document.getElementById('resumen-editor').style.display = 'block';
+  }
 }
 
 async function generarResumenIA() {
