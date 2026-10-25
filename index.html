@@ -9,6 +9,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Sistema de gestión médica para gastroenterología">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%230d9488'/%3E%3Cpath d='M50 25c-8 0-15 12-15 25s7 25 15 25 15-12 15-25-7-25-15-25zm0 5c5 0 10 9 10 20s-5 20-10 20-10-9-10-20 5-20 10-20z' fill='white'/%3E%3C/svg%3E">
 <title>Gastro CDELU</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -2407,6 +2410,79 @@ body.theme-blue .topbar-avatar {
       <button class="btn btn-primary btn-lg" id="btn-login" onclick="doLogin()">
         Ingresar al Sistema
       </button>
+      <div style="margin-top:20px;text-align:center">
+        <a href="#" onclick="showModal('modal-privacidad');return false" style="color:var(--text2);font-size:12px;text-decoration:underline">Política de Privacidad</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Política de Privacidad -->
+  <div class="modal-overlay" id="modal-privacidad" style="display:none">
+    <div class="modal" style="max-width:700px;max-height:85vh;overflow:auto">
+      <div class="modal-header">
+        <h2 style="margin:0">Política de Privacidad</h2>
+        <button class="modal-close" onclick="closeModal('modal-privacidad')">×</button>
+      </div>
+      <div class="modal-body" style="font-size:14px;line-height:1.7">
+        <p><strong>Última actualización:</strong> Octubre 2026</p>
+        
+        <h3 style="margin-top:20px;font-size:15px">1. Responsable del Tratamiento</h3>
+        <p>La Dra. Lorena Notari, médica gastroenteróloga, es responsable del tratamiento de los datos personales recopilados a través de este sistema.</p>
+        
+        <h3 style="margin-top:20px;font-size:15px">2. Datos que Recopilamos</h3>
+        <p>Recopilamos datos necesarios para la atención médica:</p>
+        <ul style="margin:10px 0;padding-left:20px">
+          <li>Datos de identificación (nombre, DNI, fecha de nacimiento)</li>
+          <li>Datos de contacto (teléfono, email)</li>
+          <li>Datos de salud (historia clínica, estudios, diagnósticos)</li>
+          <li>Cobertura de salud (obra social)</li>
+        </ul>
+        
+        <h3 style="margin-top:20px;font-size:15px">3. Finalidad del Tratamiento</h3>
+        <p>Los datos se utilizan exclusivamente para:</p>
+        <ul style="margin:10px 0;padding-left:20px">
+          <li>Gestión de turnos y citas médicas</li>
+          <li>Registro de historia clínica y seguimiento</li>
+          <li>Generación de informes médicos</li>
+          <li>Comunicación con el paciente (recordatorios)</li>
+        </ul>
+        
+        <h3 style="margin-top:20px;font-size:15px">4. Resúmenes con Inteligencia Artificial</h3>
+        <p>El sistema puede generar resúmenes de historia clínica utilizando IA. Para proteger su privacidad:</p>
+        <ul style="margin:10px 0;padding-left:20px">
+          <li>Los datos se anonimizan antes de enviarse (sin nombre ni DNI)</li>
+          <li>Solo se envía información médica relevante</li>
+          <li>El servicio de IA no almacena los datos procesados</li>
+        </ul>
+        
+        <h3 style="margin-top:20px;font-size:15px">5. Almacenamiento y Seguridad</h3>
+        <p>Sus datos se almacenan en servidores seguros con:</p>
+        <ul style="margin:10px 0;padding-left:20px">
+          <li>Encriptación en tránsito (HTTPS/TLS)</li>
+          <li>Encriptación en reposo</li>
+          <li>Acceso restringido mediante credenciales</li>
+          <li>Copias de seguridad periódicas</li>
+        </ul>
+        
+        <h3 style="margin-top:20px;font-size:15px">6. Derechos del Paciente (Ley 25.326)</h3>
+        <p>Usted tiene derecho a:</p>
+        <ul style="margin:10px 0;padding-left:20px">
+          <li>Acceder a sus datos personales</li>
+          <li>Solicitar rectificación de datos inexactos</li>
+          <li>Solicitar supresión de datos (cuando corresponda)</li>
+          <li>Oponerse al tratamiento</li>
+        </ul>
+        <p>Para ejercer estos derechos, comuníquese con el consultorio.</p>
+        
+        <h3 style="margin-top:20px;font-size:15px">7. Conservación de Datos</h3>
+        <p>Los datos de historia clínica se conservan según la normativa vigente para documentación médica (mínimo 10 años desde la última atención).</p>
+        
+        <h3 style="margin-top:20px;font-size:15px">8. Contacto</h3>
+        <p>Para consultas sobre privacidad, comuníquese con el consultorio de la Dra. Lorena Notari.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-privacidad')">Cerrar</button>
+      </div>
     </div>
   </div>
 
@@ -2602,7 +2678,7 @@ body.theme-blue .topbar-avatar {
           <div class="search-bar">
             <div class="search-input-wrap">
               <span class="icon" style="font-size:14px;color:var(--muted)">⌕</span>
-              <input type="text" id="search-input" placeholder="Buscar por apellido, nombre o DNI..." oninput="filterPacientes(this.value)">
+              <input type="text" id="search-input" placeholder="Buscar por nombre, DNI o teléfono..." oninput="filterPacientes(this.value)">
             </div>
             <button class="btn btn-secondary btn-sm" onclick="loadPacientes()">↺ Actualizar</button>
           </div>
@@ -4570,7 +4646,9 @@ function filterPacientes(q) {
   const filtered = (App.pacientes || []).filter(p => {
     const nom = (p.apellidoNombre || '').toLowerCase();
     const dni = (p.dni || '').toString();
-    return nom.includes(q.toLowerCase()) || dni.includes(q);
+    const tel = (p.telefono || '').replace(/\D/g, ''); // solo números
+    const qNum = q.replace(/\D/g, ''); // query sin caracteres no numéricos
+    return nom.includes(q.toLowerCase()) || dni.includes(q) || (qNum && tel.includes(qNum));
   });
   renderPacientes(filtered, q.trim() ? 'search' : 'recent');
 }
