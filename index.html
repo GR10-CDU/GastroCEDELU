@@ -7107,6 +7107,8 @@ async function _syncCitasToSupabase(citas) {
         pacienteNombre: c.nombre || '',
         pacienteId: c.pacienteId || '',
         motivo: c.estudio || '',
+        obraSocial: c.obraSocial || '',
+        telefono: c.telefono || '',
         notas: c.notas || '',
         estado: c.estado || 'pendiente'
       }, App.session.medicoId);
