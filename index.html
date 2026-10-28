@@ -4796,9 +4796,13 @@ async function submitPaciente() {
     derivadoPor:    document.getElementById('pac-derivado').value
   };
 
-  // ── Volver a lista y dejar trabajar libremente ──────────────
+  // ── Cerrar modal/form ──────────────
   resetFormPaciente();
-  showPage('pacientes');
+  
+  // Si es edición, quedarse en la ficha; si es nuevo, ir a lista
+  if (!esEdicion) {
+    showPage('pacientes');
+  }
 
   // ── Mostrar banner no-bloqueante ──────────────────────────
   SaveBanner.show(esEdicion ? 'Actualizando paciente...' : 'Guardando paciente...', 'Enviando datos al servidor', 1);
@@ -4814,6 +4818,11 @@ async function submitPaciente() {
       await loadPacientes();
 
       SaveBanner.success(esEdicion ? 'Paciente actualizado' : 'Paciente guardado');
+      
+      // Si era edición, recargar la ficha del paciente para mostrar datos actualizados
+      if (esEdicion && pacIdVal) {
+        abrirPaciente(pacIdVal);
+      }
     } catch (e) {
       SaveBanner.error('Error de conexión: ' + e.message);
     }
