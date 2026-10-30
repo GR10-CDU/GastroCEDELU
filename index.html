@@ -7402,12 +7402,23 @@ function renderCalSemana(el) {
       btnWhatsAppHTML = '<button onclick="event.stopPropagation();enviarAgendaWhatsApp(\'' + iso + '\')" style="background:#25d366;border:none;border-radius:5px;width:100%;padding:4px;font-size:10px;font-weight:700;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:4px" title="Enviar agenda por WhatsApp">📲 WhatsApp</button>';
     }
 
+    // Aviso cumple/feriado
+    var aviso = _getAvisoDia(d);
+    var avisoHTML = '';
+    if (aviso) {
+      var avisoBg = aviso.tipo === 'cumple' ? '#fff3e0' : '#ffebee';
+      var avisoBorder = aviso.tipo === 'cumple' ? '#ffcc80' : '#ef9a9a';
+      var avisoColor = aviso.tipo === 'cumple' ? '#e65100' : '#c62828';
+      avisoHTML = '<div style="background:' + avisoBg + ';border:1px solid ' + avisoBorder + ';border-radius:6px;padding:4px 6px;margin-bottom:6px;font-size:10px;font-weight:700;color:' + avisoColor + ';text-align:center">' + aviso.texto + '</div>';
+    }
+
     return '<div style="flex:1;min-width:80px;background:' + colBg + ';border-radius:12px;border:1px solid ' + colBorder + ';padding:10px 8px;display:flex;flex-direction:column">'
       + '<div style="text-align:center;margin-bottom:8px">'
       +   '<div style="font-size:11px;font-weight:800;color:' + lblColor + ';letter-spacing:.1em">' + _DIAS_CORTO[diaNum].toUpperCase() + '</div>'
       +   '<div style="font-size:24px;font-weight:900;color:' + diaColor + ';line-height:1.1;margin:3px 0">' + d.getDate() + '</div>'
       +   '<div style="font-size:11px;color:' + lblColor + '">' + _MESES[d.getMonth()].slice(0,3) + '</div>'
       + '</div>'
+      + avisoHTML
       + btnBloquesHTML
       + chips
       + '<div style="margin-top:auto;padding-top:6px">'
@@ -8971,6 +8982,43 @@ var _BLOQUES_CONFIG = {
   1: { inicio: '08:00', fin: '12:30', label: 'Lunes'  },
   2: { inicio: '07:00', fin: '10:00', label: 'Martes' }
 };
+
+// ══ CUMPLEAÑOS Y FERIADOS (para avisos en agenda) ══
+var _CUMPLES = {
+  '03-16': '🎂 Cumple Ger',
+  '06-09': '🎂 Cumple Sofi',
+  '09-08': '🎂 Cumple Lore',
+  '10-29': '🎂 Cumple Lara'
+};
+
+var _FERIADOS_2027 = {
+  '01-01': 'Año Nuevo',
+  '02-15': 'Carnaval',
+  '02-16': 'Carnaval',
+  '03-24': 'Día de la Memoria',
+  '04-02': 'Día del Veterano',
+  '04-15': 'Jueves Santo',
+  '04-16': 'Viernes Santo',
+  '05-01': 'Día del Trabajador',
+  '05-25': 'Revolución de Mayo',
+  '06-20': 'Día de la Bandera',
+  '06-21': 'Paso a la Inmortalidad Güemes',
+  '07-09': 'Día de la Independencia',
+  '08-16': 'Paso a la Inmortalidad San Martín',
+  '10-11': 'Día del Respeto a la Diversidad',
+  '11-22': 'Día de la Soberanía',
+  '12-08': 'Inmaculada Concepción',
+  '12-25': 'Navidad'
+};
+
+function _getAvisoDia(fecha) {
+  var mm = String(fecha.getMonth()+1).padStart(2,'0');
+  var dd = String(fecha.getDate()).padStart(2,'0');
+  var key = mm + '-' + dd;
+  if (_CUMPLES[key]) return { tipo: 'cumple', texto: _CUMPLES[key] };
+  if (_FERIADOS_2027[key]) return { tipo: 'feriado', texto: '🚫 ' + _FERIADOS_2027[key] };
+  return null;
+}
 
 function _generarSlots(inicio, fin) {
   var slots = [];
