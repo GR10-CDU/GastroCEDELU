@@ -2384,7 +2384,7 @@ body.theme-blue .topbar-avatar {
 }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 </head>
 <body>
 
@@ -5253,8 +5253,8 @@ function renderConsultas(list) {
           <span id="${uid}-chevron" style="color:var(--muted);font-size:12px;transition:transform 0.2s">▼</span>
           <button class="btn btn-secondary btn-sm" title="Editar consulta"
             onclick="event.stopPropagation();editConsulta('${c.id}')">✎ Editar</button>
-          <button class="btn btn-secondary btn-sm" title="Descargar Word"
-            onclick="event.stopPropagation();descargarConsultaWord('${c.id}')" style="background:#1565c0;border-color:#1565c0;color:#fff">⬇ Word</button>
+          <button class="btn btn-secondary btn-sm btn-icon" title="Descargar Word"
+            onclick="event.stopPropagation();descargarConsultaWord('${c.id}')" style="background:#1565c0;border-color:#1565c0;color:#fff">⬇</button>
           <button class="btn btn-danger btn-sm btn-icon" title="Eliminar consulta"
             onclick="event.stopPropagation();confirmarEliminarConsulta('${c.id}', ${i})">×</button>
         </div>
@@ -5458,6 +5458,13 @@ async function descargarConsultaWord(consultaId) {
   const c = list.find(x => String(x.id) === String(consultaId));
   if (!c) { toast('Consulta no encontrada', 'error'); return; }
 
+  // Verificar que la librería docx esté cargada
+  if (typeof docx === 'undefined') {
+    toast('Cargando librería...', 'info');
+    console.error('Librería docx no cargada');
+    return;
+  }
+
   const pac = App.pacienteActual;
   const pacNombre = pac ? pac.apellidoNombre : 'Paciente';
 
@@ -5466,89 +5473,89 @@ async function descargarConsultaWord(consultaId) {
   const mIso = fechaStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (mIso) fechaStr = mIso[3] + '/' + mIso[2] + '/' + mIso[1];
 
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
+  try {
+    const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
 
-  const children = [];
+    const children = [];
 
-  // Encabezado
-  children.push(new Paragraph({
-    children: [new TextRun({ text: 'CONSULTA MÉDICA', bold: true, size: 32 })],
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 200 }
-  }));
-
-  children.push(new Paragraph({
-    children: [new TextRun({ text: 'Dra. Lorena Notari — Gastroenterología', italics: true, size: 22 })],
-    alignment: AlignmentType.CENTER,
-    spacing: { after: 400 }
-  }));
-
-  // Datos del paciente y fecha
-  children.push(new Paragraph({
-    children: [
-      new TextRun({ text: 'Paciente: ', bold: true }),
-      new TextRun({ text: pacNombre })
-    ],
-    spacing: { after: 100 }
-  }));
-
-  children.push(new Paragraph({
-    children: [
-      new TextRun({ text: 'Fecha: ', bold: true }),
-      new TextRun({ text: fechaStr })
-    ],
-    spacing: { after: 100 }
-  }));
-
-  if (c.lugarAtencion) {
+    // Encabezado
     children.push(new Paragraph({
-      children: [
-        new TextRun({ text: 'Lugar: ', bold: true }),
-        new TextRun({ text: c.lugarAtencion })
-      ],
+      children: [new TextRun({ text: 'CONSULTA MÉDICA', bold: true, size: 32 })],
+      alignment: AlignmentType.CENTER,
       spacing: { after: 200 }
     }));
-  }
 
-  // Separador
-  children.push(new Paragraph({ spacing: { after: 200 } }));
+    children.push(new Paragraph({
+      children: [new TextRun({ text: 'Dra. Lorena Notari — Gastroenterología', italics: true, size: 22 })],
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 400 }
+    }));
 
-  // Campos de la consulta
-  const campos = [
-    { label: 'MOTIVO DE CONSULTA', value: c.motivoConsulta },
-    { label: 'EVOLUCIÓN', value: c.exFisico },
-    { label: 'DIAGNÓSTICO', value: c.impresionDiagnostica },
-    { label: 'CONDUCTA', value: c.tratamiento },
-    { label: 'PENDIENTE', value: c.pendiente }
-  ];
+    // Datos del paciente y fecha
+    children.push(new Paragraph({
+      children: [
+        new TextRun({ text: 'Paciente: ', bold: true }),
+        new TextRun({ text: pacNombre })
+      ],
+      spacing: { after: 100 }
+    }));
 
-  campos.forEach(campo => {
-    if (campo.value) {
+    children.push(new Paragraph({
+      children: [
+        new TextRun({ text: 'Fecha: ', bold: true }),
+        new TextRun({ text: fechaStr })
+      ],
+      spacing: { after: 100 }
+    }));
+
+    if (c.lugarAtencion) {
       children.push(new Paragraph({
-        children: [new TextRun({ text: campo.label, bold: true, size: 24 })],
-        spacing: { before: 200, after: 100 }
+        children: [
+          new TextRun({ text: 'Lugar: ', bold: true }),
+          new TextRun({ text: c.lugarAtencion })
+        ],
+        spacing: { after: 200 }
       }));
-      // Dividir por saltos de línea
-      const lineas = campo.value.split(/\n/);
-      lineas.forEach(linea => {
-        children.push(new Paragraph({
-          children: [new TextRun({ text: linea, size: 22 })],
-          spacing: { after: 60 }
-        }));
-      });
     }
-  });
 
-  const doc = new Document({
-    sections: [{
-      properties: {
-        page: { size: { width: 12240, height: 15840 } } // Letter
-      },
-      children: children
-    }]
-  });
+    // Separador
+    children.push(new Paragraph({ spacing: { after: 200 } }));
 
-  try {
+    // Campos de la consulta
+    const campos = [
+      { label: 'MOTIVO DE CONSULTA', value: c.motivoConsulta },
+      { label: 'EVOLUCIÓN', value: c.exFisico },
+      { label: 'DIAGNÓSTICO', value: c.impresionDiagnostica },
+      { label: 'CONDUCTA', value: c.tratamiento },
+      { label: 'PENDIENTE', value: c.pendiente }
+    ];
+
+    campos.forEach(campo => {
+      if (campo.value) {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: campo.label, bold: true, size: 24 })],
+          spacing: { before: 200, after: 100 }
+        }));
+        // Dividir por saltos de línea
+        const lineas = String(campo.value).split(/\n/);
+        lineas.forEach(linea => {
+          children.push(new Paragraph({
+            children: [new TextRun({ text: linea, size: 22 })],
+            spacing: { after: 60 }
+          }));
+        });
+      }
+    });
+
+    const doc = new Document({
+      sections: [{
+        properties: {
+          page: { size: { width: 12240, height: 15840 } }
+        },
+        children: children
+      }]
+    });
+
     const blob = await Packer.toBlob(doc);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -5559,10 +5566,10 @@ async function descargarConsultaWord(consultaId) {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast('Descargando Word...', 'success');
+    toast('Descargando...', 'success');
   } catch (e) {
     console.error('Error generando Word:', e);
-    toast('Error al generar Word', 'error');
+    toast('Error al generar Word: ' + e.message, 'error');
   }
 }
 
