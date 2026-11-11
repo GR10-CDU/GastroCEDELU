@@ -7140,7 +7140,7 @@ async function _cargarCitasDesdeSupabase() {
       const citasSupabase = res.data.map(c => ({
         id: c.id,
         fecha: c.fecha,
-        hora: c.hora,
+        hora: (c.hora || '').slice(0,5),
         nombre: c.pacienteNombre,
         pacienteId: c.pacienteId,
         estudio: c.motivo,
@@ -9079,7 +9079,7 @@ function _abrirPanelBloques(iso) {
 function _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel) {
   var citas = _citasCargar();
   var ocupados = 0;
-  slots.forEach(function(h){ if(citas.some(function(c){return c.fecha===iso&&c.hora===h;})) ocupados++; });
+  slots.forEach(function(h){ if(citas.some(function(c){return c.fecha===iso&&(c.hora||'').slice(0,5)===h;})) ocupados++; });
   var libres = slots.length - ocupados;
 
   var header = document.createElement('div');
@@ -9100,7 +9100,7 @@ function _renderPanelBloques(panel, iso, d, diaNum, cfg, slots, fechaLabel) {
   body.style.cssText = 'overflow-y:auto;flex:1;padding:16px 20px';
 
   slots.forEach(function(hora) {
-    var cita = citas.find(function(c){ return c.fecha===iso && c.hora===hora; });
+    var cita = citas.find(function(c){ return c.fecha===iso && (c.hora||'').slice(0,5)===hora; });
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)';
 
