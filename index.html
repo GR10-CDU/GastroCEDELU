@@ -2384,6 +2384,7 @@ body.theme-blue .topbar-avatar {
 }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.min.js"></script>
 </head>
 <body>
 
@@ -5252,6 +5253,8 @@ function renderConsultas(list) {
           <span id="${uid}-chevron" style="color:var(--muted);font-size:12px;transition:transform 0.2s">▼</span>
           <button class="btn btn-secondary btn-sm" title="Editar consulta"
             onclick="event.stopPropagation();editConsulta('${c.id}')">✎ Editar</button>
+          <button class="btn btn-secondary btn-sm" title="Descargar Word"
+            onclick="event.stopPropagation();descargarConsultaWord('${c.id}')" style="background:#1565c0;border-color:#1565c0;color:#fff">⬇ Word</button>
           <button class="btn btn-danger btn-sm btn-icon" title="Eliminar consulta"
             onclick="event.stopPropagation();confirmarEliminarConsulta('${c.id}', ${i})">×</button>
         </div>
@@ -5449,6 +5452,120 @@ function editConsulta(consultaId) {
 
   showModal('modal-consulta');
 }
+// ── DESCARGAR CONSULTA EN WORD ────────────────────────────────────
+async function descargarConsultaWord(consultaId) {
+  const list = App.consultasList || [];
+  const c = list.find(x => String(x.id) === String(consultaId));
+  if (!c) { toast('Consulta no encontrada', 'error'); return; }
+
+  const pac = App.pacienteActual;
+  const pacNombre = pac ? pac.apellidoNombre : 'Paciente';
+
+  // Formatear fecha
+  let fechaStr = c.fechaConsulta || '';
+  const mIso = fechaStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (mIso) fechaStr = mIso[3] + '/' + mIso[2] + '/' + mIso[1];
+
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
+
+  const children = [];
+
+  // Encabezado
+  children.push(new Paragraph({
+    children: [new TextRun({ text: 'CONSULTA MÉDICA', bold: true, size: 32 })],
+    alignment: AlignmentType.CENTER,
+    spacing: { after: 200 }
+  }));
+
+  children.push(new Paragraph({
+    children: [new TextRun({ text: 'Dra. Lorena Notari — Gastroenterología', italics: true, size: 22 })],
+    alignment: AlignmentType.CENTER,
+    spacing: { after: 400 }
+  }));
+
+  // Datos del paciente y fecha
+  children.push(new Paragraph({
+    children: [
+      new TextRun({ text: 'Paciente: ', bold: true }),
+      new TextRun({ text: pacNombre })
+    ],
+    spacing: { after: 100 }
+  }));
+
+  children.push(new Paragraph({
+    children: [
+      new TextRun({ text: 'Fecha: ', bold: true }),
+      new TextRun({ text: fechaStr })
+    ],
+    spacing: { after: 100 }
+  }));
+
+  if (c.lugarAtencion) {
+    children.push(new Paragraph({
+      children: [
+        new TextRun({ text: 'Lugar: ', bold: true }),
+        new TextRun({ text: c.lugarAtencion })
+      ],
+      spacing: { after: 200 }
+    }));
+  }
+
+  // Separador
+  children.push(new Paragraph({ spacing: { after: 200 } }));
+
+  // Campos de la consulta
+  const campos = [
+    { label: 'MOTIVO DE CONSULTA', value: c.motivoConsulta },
+    { label: 'EVOLUCIÓN', value: c.exFisico },
+    { label: 'DIAGNÓSTICO', value: c.impresionDiagnostica },
+    { label: 'CONDUCTA', value: c.tratamiento },
+    { label: 'PENDIENTE', value: c.pendiente }
+  ];
+
+  campos.forEach(campo => {
+    if (campo.value) {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: campo.label, bold: true, size: 24 })],
+        spacing: { before: 200, after: 100 }
+      }));
+      // Dividir por saltos de línea
+      const lineas = campo.value.split(/\n/);
+      lineas.forEach(linea => {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: linea, size: 22 })],
+          spacing: { after: 60 }
+        }));
+      });
+    }
+  });
+
+  const doc = new Document({
+    sections: [{
+      properties: {
+        page: { size: { width: 12240, height: 15840 } } // Letter
+      },
+      children: children
+    }]
+  });
+
+  try {
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const nombreArchivo = (pacNombre.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ ]/g, '') + ' - Consulta ' + fechaStr.replace(/\//g, '-') + '.docx').replace(/\s+/g, ' ');
+    a.href = url;
+    a.download = nombreArchivo;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Descargando Word...', 'success');
+  } catch (e) {
+    console.error('Error generando Word:', e);
+    toast('Error al generar Word', 'error');
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────
 async function submitConsulta() {
   const pac = App.pacienteActual;
